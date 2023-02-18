@@ -1,6 +1,6 @@
 import psycopg2
 
-user = 'hermagst'
+user = ''
 pwd = ''
 
 connection = f"dbname='{user}'user='{user}_priv'port='5432'host='dbpg-ifi-kurs03.uio.no'password='{pwd}'"
