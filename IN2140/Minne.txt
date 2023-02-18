@@ -1,0 +1,36 @@
+Oppgave 1: Layout
+
+1)	Siden utførelsen av et program er det vi kaller en prosess vil jeg si at et kodesegment 
+	inneholder både deler av programmet og prosessen. Til tross for dette vil jeg si at det 
+	inneholder en større andel av program enn prosess ettersom det er flere andre ting som går 
+	inn i en prosess.
+
+2)	Ved å ha to separate dataområder i minne kan vi lagre to forskjellige typer data.
+	I stacken: 	Midlertidige lokale variabler vi glemmer etter vi går ut av kodeblokker.
+				Dette er her vi lagrer dynamiske verdier i tillegg til at vi holder styr på 
+				rekkefølgen koden skal eksekveres i og hvor vi skal hoppe til ved funksjonskall osv.
+	I heapen:	Globale variabler vi skal beholde gjennom hele programmet. Heapen er tregere 
+				enn stacken og bruker en hierarkisk datastruktur fremfor stackens lineære.
+	Dersom minneområde til stacken overtrer inn i heapen vil vi få en stackoverflow error, og en
+	heapoverflow når det motsatte skjer. Dette vil ideelt sett kræsje programmet men kan også
+	utnyttes av en angreper til andre hensikter.
+
+3)	En prosess bruker både stacken og heapen. For å kunne bruke variabler utenfor en funksjon
+	må man allokere minne i heapen for den. Det er dette vi gjør når vi bruker malloc(). Ellers
+	blir lokale variabler lagret i stacken. Dette er raskere og billigere, men vanskeligere å
+	håndtere.
+
+	Man kunne klart seg med å bare bruke både heapen og allokere alt med malloc(), eller ved å
+	ha hele programmet i main funksjonen med lokale variabler og dermed bare bruke stacken.
+	Hverken av disse løsningene er anbefalt. // litt usikker
+
+Oppgave 2: Partisjonering
+
+1)	Siden har 1MiB minne og prosesser som til sammen krever 1MiB minne burde vi ha nok minne
+	til å kjøre alle disse prosessene samtidig. Men siden vi bruker en statisk partisjonering
+	som ikke kan gi de to prosessene som krever 64KiB noe mindre enn 128MiB vil det ikke være
+	nok minne til å kjøre alle prosessene samtidig slik de gjør på slutten av kjøretidsplanen.
+	Altså siden vi gir to prosesser mer minne enn de trenger ender vi opp med å ikke ha nok minne
+	for prosess E til slutt.
+
+2)	
