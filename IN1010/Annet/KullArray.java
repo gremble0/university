@@ -1,0 +1,3 @@
+class KullArray extends Kull {
+	
+}

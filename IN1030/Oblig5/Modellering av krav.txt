@@ -1,0 +1,15 @@
+Oppgave 2
+a)	Use case: "Kjøp billett som eksisterende kunde"
+	Prebetingelse: Kunden har en registrert bruker
+	Postbetingelse: Kundens bank har overført pengene til eieren av systemet og i gjengjeld fått bestilt billett.
+
+	Kunden må først logge inn på sin registrerte bruker for å få tilgang til systemets tjenester. 
+	Kunden sender inn loggin-informasjon. Systemet sjekker om informasjonen er gyldig, hvis ja: gå videre, hvis nei: skriv feilmelding og igjen krev innlogging.
+	Når kunden har logget inn kan de navigere seg frem til siden for bestilling av kinobillett og sende inn en forespørsel til systemet om å bestille en billett.
+	Systemet spør kundens bank om å overføre passende pengesum, hvis overføringen går gjennom: gi brukeren billetten de bestilte og avslutt use case, hvis ikke: send feilmelding.
+
+Oppgave 4
+a) 	Ved å benytte devops prinsipper kan man korte ned tiden til produkt-slipp samtidig som man sikrer systemets kvalitet. Hvis alle utviklere holdes ansvarlig for alt som trengs for sluttproduktet vil alle utviklerne skjønne eventuelle problemer, som de så kan samarbeide lettere for å fikse. Hvis alt som kan automatiseres blir automatisert vil dette vesentlig minimere vedlikehold. Ved å måle effektivitet og kvalitet på utviklingen systemet kan man enklere forbedre fremtidig programvare ved å studere hva som har fungert før.
+b) 	Continuous integration: en utviklings-fremgangsmåte der alle utviklernes programvare "merges" til et hovedprogram med jevne mellomrom.
+	Continuous delivery: en utviklings-fremgangsmåte der utviklerne er påkrevd å levere kjørbar og fungerende programvare med kort mellomrom. Dette vil sikre et fungerende produkt uavhengig av eventuelle endringer i fristen eller andre problemer som kan oppstå underveis.
+	Continuous deployment: en utviklings-fremgangsmåte der programvarens funksjonalitet er levert gjennom automatisert deployment.

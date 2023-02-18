@@ -1,0 +1,8 @@
+-   Deles inn i 2 og 2
+    -   Par skal samarbeide med delegerte oppgaver
+    -   Arbeid gjøres hovedsaklig over nett
+-   Verktøyet brukt for samarbeid er github
+-   Vi skal basere oss på Adam sin oblig2 løsning og Herman sin oblig3 løsning
+    -   Vi hadde alle relativt like løsninger på oblig2, men vi valgte Adam sin.
+    -   For oblig3 hadde vi to hovedkategorier for løsninger - enveisliste med siste peker, og toveisliste med siste og forrige peker.
+        -   Valgte enveisliste med siste peker fordi det er lettere å forholde seg til og mindre å holde styr på når vi oppdaterer listen, i tillegg til at det krever mindre minne og færre operasjoner, selv om dette kan gjøre det mindre effektivt å behandle listen i noen tilfeller.

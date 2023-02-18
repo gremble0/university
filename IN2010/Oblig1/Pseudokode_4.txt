@@ -1,0 +1,12 @@
+Oppgave 4a:
+
+Input: Et sortert array
+Output: Skriver ut tall i rekkefølge nødvendig for å danne et balansert binært søketre
+
+Procedure balansertSoeketre(sortertArr):
+	if len(sortertArr) < 1 then
+		return
+	median <-- math.floor(len(sortertArr)/2)
+	print(sortertArr[median])
+	balansertSoeketre(sortertArr[median+1:-1])
+	balansertSoeketre(sortertArr[0:median+1])

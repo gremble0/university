@@ -1,0 +1,310 @@
+1.1
+z
+tilgjengelighet **
+konfidensialitet **
+dataint. //
+person. //
+systemint. **
+
+poeng 0
+
+1.2
+- **
+sårbar. //
+ingen **
+risiko **
+sårbarhet. **
+risiko //
+
+poeng 0
+
+1.3
+konfig:			
+brukerreg.
+klargj;r aut.
+tilgangsaut.
+
+bruksfase:
+oppgi brukerid
+oppgi aute
+tilgangskont. ///////////////
+
+poeng 3
+
+1.4
+sterkere **
+valideres av mottager //
+
+poeng 0
+
+2.1
+massephishing
+hvalphishing
+klonephishing
+spydphishing //////////
+
+poeng 2
+
+2.2
+mitm //
+sidekanal **
+- **
+skjult **
+
+poeng 0
+
+2.3
+sant //
+sant **
+usant //
+-- usant /*
+
+poeng 0.5 - 1
+
+2.4
+sikkerhetskopi //
+anon **
+
+anon //
+cyber //
+
+poeng 1
+
+2.5
+1 --DBS //
+2 --Virus **
+3 trojan **
+4 --orm //
+
+poeng 0
+
+3.1
+klart-chif **
+nøkkel //
+
+poeng 0
+
+3.2 
+symmetrisk ** 
+
+poeng 0
+
+3.3
+E
+klartekst
+teller
+chiffertekst
+D
+
+poeng 0
+
+3.4
+sant //
+usant //
+sant //
+sant ** ??????????
+
+poeng 1
+
+3.5
+sin egen
+private
+alices
+offentlige /////////
+
+poeng 2
+
+4.1
+256
+10
+128
+1024 //////////
+
+poeng 2
+
+4.2
+dekrypt
+dekrypt /////////
+
+poeng 2
+
+4.3
+hemmelig //
+hemmelig //
+privat //
+offentlig //
+offentlig //
+privat //
+ 
+poeng 0
+
+4.4
+-- mellom **
+-- mellom ** ??????????????
+ingen //
+rotsert //
+mellom //
+mellom **
+
+poeng 1 (*)
+
+5.1
+applikasjon //
+internett **
+transport **
+linkprotokoll //
+
+poeng 0
+
+5.2
+-- record
+IPsec
+ingen
+-- handshake /////**
+
+poeng 1-2
+
+5.3
+a Diffie-hellman nøkkelutveksling
+
+b At man kan oppnå et forhold mellom to korrespondenter som man kan være sikker på at er og vil forbli hemmelig utover. Det vil si at
+etter nøkkelutvekslingen er utført vil det være en sikker forbindelse mellom de to partene som har utført den.
+
+c Ved å ta i bruk en algoritme som sikrer en forbindelse som vil forbli sikker i fremtiden
+
+d Enigma. Denne sikkerhetsprotokollen lager øktnøkler ved å hardkode dagens instillinger inn i en maskin, noe som kan avlyttes av utenforstående.
+
+poeng 1
+
+5.4
+--
+applikasjons
+tilstandsbasert
+tilstandsløst
+
+poeng 1.5
+
+
+6.1
+ingen
+med hash
+vanskelig
+uten hash
+
+poeng 2
+
+6.2
+minske //
+FMR = FNMR **
+forsøk på forfalsk //
+vanskelig på tross av //
+7 **
+5 **
+
+poeng 0
+
+6.3
+OTP **
+pass og id //
+sekundær //
+OTP //
+sekundær //
+online **
+
+poeng 2
+
+6.4 ******
+norge //
+eidas **
+usa //
+norge **
+
+poeng 0
+
+7.1 **********
+silo **
+føder **
+silo //
+føde //
+
+poeng 0
+
+7.2
+poeng 2
+
+7.3 ************
+- 
+mac **
+-
+-
+
+poeng 0
+
+8.1
+-- **
+-- 27002 **
+ingen //
+begge //
+-- ingen //
+-- begge **
+
+poeng 1 (*)
+
+8.2 ******************
+Detect, identify, recover, respond, protect
+
+Oppdage, identifisere, håndtere, beskytte
+
+poeng 0
+
+8.3
+formalisert 
+system ///////
+
+poeng 2
+
+9.1
+Krav, design, opplæring, koding, test, produksjonssetting, forvaltning *
+
+poeng 2
+
+9.2
+autentisitiet //
+integritet //
+tilgjengelighet -- tilgangskontroll **
+konfidensialitet //
+tilgjengelighet //
+tilgangskontroll //
+
+poeng 2
+
+9.3
+-
+devops //
+devops //
+ingen **
+-
+sikker smidig //
+
+poeng 1
+
+
+
+
+
+
+
+TOTALT: 31 POENG
+
+
+
+
+
+
+
+
+
+
+
+
+

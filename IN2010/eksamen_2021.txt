@@ -1,0 +1,163 @@
+b	a) usant
+	b) sant
+	c) sant
+	d) usant
+
+s	a) sant
+	b) usant
+	c) usant
+	d) sant
+
+i	a) usant **********
+	b) usant
+	c) sant
+	d) usant
+
+stabil	a) nei
+	b) 22
+	c) ***********
+
+binaer heap	a) 11, 28, 27, 43, 32, 66, 55, 59
+		b) 4, 7, 11, 43, 28, 27, 55, 59, 66, 32
+		c) 27* (28)
+
+huffman	a) 4
+	b) 2
+	c) 9 + 8 + 1 + 4 + 4 = 26
+	d) 15 (antall tegn * 2 - 1)
+	e) 7 (antall noder - 1)
+
+beregnbar	a) usant
+		b) usant
+		c) sant ******
+		d) sant
+		e) sant ****
+		f) sant
+		g) usant *****
+		h) sant *****
+
+kortest	a) dijsktra
+	b) topologisk sortering
+	c) BFS
+	d) Bellman-ford
+
+
+intervall a) **************
+	// antar B er en klasse med instansvariabler brukt nedenfor
+	Procedure InRange(B, a, b):
+		res = []
+		current = B.root
+		if a == B.root.value:
+			res.append(a)
+		if a < B.root.value:
+			while current.left: // fortsett saa lenge left eller right ikke er null
+				if a > current.left.value:
+					current = current.left
+				else:
+					res.append(current.left.value)
+			while current.parent <= b:
+				res.append(current.value)
+
+	// etter juks rekursjon
+	// tar en node v og tallene a og b som input, ved første kall er noden v roten av B
+	Procedure InRange(v, a, b):
+		if v == null:
+			return null
+		if a < v.value:
+			InRange(v.left, a, b)
+		if b > v.value:
+			InRange(v.right, a, b)
+		if a <= v.value <= b: // vet ikke om denne if-en maa vaere paa samme sted som i fasit
+			print(v.value)
+	
+	b) I dette tilfellet vil algoritmen min besøke alle nodene en gang og dermed ha kjøretidskompleksitet på O(n)
+	c) I dette tilfellet vil algoritmen min starte med å gå enten til høyre eller venstre ned søketreet.
+	   Så vil den fortsette ned log(n) ganger der n er antall noder. log(n) fordi antall mulige noder halveres for hvert kall på
+	   InRange(v, a, b) når vi endrer v til v.left eller v.right.
+
+forekomster 
+	I strategi 2 lages det et array B som baserer størrelsen sin på input. Dette kan gjøre at dette arrayet blir veldig stort og fullt
+	av null-verdier dersom input består av få, men store tall (f.eks: [0, 2, 1482494]). Denne algoritmen kan dermed være ueffektiv i
+	forhold til minne. På den andre siden bruker denne algoritmen arrays som er veldig raske for både 
+	oppslag og input. Denne algoritmen vil i værste tilfelle ha en kjøretidskompleksitet på O(k + 2A) (1A for å finne det største elementet
+	i A og 1 til for å løkke gjennom alle elementene i A og oppdatere B arrayet), der k som sagt kan være et veldig stort tall og kan 
+	gjøre algoritmen treg dersom det er store tall i A. Dette vil også være den forventede kjøretidskompleksiteten.
+
+	I strategi 1 brukes et hashmap H som også baserer seg på størrelsen av input. I motsetning til arrays er det en forskjell i hashmap datastrukturen
+	mellom forventet kjøretidskompleksitet og værste tilfelle kjøretidskompleksitet. Metodene put og get i hashmaps er i værste tilfelle lineær tid O(n),
+	men har en amortisert forventet kompleksitet på O(1). Derfor har denne strategien i værste tilfelle en kjøretidskompleksitet på O(A^2)
+
+summerer til x
+	a)
+	Procedure FindSummands(A, x):
+		for i = 0; i = i + 1; to n:
+			low = i
+			high = n - 1 // n er stoerrelsen paa A
+			while low < high:
+				if A[i] + A[high] > x:
+					high = low + high / 2
+				else if A[i] + A[high] < x:
+					low = low + high / 2
+				else:
+					print(A[i], A[high])
+
+
+fargelegg
+	Procedure TwoColor(G):
+		for v in V: // lokk gjennom alle noder og sett dem til R, O(|V|)
+			v.color = R
+		for (u, v) in E: // O(|E|)
+			TwoColorRec(u, v)
+
+	Procedure TwoColorRec(u, v):
+		if u.color = v.color:
+			v.FlipColor()
+
+
+
+whops oppgjor
+	Procedure WhopsOppgjor(G, T):
+		while G is not empty:
+			v = velg vilkarlig element fra V
+			K = tom graf
+			K.append(DFSVisit(G, v, [])) // legg til det som ender opp i visited i K
+			if SjekkKomponent(K, T):
+				G = G - K // fjerner alle elementene i K fra G og fortsetter lokken
+				continue
+			else:
+				return false
+		return true // hvis algoritmen kommer seg hit uten a returnere false i while 
+			    // lokken er oppgjoret mulig
+
+			
+	Procedure DFSVisit(G, v, visited):
+		visited.append(v)
+		for (v, u) in E:
+			if u not in visited:
+				DFSVisit(G, u, visited)	
+		
+
+	Procedure SjekkKomponent(K, T):
+		// tar en komponent og sjekker om oppgjoret er mulig for den komponenten
+		// hvis det ikke er mulig for denne komponenten vet vi at oppgjoret ikke er
+		// mulig, hvis det er mulig returner true
+		delSum = 0
+		for v in V: // nodene til K
+			delsum = delsum + T[v]
+		return delsum = 0
+
+
+whops logger
+	Procedure WhopsLogger(G):
+		
+
+
+
+
+
+
+
+
+
+
+
