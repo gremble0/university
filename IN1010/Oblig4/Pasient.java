@@ -21,7 +21,7 @@ public class Pasient {
     public Stabel<Resept> hentStabel() {return reseptStabel;}
 
     public String toString(){
-        return "Pasientnavn: " + navn + "\nFodselsnummer: " + fodselsnummer + "\nID: " + ID;
+        return "Pasienten " + navn + "\nFodselsnummer: " + fodselsnummer + "\nID: " + ID;
     }
       
 }

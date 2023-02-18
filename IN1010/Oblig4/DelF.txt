@@ -1,0 +1,20 @@
+Oppgave F - Erfaringsnotat
+
+F1)
+
+På starten av obligen fungerte det fint med planleggingen av hvem sine løsninger fra Oblig 2 og 3 vi skulle bruke, 
+siden det var ulike løsninger brukt på de forrige obligene.
+Vi ble også fort enige om hvordan vi skulle løse oppgaven, selv om det ofte kan være mange ulike meninger og ting man er uenige om når man jobber i gruppe.
+Fordelingen av oppgavene fra oppgave A-D var gjort bra og den delen av obligen ble ferdig relativt fort.
+Vi brukte Github for mesteparten av arbeidet og måten vi lagret koden på var effektiv, 
+med tanke på oversikt og struktur når endringer ble gjort på deler av oppgaven. 
+
+F2
+Til neste gang kunne vi ha planlagt litt mer i forkant og lest godt gjennom oppgaven før vi startet å jobbe.
+Den siste deloppgaven endte opp med å være mye mer arbeid enn det som ble forutsatt. Det var noen metoder og deloppgaver i del E tok mer tid å lage.
+Brukerinput designet med feilsjekker og lesfrafil-metoden var noen av disse. I tillegg var det noen komponenter i koden fra oblig 2 og oblig 3 som det måtte gjøres endringer på, 
+for at de kunne bli brukt til ny funksjonalitet på Oblig 4. 
+
+F3
+Fordelene med gruppearbeidet var å kunne samarbeide med andre for å finne løsninger og metoder som man ikke nødvendigvis hadde gjort på samme måte om man hadde jobbet helt selvstendig. 
+I tillegg er det viktig å ha god tid til å skrive god og leselig kode, når andre skal bruke det.

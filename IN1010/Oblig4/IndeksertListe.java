@@ -1,4 +1,3 @@
-import java.util.Iterator;
 
 public class IndeksertListe<T> extends Lenkeliste<T> {
     public void leggTil(int pos, T x) throws UglydigListeIndeks {
@@ -104,10 +103,7 @@ public class IndeksertListe<T> extends Lenkeliste<T> {
         return resultat;
     }
 
-    @Override
-    public Iterator<T> iterator() {
-        // TODO Auto-generated method stub
-        return null;
-    }
+    
+
 
 }

@@ -20,8 +20,8 @@ public class Hovedprogram {
 
         Legesystem asd = new Legesystem();
         asd.lesFraFil("asd.txt");
-        asd.qwerty();
-        // asd.mainLoop();
+        asd.mainLoop();
+        asd.skrivTilFil();
         //asd.qwerty();
         //asd.mainLoop();
     }

@@ -12,7 +12,6 @@ abstract public class Resept {
         ID = idTeller;
         this.legemiddel = legemiddel;
         this.utskrivendeLege = utskrivendeLege;
-        //this.pasientId = pasientId;
         this.reit = reit;
         pasient = p;
     }
@@ -29,13 +28,14 @@ abstract public class Resept {
         return utskrivendeLege;
     }
 
-    /*public int hentPasientId(){
-        return pasientId;      
-    }*/
+    public int hentPasientId(){
+        return pasient.hentId();      
+    }
 
     public int hentReit(){
         return reit;      
     }
+
 
     public boolean bruk(){
         if (reit == 0)
@@ -49,6 +49,6 @@ abstract public class Resept {
     abstract public int prisAaBetale(int pris);
 
     public String toString(){
-        return ("Legemiddel: " + legemiddel + "\nUtskrivendeLege: " + utskrivendeLege + "\nPasient ID: " + /*pasientId +*/ "\nReit: " + reit);
+        return ("Legemiddel: " + legemiddel + "\nUtskrivendeLege: " + utskrivendeLege + "\nPasient ID: " + hentPasientId() + "\nReit: " + reit);
     }
 }

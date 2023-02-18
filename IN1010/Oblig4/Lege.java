@@ -2,6 +2,7 @@
 public class Lege implements Comparable<Lege>{
     protected String legenavn;
     IndeksertListe<Resept> utskrevneResepter = new IndeksertListe<>(); 
+    int narkotiskBruk;
 
     Lege(String legenavn){
         this.legenavn = legenavn;
@@ -9,6 +10,14 @@ public class Lege implements Comparable<Lege>{
 
     public String hentNavn(){
         return legenavn;
+    }
+
+    public void leggTilNarkotiskBruk(){
+        narkotiskBruk++;
+    }
+
+    public int skrivUtNarkotiskBruk(){
+        return narkotiskBruk;
     }
 
     public IndeksertListe<Resept> hentUtskrevneResepter() {
@@ -43,6 +52,6 @@ public class Lege implements Comparable<Lege>{
     }   
 
     public String toString(){
-        return "Legenavn: " + legenavn;
+        return "Legen " + legenavn;
     }
 }

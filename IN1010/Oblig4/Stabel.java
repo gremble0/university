@@ -1,4 +1,4 @@
-import java.util.Iterator;
+
 
 public class Stabel<T> extends Lenkeliste<T> {
     @Override
@@ -12,9 +12,4 @@ public class Stabel<T> extends Lenkeliste<T> {
         stoerrelse++;
     }
 
-    @Override
-    public Iterator<T> iterator() {
-        // TODO Auto-generated method stub
-        return null;
-    }
 }
