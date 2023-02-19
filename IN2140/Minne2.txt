@@ -1,0 +1,68 @@
+Oppgave 1: Layout
+
+1)	Siden utførelsen av et program er det vi kaller en prosess vil jeg si at et kodesegment 
+	inneholder både deler av programmet og prosessen. Til tross for dette vil jeg si at det 
+	inneholder en større andel av program enn prosess ettersom det er flere andre ting som går 
+	inn i en prosess.
+
+2)	Ved å ha to separate dataområder i minne kan vi lagre to forskjellige typer data.
+	I stacken: 	Midlertidige lokale variabler vi glemmer etter vi går ut av kodeblokker.
+				Dette er her vi lagrer dynamiske verdier i tillegg til at vi holder styr på 
+				rekkefølgen koden skal eksekveres i og hvor vi skal hoppe til ved funksjonskall osv.
+	I heapen:	Globale variabler vi skal beholde gjennom hele programmet. Heapen er tregere 
+				enn stacken og bruker en hierarkisk datastruktur fremfor stackens lineære.
+	Dersom minneområde til stacken overtrer inn i heapen vil vi få en stackoverflow error, og en
+	heapoverflow når det motsatte skjer. Dette vil ideelt sett kræsje programmet men kan også
+	utnyttes av en angreper til andre hensikter.
+
+3)	En prosess bruker både stacken og heapen. For å kunne bruke variabler utenfor en funksjon
+	må man allokere minne i heapen for den. Det er dette vi gjør når vi bruker malloc(). Ellers
+	blir lokale variabler lagret i stacken. Dette er raskere og billigere, men vanskeligere å
+	håndtere.
+
+	Man kunne klart seg med å bare bruke både heapen og allokere alt med malloc(), eller ved å
+	ha hele programmet i main funksjonen med lokale variabler og dermed bare bruke stacken.
+	Hverken av disse løsningene er anbefalt.
+
+
+Oppgave 2: Partisjoner
+
+1)	Med en statisk partisjonering risikerer man å ikke ha store, og/eller små nok partisjoner for 
+	prosessene sine. Det er det som skjer i vårt tilfelle. Ettersom vi har nøyaktig nok minne
+	for å kjøre alle prosessene våre dersom vi partisjonerer alle prosessene våre i nøyaktig
+	store nok partisjoner, vil det gå feil hvis partisjonene er i feil størrelse. Det er dette
+	som skjer med våre prosesser. Alle prosessene passer i minnet frem til vi kommer til prosess E.
+	På det punktet har vi vært ueffektive med minneallokering i tillegg til at prosess E aldri 
+	hadde en partisjon stor nok til seg selv.
+
+2)	Ingen av algoritmene kan hjelpe prosess E siden kjøretidsplanen for prosess A er tidligere enn
+	slutten til C. Hvis prosess A startet opp igjen senere enn slutten til C ville det vært mulig.
+	Ytelses indikatorer for hver av algoritmene varierer i forhold til kompleksiteten der Best Fit
+	er den mest komplekse siden den gjør flest kalkulasjoner før den allokerer minne for prosessen,
+	dette gjør den også litt tregere. På den andre siden gjør First Fit allokeringen raskt ved å
+	bare allokere det første minnet den finner.
+
+3)	Med buddy-tildeling kan vi effektivt allokere riktige mengder minne til alle prosessene våre.
+	For hver prosess vi starter splitter vi av en så liten mengde minne den prosessen trenger.
+	I vårt tilfelle tillater buddy-tildeling oss å kjøre alle prosessene våre samtidig, uten
+	segmentering.
+
+Oppgave 3: Multilevel Paging
+
+1)	Gitt et virtuelt minneadresse område med plass til 2^32 bytes og en side størrelse på 4KiB,
+	er det (2^32/2^12) = 2^20 = 1048576 sider
+
+2)	Multi-level paging brukes til å håndtere minne effektivt, uavhengig av størrelsen på sidetabellen. 
+	Det reduserer størrelsen på sidetabellen i fysisk minne. Selv om sidetabellen ikke er overdrevent 
+	stor, kan det fortsatt være upraktisk å lagre alt dets innhold i minnet til enhver tid på grunn 
+	av begrenset minne. Hvis hele sidetabellen skulle vært lagret i minne til enhver tid, så vil dette 
+	forbruke en betydelig mengde med minne, som fører til at mindre minne vil være tilgjengelig for 
+	andre system ressurser og applikasjoner. Når en sidetabell swappes til disk så må operativsystemet 
+	hente det fra disken når det trengs som kan føre til forsinkelser når man skal aksessere minne. 
+	Det kan også være risikabelt fordi hvis sidetabellen ikke er tilgjengelig når den trengs, 
+	kan systemet krasje.
+
+3)	Multilevel paging kan påvirke muligheten til å swappe ut sidetabellen. Hvis sidetabellen er lagret 
+	i minnet, kan det brukes til å redusere størrelsen på hver sidetabell. På den andre siden kan multilevel 
+	paging også gjøre det mer komplisert å swappe ut sidetabellen, fordi det vil være nødvendig å 
+	swappe ut flere pagetabeller samtidig.

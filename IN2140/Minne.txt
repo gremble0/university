@@ -26,11 +26,26 @@ Oppgave 1: Layout
 
 Oppgave 2: Partisjonering
 
-1)	Siden har 1MiB minne og prosesser som til sammen krever 1MiB minne burde vi ha nok minne
-	til å kjøre alle disse prosessene samtidig. Men siden vi bruker en statisk partisjonering
-	som ikke kan gi de to prosessene som krever 64KiB noe mindre enn 128MiB vil det ikke være
-	nok minne til å kjøre alle prosessene samtidig slik de gjør på slutten av kjøretidsplanen.
-	Altså siden vi gir to prosesser mer minne enn de trenger ender vi opp med å ikke ha nok minne
-	for prosess E til slutt.
+	// Jeg løste med segmentering som ikke er lov - feil svar.
 
-2)	
+1)	Siden har 1MiB minne og prosesser som til sammen krever 1MiB minne har vi nok minne
+	til å kjøre alle disse prosessene samtidig. Men siden vi bruker en statisk partisjonering
+	som ikke kan gi de to prosessene som krever 64KiB noe mindre enn 128MiB vil vi på det punktet
+	vi kommer til prosess E måtte fragmentere den inn i samme partisjon som andre prosesser
+	slik de gjør på slutten av kjøretidsplanen. Eventuelt kunne vi flyttet to av de 64KiB prosessene
+	i samme partisjon. Uansett måtte vi fragmentert prosess E til minst 2 partisjoner.
+
+2)	Med first fit minneallokering hadde vi ikke fått noen fragmentering siden etter prosess A terminerer
+	fylles den 128KiB blokken av minne opp igjen av prosess C og D. Så legger den seg tilbake på toppen
+	av minne når den starter igjen. Når prosess E skal starte er det da en full 512KiB blokk minne 
+	ledig på toppen av minne og en 64KiB blokk på bunnen for at prosess C kan starte opp igjen.
+
+	Med next fit vil vi sitte igjen med 384KiB på toppen av minne som den største blokken minne. Dette er 
+	fordi at når prosess A og C terminerer forblir disse hullene i minne liggende før prosess A starter igjen
+	og okkuperer deler av det prosess E trenger for å ikke skape fragmentering. Altså må vi fragmentere 
+	prosess E inn i en 384KiB partisjon og en 128KiB partisjon. Prosess C kan starte i samme minneområde uten
+	fragmentering.
+
+
+
+
