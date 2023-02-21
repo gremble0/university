@@ -1,0 +1,14 @@
+2.1
+Innkapsling er et objektorienteringsprinsipp som handler om hvordan man behandler data i klasser.
+Innkapsling sier at alle endringer av instansvariabler skjer gjennom klassens metoder. Det offentlige grensesnittet 
+har ikke tilgang til innholdet i klassens metoder. Dette gir oss en ryddigere oversikt og "streamlined" fremgangsmåte
+å behandle data på, samtidig som det ryddiggjør koden og gjør det lettere for andre å bruke objektet.
+2.2
+Grensesnittet til en klasse består av metodene inni klassen. Klassens metoder behandler potensielle argumenter,
+instansvariabler og returverdier. En forskjell fra grensesnittet og implementasjonen til klassen er offentlighet.
+Instansvariablene er private og brukes kun av klassens metoder, mens det holdes skjult fra grensesnittet.
+2.3
+En instansmetode er en funksjon som går under en klasse. Den initierer og behandler instansvariabler mellom hverandre.
+Skopet til en instansvariabel går på tvers av metodene for en samme klasse. Derfor samarbeider instansmetodene mer direkte
+med hverandre enn i funksjoner der du må eksplisitt returnere og ta inn parametere for å kunne overføre verdier fra en 
+funksjon til en annen.
