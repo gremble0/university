@@ -13,8 +13,8 @@ int stringsum(char *s) {
 	}
 
 	for(int i = 0; i < s_len; i++) {
-		if(s_lower[i] == 32) continue;
-		if(s_lower[i] < 97 || s_lower[i] > 122) return -1;
+		if(s_lower[i] == ' ') continue;
+		if(s_lower[i] < 'a' || s_lower[i] > 'z') return -1;
 		sum += s_lower[i] - 96;
 	}
 	return sum;
@@ -25,7 +25,7 @@ int *get_substring_interval(char *s, char c) {
 	int *interval = malloc(2);
 	int first = 0; 
 	int last = 0;
-
+	
 	for(int i = 0; i < strlen(s); i++) {
 		if(s[i] == c) {
 			if(first == 0) {
@@ -36,9 +36,8 @@ int *get_substring_interval(char *s, char c) {
 		}
 	}
 
-	interval[0] = first;
+ 	interval[0] = first;
 	interval[1] = last;
-	// kan ikke frigjoere siden vi trenger variabelen for returverdi
 	return interval;
 }
 

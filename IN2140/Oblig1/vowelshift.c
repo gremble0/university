@@ -1,7 +1,7 @@
-#include <stdio.h> // printf(), gets(), getchar()
-#include <string.h> // strcpy(), strlen()
-#include <stdlib.h> // malloc()
-#include <ctype.h> // toupper()
+#include <stdio.h>
+#include <string.h>
+#include <stdlib.h>
+#include <ctype.h>
 
 char *vowelshift(char str[], char c) {
 	char *res = malloc(strlen(str));
@@ -29,7 +29,7 @@ int main(void) {
 
 	if(c != 'a' && c != 'e' && c != 'i' && c != 'o' && c != 'u') {
 		printf("%s\n", "Du skrev ikke en vokal");
-		return 0;
+		return -1;
 	}
 
 	printf("%s\n", vowelshift(str, c));
