@@ -7,3 +7,5 @@ data class AlpacaParty(
     val img: String,
     val color: String
 )
+
+data class AlpacaPartyList(val parties: List<AlpacaParty>)
