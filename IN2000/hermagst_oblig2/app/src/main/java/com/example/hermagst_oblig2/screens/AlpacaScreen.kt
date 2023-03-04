@@ -28,7 +28,6 @@ fun AlpacaScreen(alpacaViewModel: AlpacaViewModel = viewModel()) {
 
     var expanded by remember { mutableStateOf(false) }
     var selectedDistrict by remember { mutableStateOf(districts[0]) }
-    var votes: Map<String, Int> by remember { mutableStateOf(alpacaUiState.votes) }
 
     Column(
         modifier = Modifier.fillMaxWidth(),
@@ -64,9 +63,20 @@ fun AlpacaScreen(alpacaViewModel: AlpacaViewModel = viewModel()) {
         }
 
         LazyColumn {
-            println(votes)
+            var votesTotal = 0
+            alpacaUiState.votes.forEach {
+                votesTotal += it.value
+            }
             itemsIndexed(alpacaUiState.parties) { index, partyData ->
-                AlpacaCard(alpacaParty = partyData, votes[(index+1).toString()].toString())
+//                println(alpacaUiState.votes[(index+1).toString()])
+//                println(votesTotal)
+//                println(alpacaUiState.votes[(index+1).toString()]!! / votesTotal)
+
+                AlpacaCard(
+                    alpacaParty = partyData,
+//                    (alpacaUiState.votes[(index+1).toString()]!! / votesTotal).toString()
+                    alpacaUiState.votes[(index+1).toString()].toString()
+                )
             }
         }
     }
