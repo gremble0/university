@@ -15,10 +15,13 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.viewModelScope
 import androidx.lifecycle.viewmodel.compose.viewModel
 import coil.compose.AsyncImage
 import com.example.hermagst_oblig2.model.AlpacaParty
 import com.example.hermagst_oblig2.viewmodels.AlpacaViewModel
+import kotlinx.coroutines.launch
+import kotlin.math.roundToInt
 
 @OptIn(ExperimentalMaterialApi::class)
 @Composable
@@ -27,7 +30,6 @@ fun AlpacaScreen(alpacaViewModel: AlpacaViewModel = viewModel()) {
     val districts = listOf("1", "2", "3")
 
     var expanded by remember { mutableStateOf(false) }
-    var selectedDistrict by remember { mutableStateOf(districts[0]) }
 
     Column(
         modifier = Modifier.fillMaxWidth(),
@@ -40,9 +42,9 @@ fun AlpacaScreen(alpacaViewModel: AlpacaViewModel = viewModel()) {
         ) {
             TextField(
                 readOnly = true,
-                value = selectedDistrict,
+                value = alpacaUiState.district,
                 onValueChange = {},
-                label = { Text("Label") },
+                label = { Text("Velg valgdistrikt") },
                 trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = expanded) },
             )
             ExposedDropdownMenu(
@@ -52,7 +54,10 @@ fun AlpacaScreen(alpacaViewModel: AlpacaViewModel = viewModel()) {
                 districts.forEach { selectionOption ->
                     DropdownMenuItem(
                         onClick = {
-                            selectedDistrict = selectionOption
+                            // Laster data fra api hver gang knapp trykkes. Kunne gjort det
+                            // på en annen måte men dette var mer lik slik oppgaveteksen ba om
+                            alpacaViewModel.district = selectionOption
+                            alpacaViewModel.loadVotes()
                             expanded = false
                         }
                     ) {
@@ -63,19 +68,20 @@ fun AlpacaScreen(alpacaViewModel: AlpacaViewModel = viewModel()) {
         }
 
         LazyColumn {
-            var votesTotal = 0
-            alpacaUiState.votes.forEach {
-                votesTotal += it.value
-            }
+            var votesTotal = 0.0
+            alpacaUiState.votes.forEach { votesTotal += it.value }
             itemsIndexed(alpacaUiState.parties) { index, partyData ->
-//                println(alpacaUiState.votes[(index+1).toString()])
-//                println(votesTotal)
-//                println(alpacaUiState.votes[(index+1).toString()]!! / votesTotal)
-
+                val doublePercent: Double? = (alpacaUiState.votes[(index+1).toString()]?.toDouble()?.div(votesTotal))
                 AlpacaCard(
                     alpacaParty = partyData,
-//                    (alpacaUiState.votes[(index+1).toString()]!! / votesTotal).toString()
-                    alpacaUiState.votes[(index+1).toString()].toString()
+                            "${alpacaUiState.votes[(index+1).toString()]} - ${
+                            doublePercent
+                            ?.times(100.0)
+                            ?.roundToInt()
+                            ?.div(1.0)
+                            ?.toInt()
+                            .toString()
+                        }%"
                 )
             }
         }

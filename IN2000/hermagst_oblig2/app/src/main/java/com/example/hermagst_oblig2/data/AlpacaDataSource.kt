@@ -11,7 +11,6 @@ import org.json.JSONArray
 import org.json.JSONObject
 
 class AlpacaDataSource(private val path: String) {
-
     private val client = HttpClient {
         install(ContentNegotiation) {
             gson()
@@ -60,6 +59,30 @@ class AlpacaDataSource(private val path: String) {
         for (i in 0 until responseArr.length()) {
             val vote = responseArr.getJSONObject(i)
             res[vote["id"] as String] = res[vote["id"] as String]!! + 1 // += 1
+        }
+        return res
+    }
+
+    suspend fun fetchXmlVotes(): Map<String, Int> {
+        val res = mutableMapOf(
+            "1" to 0,
+            "2" to 0,
+            "3" to 0,
+            "4" to 0
+        )
+
+        // kotlins innebygde xml parser så helt jævlig ut, gjør det selv i stedet
+        val responseString: String = client.get(path).body()
+        var currentDistrict = 0
+        for (line in responseString.split("\n")) {
+            if (line.contains("votes")) {
+                currentDistrict += 1
+                // xddddddddddddddddd
+                res[currentDistrict.toString()] = line
+                    .replace("<votes>","")
+                    .replace("</votes>","")
+                    .toInt()
+            }
         }
         return res
     }

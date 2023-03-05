@@ -12,16 +12,13 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 
 class AlpacaViewModel: ViewModel() {
-    private val alpacaDataSource = AlpacaDataSource(
-        "https://in2000-proxy.ifi.uio.no/alpacaapi/alpacaparties"
-    )
-    private val votesDataSource = AlpacaDataSource(
-        "https://in2000-proxy.ifi.uio.no/alpacaapi/district1"
-    )
-    var votes: Map<String, Int> = mutableMapOf()
     private var parties: List<AlpacaParty> = mutableListOf()
-    private val _alpacaUiState = MutableStateFlow(AlpacaUiState(parties=listOf(), votes))
+    var votes: Map<String, Int> = mutableMapOf()
+    private val baseUrl: String = "https://in2000-proxy.ifi.uio.no/alpacaapi/"
+
+    private val _alpacaUiState = MutableStateFlow(AlpacaUiState(parties=listOf(), votes, "1"))
     val alpacaUiState: StateFlow<AlpacaUiState> = _alpacaUiState.asStateFlow()
+    var district: String = alpacaUiState.value.district
 
     init {
         loadParties()
@@ -30,15 +27,21 @@ class AlpacaViewModel: ViewModel() {
 
     private fun loadParties() {
         viewModelScope.launch {
+            val alpacaDataSource = AlpacaDataSource("${baseUrl}alpacaparties")
             parties = alpacaDataSource.fetchParties()
-            _alpacaUiState.value = AlpacaUiState(parties=parties, votes)
+            _alpacaUiState.value = AlpacaUiState(parties, votes, district)
         }
     }
 
-    private fun loadVotes() {
+    fun loadVotes() {
         viewModelScope.launch {
-            votes = votesDataSource.fetchJsonVotes()
-            _alpacaUiState.value = AlpacaUiState(parties=parties, votes)
+            val votesDataSource = AlpacaDataSource("${baseUrl}district${district}")
+            votes = if (district == "3") {
+                votesDataSource.fetchXmlVotes()
+            } else {
+                votesDataSource.fetchJsonVotes()
+            }
+            _alpacaUiState.value = AlpacaUiState(parties, votes, district)
         }
     }
 }
