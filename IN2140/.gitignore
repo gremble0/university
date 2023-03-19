@@ -1,2 +1,5 @@
-# Compiled c files
+# Compiled c files in windows
 *.exe
+
+# Other
+ukesoppgaver/

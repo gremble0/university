@@ -4,7 +4,7 @@
 #include <ctype.h>
 
 char *vowelshift(char str[], char c) {
-	char *res = malloc(strlen(str));
+	char *res = malloc(strlen(str) + 1);
 	strcpy(res, str);
 	for(size_t i = 0; i < strlen(str); i++) {
 		if(str[i] == 'a' || str[i] == 'e' || str[i] == 'i' || str[i] == 'o' || str[i] == 'u') {
@@ -17,21 +17,18 @@ char *vowelshift(char str[], char c) {
 	return res;
 }
 
-int main(void) {
-	char str[100];
-	char c;
+int main(int argc, char *argv[]) {
+	char *str = argv[1];
+	char c = argv[2][0];
 
-	printf("%s\n", "Skriv en setning");
-	gets(str);
-	
-	printf("%s\n", "Skriv en vokal");
-	c = getchar();	
-
+    printf("%c",c);
 	if(c != 'a' && c != 'e' && c != 'i' && c != 'o' && c != 'u') {
 		printf("%s\n", "Du skrev ikke en vokal");
 		return -1;
 	}
-
-	printf("%s\n", vowelshift(str, c));
+    
+    char *res = vowelshift(str, c);
+	printf("%s\n", res);
+    free(res);
 	return 0;
 }
