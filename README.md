@@ -1,4 +1,4 @@
-# Universitet
+# University
 This is a complete collection of all the work associated with my studies at UiO (University of Oslo) taking the degree [*Programming and system architecture*](https://www.uio.no/studier/program/informatikk-programmering/)
 
 I am currently in my 4th semester out of the 6 required for a completed bachelors degree. In this repo you will see my progress as a developer throughout the course of the degree, and how my skills improve as the subjects get more advanced and i learn more about programming. Listed below are all the programming related courses I've taken so far. Marked with ✔️ are completed courses, ⭕ are ongoing courses.
