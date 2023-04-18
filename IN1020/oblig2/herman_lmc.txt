@@ -1,0 +1,45 @@
+        INP
+        STA n //lagrer input i n "variabelen"
+lokke   BRZ videre //går videre hvis n == 0
+        INP
+        ADD sum 
+        STA sum //tar input og legger det til sum
+        LDA n
+        SUB v1
+        STA n
+        BRA lokke //går opp igjen til lokke
+videre  LDA sum
+        OUT //printer ut det som er i akkumulatoren (sum)
+rest    SUB v2
+        BRZ par
+        BRP rest //hvis sum -2 er 0 vet vi det er et partall, hvis sum -2 er positivt fortsett løkken, hvis sum -2 er hverken positiv eller 0 (negativt) gå videre
+odd     LDA oddArr
+        BRZ avslutt //avslutter programmet (ved å hoppe til en linje der kommandoen er HLT) hvis akkumulator (oddArr) er 0
+        OTC
+        LDA odd
+        ADD v1
+        STA odd
+        BRA odd
+par     LDA parArr
+        BRZ avslutt
+        OTC
+        LDA par
+        ADD v1
+        STA par
+        BRA par
+avslutt HLT //alt herfra og nedover er ikke lenger kommandoer, men lagrede verdier (variabler)
+v1      DAT 1
+v2      DAT 2
+n       DAT
+sum     DAT 0
+oddArr  DAT 111 //o
+        DAT 100 //d
+        DAT 100 //2 ganger d for å kunne iterere gjennom
+        DAT 101 //e
+        DAT 0 //for BRZ
+parArr  DAT 112 //p
+        DAT 97 //a
+        DAT 114 //r
+        DAT 0
+//ved gjentatt kjøring av dette programmet (hvertfall på http://peterhigginson.co.uk/LMC/) vil ikke verdien lagret i sum nullstilles mellom hver gjennomgang. Programmet funker fint første gjennomgang eller ved å laste inn siden på nytt.
+//kunne også lagt inn et linjeskifte mellom tall og par/odde ved å OTC ascii kode til linjeskifte (10), men hver gang jeg endrer noe i programmet slutter den å virke som forventet.
