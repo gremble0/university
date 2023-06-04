@@ -1,6 +1,4 @@
 # TODO: 
-- https://www.uio.no/studier/emner/matnat/ifi/IN2140/v23/ukeplan/uke-09.html
-- https://www.uio.no/studier/emner/matnat/ifi/IN2140/v23/ukeplan/uke-10.html
 - https://www.uio.no/studier/emner/matnat/ifi/IN2140/v23/ukeplan/uke-12.html
 - https://www.uio.no/studier/emner/matnat/ifi/IN2140/v23/ukeplan/uke-13.html
 - https://www.uio.no/studier/emner/matnat/ifi/IN2140/v23/ukeplan/uke-16.html
@@ -104,17 +102,17 @@ I dag er dynamisk og preemptive scheduleringsalgoritmer vanligst, men alle bruke
 	- Ulempe - utsulting, noen prosesser må kanskje vente veldig lange - løsning: dynamiske prioriteter som endrer prioriteten på prosesser når de har ventet for lenge, men dette gir mer overhead.
 
 ### Microsoft windows 2000: Forgrunnsaktiviteter gis lengre tidsbiter siden de trenger rask responstid
-	- 32 prioritetsnivåer med RR i hvert nivå
-	- Input og throughput orientert
-	- De 16 øverste nivåene: real-time prosesser med statiske prioriteter som kan kjøre for evig
-	- De 15 neste nivåene: prioritet kan økes eller synkes med 2 nivåer. CPU bundede prosesser får redusert prioritet. IO bundede prosesser får økt prioritet. Dette er for å øke interaktivitet med systemet.
-	- Det siste nivået er for veldig lavt prioriterte OS prosesser
+- 32 prioritetsnivåer med RR i hvert nivå
+- Input og throughput orientert
+- De 16 øverste nivåene: real-time prosesser med statiske prioriteter som kan kjøre for evig
+- De 15 neste nivåene: prioritet kan økes eller synkes med 2 nivåer. CPU bundede prosesser får redusert prioritet. IO bundede prosesser får økt prioritet. Dette er for å øke interaktivitet med systemet.
+- Det siste nivået er for veldig lavt prioriterte OS prosesser
 ### Windows 8/10: For det meste det samme, med 2 nye grupperinger som skiller mellom prosessprioritet og trådprioritet.
-	- Hver prosessklasse har 7 ekstra trådprioriteter.
-	- For å finne den endelige trådprioriteten for en prosess tar man hensyn til begge disse
-	- Dynamiske prioriteter for nivå 0-15
-	- Bruker kan også lage egen schedulering for hver applikasjon (user mode scheduling, UMS)
-	- Kan også gi garanti for multimedia prosesser (MMCSS)
+- Hver prosessklasse har 7 ekstra trådprioriteter.
+- For å finne den endelige trådprioriteten for en prosess tar man hensyn til begge disse
+- Dynamiske prioriteter for nivå 0-15
+- Bruker kan også lage egen schedulering for hver applikasjon (user mode scheduling, UMS)
+- Kan også gi garanti for multimedia prosesser (MMCSS)
 
 ### Linux:
 - 3 prioritetsklasser:
@@ -179,8 +177,8 @@ I dag er dynamisk og preemptive scheduleringsalgoritmer vanligst, men alle bruke
 
 ## Minnehåndtering for multiprogrammering:
 - Å ha alt i primærminne er umulig - må finne en balanse med sekundærminne
-- Primitiv metode - *swapping*: Når en prosess startes lastes den inn fra sekundærminne inn i primærminne. Dette innebærer veldig mange kostbare operasjoner med å lese fra disk.
-- Neste metode - *overlays*: Delegerer minnehåndtering til programmereren. Laster inn segmenter fra sekundær- inn i primær-minne når det trengs. Fortsatt ikke optimalt.
+- Primitiv metode - *swapping:* Når en prosess startes lastes den inn fra sekundærminne inn i primærminne. Dette innebærer veldig mange kostbare operasjoner med å lese fra disk.
+- Neste metode - *overlays:* Delegerer minnehåndtering til programmereren. Laster inn segmenter fra sekundær- inn i primær-minne når det trengs. Fortsatt ikke optimalt.
 - Til slutt - *segmentering/paging*: Litt likt overlays, men lar kjernen håndtere det i stedet for programmereren.
 
 ## Fikset partisjonering:
@@ -413,7 +411,7 @@ I dag er dynamisk og preemptive scheduleringsalgoritmer vanligst, men alle bruke
 - VOP_READ(): Dette er en virtuell funksjonspeker. Dvs at det er en funksjon som peker på en annen funksjon avhengig av miljøet den kalles fra.
 ![VOP_READ](./vopread.png "VOP_READ")
 - getblk(): følg den lenkede hash listen. Hvis du ikke finner blokken i hash listen betyr det at vi ikke har blokken i cachet. Ifølge LRU bytter man da ut det least recently used elementet (i bildet den gule L'en) og legger inn blokk i cache.
-![getblk()](./getblk "getblk")
+![getblk()](./getblk.png "getblk")
 - VOP_STRATEGY: Også en virtuell funksjonspeker. Avhenger av hva slags disk den skal lese fra. Den initierer endelig lesing fra selve disken. Etter dette er ferdig returnerer man tilbake til getblk() og oppdaterer hash listen, det innebærer å kaste ut det least recently used elementet og omorganisere lenkene i listen. Til slutt sender man en interrupt som sier at dataen ligger klar i buffercachen som gjør at man kan returnere til applikasjonen.
 ![VOP_STRATEGY](./vopstrat.png "VOP_STRATEGY")
 
@@ -510,3 +508,98 @@ I dag er dynamisk og preemptive scheduleringsalgoritmer vanligst, men alle bruke
     - To måter å sende signaler: kill() og raise()
     - For å håndtere signaler: signal()
         - Man kan redefinere hva et signal skal gjøre ved å peke til en egendefinert funksjon ved fanging av signaler (`signal(sig_nr, void (\*func) ())`). Når man gjør dette vil ikke default betydningen utføres, heller denne egendefinerte funksjonen.
+
+# Datakommunikasjon:
+## Nettverk strukturer:
+- Nettverk komponenter: 
+    - **Endesystem**: Noder som ikke frakter nettverkpakker videre til andre noder. F.eks. datamaskiner, gatelys, branndetektorer, osv.
+    - **Intermediate system**: Noder som viderefører pakker til andre noder. F.eks. modem, ruter, switcher, web proxy, osv.
+- Nettet kan ses på som en graf der det er kanter mellom noder. Noder vil være et endesystem eller et intermediate system og en kant vil være en kobling mellom to noder.
+- **Point-to-point channels**: 
+    - Docsis: Et sentralt intermediate system som kobler sammen alle endesystemene i et nettverk. Stjerne topologi
+    ![Docsis](./docsis.png "Docsis")
+    - Gigabit ethernet: Stjerne eller tre topologi.
+    ![Gigabit ethernet](./gbeth.png "Gigabit Ethernet")
+    - Andre strukturer:
+        - Full mesh: alle noder er koblet mot hverandre - for mange kabler og tilkoblinger når det er mange noder.
+        - Hypercube: Mye brukt
+        - Torus: God skalerende topologi ettersom en node aldri trenger flere kanter dersom nettverket vokser.
+        - Ring: Ikke brukt
+    ![Nettverk strukturer](./nettstrukt.png "Nettverk Strukturer")
+- **Broadcasting kanaler**: Hvis en node sender kan alle andre høre på den. Problem: hvis to meldinger sendes samtidig kan de kollidere - dette må håndteres. Her kan man f.eks. sende et signal om at meldingen har blitt ødelagt og må sendes på nytt.
+    - Kabel: Gammel ethernet brukte dette
+    - Radio: Typisk bruk for dette i dag - trådløst. For å hindre kollisjoner: ikke sende med mindre mottakere har sagt at de vil høre etter.
+
+## Nettverkets oppgaver:
+- Hvert par av intermediate systems må kunne veien til hverandre for å kunne videreføre data gjennom grafen.
+- Nettverket må vite hvordan man skal finne veien fram til de riktige endesystemene. Her må de også finne veien til den riktige prosessen på det mottakende endesystemet.
+- Nettverket må vite veien tilbake fra et endesystem til et annet
+- Finne riktig måte å enkode data slik at maskiner kan forstå hverandre (f.eks. hvis en little endian og big endian maskin kommuniserer)
+- Må kunne finne alternativer dersom noe går galt. F.eks. hvis et IS ødelegges må det finne en alternativ sti gjennom grafen.
+- Opprettholde sikkerhet og privathet.
+- Støtte høy traffik
+
+### Applikasjoners behov:
+#### Filnedlasting:
+- Unngå høy forsinkelse - Ikke kritisk (kan være irriterende men mindre forsinkelser er tolererbare)
+- Støtte høy traffik - Ikke kritisk
+- Håndtere nettverkproblemer - Kritisk - hvis man f.eks. skal overføre penger i banken må dette håndteres ordentlig om det skjer noe feil over nettet.
+#### Text-chat:
+- Unngå høy forsinkelse - Ikke kritisk (kan være irriterende men mindre forsinkelser er tolererbare, mennesker klarer ikke skrive raskt nok for dette)
+- Støtte høy traffik - Ikke kritisk 
+- Håndtere nettverkproblemer - Kritisk - Alle meldinger må komme fram til mottakeren
+#### Streaming av media:
+- Unngå høy forsinkelse - Noe er ok
+- Støtte høy traffik - Kritisk 
+- Håndtere nettverkproblemer - Noe er ok (Hvis noen piksler mangler fra video er det tolererbart)
+#### Haptisk interaksjon (f.eks. spill):
+- Unngå høy forsinkelse - Kritisk (bruker må kunne reagere på hendelser fortløpende)
+- Støtte høy traffik - Ukritisk (kommer an på tjenesten(?))
+- Håndtere nettverkproblemer - Noe er ok (Hvis noe går tapt går det fint)
+
+## Strukturering av oppgaver:
+- **Lagdelt fremgangsmetode** - Brukes i dag
+    ![Lagdelt fremgangsmetode](./lagstrukt.png "Lagdelt fremgangsmetode")
+- **Komponent fremgangsmetode**
+    + Hvert lag kan dele komponenter - slipper å duplisere funksjoner 
+    - Trenger veldig fleksible algoritmer for å kunne dele dem på tvers av lag
+    - Vanskelig å bli enig om hva å velge over et større nettverk med mange ulike systemer
+    ![Komponent fremgangsmetode](./komponent.png "Komponent fremgangsmetode")
+- **Rekursiv fremgangsmetode**
+    - Se på utfordringer lokalt først - hva trengs for å kommunisere med min direkte nabo?
+    - Mye signaleringsoverhead for å sette opp en sti
+    ![Rekursiv fremgangsmetode](./rekursiv.png "Rekursiv fremgangsmetode")
+
+## Layering model:
+- To modeller: ISO OSI (Open Systems Interconnection) Reference Model og TCP/IP Reference Model Internet Architecture. 
+    - OSI er mer teoretisk, TCP/IP brukes i praksis
+
+### OSI:
+![OSI](./osi.png "OSI")
+- Fysiske laget: Sende bits mellom to direkte naboer i et nettverk - kan være wifi/4g/kabel osv.
+    - Hvordan koble nettverksadapterne  
+    - Hvilke elektroniske kretser trengs (ikke med implementasjon)
+    - Hva slags prosedyre trengs for å kommunisere med naboene (send melding ut for å spørre om nabo er klar for å motta pakker før den sender, enten over kabel eller med radiobølger)
+- Linklaget: Skaper større enheter ut av bitsene (bytes) gjør dem om til frames (rammer)
+    - En ramme består av: en start og en slutt (markeres ved et kjent bitmønster), en mengde data, og en checksum som hjelper med oppdaging av mulige feil som kan oppstå under transport.
+    - Ansvar deles opp i to underliggende lag Logical Link Control (LLC) (rettet mot lag 3, detekterer feil i rammer og muligens forkaster ved feil) og Medium Access Controll (MAC) (Vi forholder oss mest til MAC, rettet mot lag 1, definerer hvordan en ramme ser ut). LLC muliggjør blant annet at vi kan ha et og samme internet for både trådfast og trådløst selv om de begge krever separate MAC lag, siden vi i dette tilfellet bare har et LCC lag. MAC laget finner nabo noden med sin MAC addresse, så bestemmer den om meldingen skal sendes enda eller om den skal vente på andre noder i nettet for å unngå kollisjon og bestemmer hvor stor rammene skal være.
+![Linklaget](./linklaget.png "Linklaget")
+- Nettverklaget (IP): Har ansvar for å sende pakker uavhengig av hverandre fra et endesystem til et annet. Finner hvordan addressene ser ut og hvordan man finner en sti fra en addresse til en annen - dette kalles routing. Laget abstraherer nettverket til en graf sånn at den kan bruke algoritmer for å finne den *beste* stien avhengig av en rekke parametre. Hvis addressene ser annerledes ut må nettverklaget også oversette dette. Hvis for mange pakker bruker samme sti kan nettverklaget også fikse dette - i værste fall forkaste noen pakker, beste fall finne en annen sti. Nettverklaget har også ansvar for metning(skontroll?). Det vil si at dersom det er flere avsendere til samme mottaker som gjør at ikke alle pakker kan sendes i full hastighet må nettverklaget håndtere dette - lage et minnebuffer der pakkene kan ligge fram til de kan sendes? forkaste noen pakker? Til slutt ansvar for å levere pakker opp til lag 4. 
+![Nettverklaget](./nettverklaget.png "Nettverklaget")
+- Transportlaget (TCP/UDP): Nettverklaget sender bare pakker mellom systemer - transportlaget skal så finne hvilke prosesser pakkene skal fram til. Legger til ekstra informasjon nødvendig for å finne prosessene når den sender pakker med nettverklaget. Skaper en relasjon mellom prosessene på ulike endesystemer. Dersom du har to prosesser som henter data fra samme endesystem må transportlaget håndtere hvilken prosess som skal motta hvilke pakker fra det andre endesystemet. På samme måte må transportlaget også tilby applikasjoner som sender flere strømmre med data til samme endesystem en måte å skille mellom formatet på de ulike dataene. Transportlaget håndterer også hastighetsforskjeller mellom avsender og mottaker. Dette kan gjøres ved å redusere hastigheten avsenderen kan sende pakker eller ved å forkaste pakker. Laget fikser også feil på endesystemer uten innflytelse på stien gjennom nettet.
+![Transportlaget](./transportlaget.png "Transportlaget")
+- Session layer: Skaper en strukturert dialog mellom prosessene på endesystemene. Sesjoner skal støttes over lengre perioder - også på tvers av ulike nettverk. Identifiserer brukere og passer på hvilke tilganger brukerne har.
+![Session layer](./sesslayer.png "Session layer")
+- Presentasjonslaget: Skal fikse ulikheter mellom endesystemer. 
+![Presentasjonslaget](./preslaget.png "Presentasjonslaget")
+- Applikasjonslaget: Alt annet! Benytter seg av funksjonalitet fra lagene under. Utvikleren kontrollerer hva som gjøres her.
+
+- I mellom to endesystemer er hvert lag en *peer*. Det vil si at alle protokollene i hvert lag må passe på tvers av endesystemer. Fysisk vil kommunikasjon mellom endesystemer gå ned gjennom lagene for å sendes fysisk av en avsender, før det kan rekonstrueres gjennom de samme protokollene av mottakeren. Dersom det skal sendes gjennom et intermediate system vil ISet kun rekonstruere pakkene opp til nettverklaget ettersom det ikke trenger å vite noe mer for å kunne videresende relevant data.
+
+### TCP/IP modellen:
+- Laget i konkurranse med OSI. Består kun av 5 lag - ingen session og presentasjonslag. I tillegg kombineres ofte lag 1 og 2 til et lag (Network interface model).
+![TCP/IP](./tcpip.png "TCP/IP")
+- Nettverkslag og transport lag funker som i OSI, men applikasjonslaget må ta seg av oppgavene til presentasjonslaget og sesjonslaget.
+- Det er kun lag 1-4 som er essensielle for å kunne kommunisere over internettet så disse vil forbli noenlunde det samme uansett. Disse lagene er også som regel definert i kjernen. Altså kan man ikke endre deres funksjonalitet direkte fra våre applikasjoner. De andre øverste 3 lagene er det utviklerne har kontroll over. Siden det er utviklerne som bestemmer hvordan dette skal implementeres er det ikke nødvendig å opprettholde standardiserte protokoller for disse lagene. Det er derfor TCP/IP modellen ikke har noen spesifikke retningslinjer for disse lagene.
+![TCP/IP difference](./tcpipdiff.png "TCP/IP difference")
+![Hourglass model](./hourglass.png "Hourglass model")
