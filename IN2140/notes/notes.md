@@ -1,5 +1,4 @@
 # TODO: 
-- https://www.uio.no/studier/emner/matnat/ifi/IN2140/v23/ukeplan/uke-13.html 1t50
 - https://www.uio.no/studier/emner/matnat/ifi/IN2140/v23/ukeplan/uke-16.html 1t30
 - https://www.uio.no/studier/emner/matnat/ifi/IN2140/v23/ukeplan/uke-17.html 2t06
 - https://www.uio.no/studier/emner/matnat/ifi/IN2140/v23/ukeplan/uke-19.html 1t10
@@ -672,7 +671,7 @@ I dag er dynamisk og preemptive scheduleringsalgoritmer vanligst, men alle bruke
         - Hvis & operasjon mellom subnet maske og nettverksdelen er like, men & operasjon mellom subnet maske og subnetdelen av addressen er ulike er det en pakke til et annet subnetverk.
         ![Subnet mask](./assets/subnetmask.png "Subnet mask")
 
-#### Classless InterDomain Routing (CIDR): <!-- Skjønte lite her -->
+#### Classless InterDomain Routing (CIDR):
 - Subnetverk er ikke bra nok
 - Klasse A nettverk med 16 millioner addresser for mye i mange tilfeller
 - Klasse C nettverk med 256 addresser for lite i mange tilfeller
@@ -680,5 +679,83 @@ I dag er dynamisk og preemptive scheduleringsalgoritmer vanligst, men alle bruke
 - Derfor kan vi i stedet ta ut deler av et 
 - I stedet for å ha et stort nettverk med en organisasjon som forvalter det kan vi ta noen av det nettets subnetverk og skille dem ut for å selge dem separat fra dets tidligere nettverk. For å identifisere disse nettverkene kan vi fortsatt bruke den samme subnetmasken. Antall mulige hosts under en addresse er lik 2^antall 0 bytes i subnet masken dette kan brukes for å fordele nettverk med passende størrelser.
     - Med denne løsningen kan du ha flere nettverk med samme bits i starten, men med forskjellige subnet og subnetmasker. For å finne hvilket nettverk en pakke skal til i slike tilfeller bruker man ***longest mask*** prinsippet. Det vil si at da sendes pakkene til det nettverket med lengst subnetmaske som fortsatt returnerer en identisk streng etter & operasjon. 
-    - I bildet under ....
+    - For å bestemme hvilket nettverk en addresse tilhører må vi da gjøre & operasjoner med addressen og alle nettverk/subnettverk under ansvarsområdet til det originale nettet de splittet seg fra. I bildet under passer addressen til Router A, Router B, IKKE Router C (den femte biten i den tredje byten i addressen til Router C er 1, i addressen vi skal route må den være 0), IKKE unassigned og IKKE Router D. Da må vi velge den routeren addressen passer til som har lengst maske som er Router B (21bits).
     ![CIDR](./assets/cidr.png "CIDR")
+- Netmaske separerer nettverk delen av addresser fra host delen av addresser.
+    - For å få nettverk addressen fra en IP addresse med cidr kan man ta & operasjon mellom IP addressen og netmasken.
+    - Hvordan skal endesystem bestemme om de skal sende pakker direkte til andre endesystem eller om de skal sendes til routeren, og hvordan bestemmer en router om den skal sende til en maskin den har ansvar for/en annen router? - Ta destination addresse og gjør en & operasjon med netmasken fra sitt eget nettverk interface. 
+        - For endesystemer: Hvis resultatet av dette er likt subnet addressen kan man sende pakken til et lokalt endesystem (kanskje først ARP forespørsel for å finne systemet og så sende). Hvis ikke likt - send til nettverkets router. 
+        - For routere: Spiller ikke noe rolle om pakken er lokal. Hvis & operasjon er lik subnet addresse - send direkte til endesystem (kanskje først oppslag i ARP cache/ARP forespørsel så sende til MAC addresse). Hvis ikke likt oppslag i routing tabell så send til annen router.
+    ![CIDR2](./assets/cidr2.png "CIDR2")
+
+#### IPv6:
+- Ingen får permanente addresser, de må lånes ut og byttes regelmessig. En fiks for dette er **NAT**, men den er ikke ideell siden det innebærer at vi ikke bruker en én til én oversettelse mellom IP addresser og maskiner.
+![IPv6](./assets/ipv6.png "IPv6")
+- Mål med IPv6: 
+    - Øke skalerbarhet
+    - Fikse begrensninger med ipv4
+        - Integrere sikkerhet i ipv6
+        - ipv4 pleide å bruke 3 bits for å indikere noen flagg for å effektivisere kommunikasjon, men dette måtte reinterpretert for andre mål. Med ipv6 skulle dette komme tilbake med traffikklasser og flow labels (identifisere om pakken var en del av en strøm eller separate enheter)
+        - Multicasting: Sende en pakke fra en maskin til flere mottakere samtidig, pakken kan kopieres i nettet sånn at avsenderen slipper å sende flere ganger.
+        - Mobility: Addresser skal kunne flytte seg fra et nettverk til et annet uten å måtte forandre routing tabeller over hele verden.
+    - Kunne eksistere i samspill med ipv4
+![IPv6 objectives](./assets/ipv6obj.png "IPv6 objectives")
+- **Headers**: 
+    - IPv6 header er alltid 40 bytes lang. IPv4 uten noen options er 20 bytes, med options opp til 60 bytes. IPv6 trenger også options, men dette ligger i lag 4 dataen.
+    - IPv4 støtter fragmentering av pakker fordi det var nyttig før, men i dag kan det føre til problemer når man har fragmenterte pakker en mottaker må prosessere siden hvis det oppstår en feil må man kanskje forkaste alle de andre pakkene også som er bortkastet båndbredde. IPv6 støtter ikke fragmentering. I stedet forhandler sender og mottaker seg fram til en maksimal lengde, men som i dag er mye lengre enn i gamle dager, som man så kan tilpasse pakkelengden etter. Hvis dette gjøres feil går pakkene tapt.
+    - IPv4 brukte også checksums for å verifisere at pakker hadde blitt sendt riktig. Dette er forkastet i IPv6, gjøres heller i lag 2&4.
+- IPv6 addresser: Ganske like IPv4 addresser. Ingen regler for hvordan network prefix, subnet identifier og interface identifier er delt opp, bruker også nettmasker for å identifisere dette.
+    - For å komprimere IPv6 addresser kan man fjerne en stor blokk av nuller og erstatte dem med `::`. Merk at man ikke kan gjøre dette flere steder i samme addresse ettersom vi da ikke hadde kunnet vite hvor mange nuller hver `::` erstatter. Man kan også droppe ledende nuller (f.eks. `..:080a:.. -> ..:80a:..`)
+![IPv6 addresse](./assets/ipv6addr.png "IPv6 addresse")
+- Hvordan tildele IPv6 addresser? noe med generering basert på MAC addresser ..?
+![IPv6 addresse 2](./assets/ipv6addr2.png "IPv6 addresse 2")
+![IPv6 addresse 3](./assets/ipv6addr3.png "IPv6 addresse 3")
+
+### Addressering i transportlaget:
+- Transportlagets oppgaver:
+    - Addressere prosesser 
+    - Forvalte en forbindelse mellom applikasjoner (evt. sende uavhengige pakker (forbindelsesløst))
+    - Overføre data mellom prosesser
+    - Håndtering av feil
+    - Pålitelig overføring av pakker
+    - Flytkontroll sånn at applikasjonene ikke "drukner" i data
+    - Metningskontroll sånn at ikke nettet får for mye data og pakker går tapt underveis
+- Alle transportentiteter tilbyr et Service Access Point til applikasjonslaget. Applikasjonslaget er et interface som vi implementerer gjennom sockets. Addressen man tilbyr til applikasjonslaget defineres gjennom en port (16 bit integer). 
+- Kommunikasjon med andre prosesser går først gjennom nettverkslaget før det prosesseres gjennom transportlagsprotokollene (som regel TCP eller UDP) på den andre maskinen. Dataen som flyter mellom prosessene har flere navn: TCP - message, UDP - datagram, ISO: Transport Protocol Data Unit(TPDU), mer generelt kan vi si "pakker". 
+- Hvis en applikasjon ønsker å addressere en mottaker-applikasjon kan man benytte seg av en Transport Service Access Point(TSAP) som inneholder informasjon om hva slags informasjon man må videresende til din lokale transportentitet for å kunne opprette en forbindelse.
+- Applikasjoner trenger også vite hvilke ports de skal lytte på. For servere kan vi slå opp i faste lister over hva hvilke porter brukes for. Merk at mange av tjenestene i disse listene kun støtter en transportprotokoll (f.eks. SSH støtter kun TCP), så mange av portnumrene kan brukes for andre tjenester så lenge det bruker en annen transportprotokoll. For klienter er portene til serverne kjent. Når en klient skal koble seg til en server velger klienten en port dynamisk og sender en `connect` forespørsel til serveren som inneholder denne dynamiskt valgte porten, da kjenner serveren porten til klienten.
+    - Eksempel - En web browser klient vil spille av en video fra en webside: Serverne venter på predefinerte porter for sine tjenester. Klienten velger dynamisk port (et tall over 1024) for sin browser og sender en `connect` melding over TCP som inneholder den valgte porten, da kjenner serveren også porten til browseren. Så vil klienten starte video pluginen for browseren som også trenger en kontrollkanal for å bekrefte forbindelse til video serveren (over TCP), denne velges også dynamiskt. Etter serveren har godtatt denne tilkoblingen og lagret porten til video pluginen til browseren, kan video pluginen og video serveren dynamiskt velge en port for UDP kommunikasjon. De kan så sende en setup melding fram og tilbake for å lære hverandres porter som de til slutt kan bruke for selve videooverføringen over UDP. Nettverkslaget kan under denne prosessen overføre pakker fram og tilbake mellom klienten og serveren. Transportlaget har i oppgave å utføre multiplexing og demultiplexing over samme TSAP. Det vil si at transportlaget må sende og motta pakker over samme IP forbindelse og finne hvilke transportprotokoller hver pakke tilhører, hente ut portinformasjonen og videresende det til applikasjonslaget.
+![Web server](./assets/webserver.png "Web server")
+![Web server 2](./assets/webserver2.png "Web server 2")
+- ~64000 addresser for å tilby tjenester er ganske lite - hvordan utvide dette?
+    - TCP: 
+        - En `TCP tjeneste` tilbys gjennom en socket. En socket består av et *3-tuple* med 3 verdier: IP addressen til maskinen som tilbyr tjenesten, portnummeret for å finne fram til applikasjonen og en indikator om at socketen er for TCP.
+        - En `TCP tilkobling` består av et *5-tuple* av 5 verdier: IP addressen til sender og mottaker, portaddressen til sender og mottaker og en indikator om at socketen er for TCP.
+        - Med disse identifikatorene har vi vesentlig flere muligheter for å identifisere TCP tilkoblinger ettersom en tilkobling er unik så lenge én av disse faktorene er forskjellige.
+    ![TCP addressing](./assets/tcpaddr.png "TCP addressing")
+
+### Addressering i applikasjonslaget (DNS):
+- For å koble seg på en ekstern maskin: SSH/telnet(gammel). Denne bruker IP addresser med mindre noe annet er spesisert i `etc/hosts` (eller DNS server forbinder andre navn med  IP addresser). I denne filen kan du assosiere IP addresser med mer lesbare navn. For å forvalte slike assosiasjoner på en større skala bruker vi DNS (Domain Name System).
+- DNS benytter et hierarkisk namespace, f.eks. `.com -> google.com -> mail.google.com`.
+- Vi kan se på DNS som en distribuert database siden det ikke er én sentral server som tar var på disse forbindelsene.
+- DNS bruker både UDP og TCP på port 53 der den lytter etter alle innkommende IP addresser.
+- DNS servere må bruke TCP for å forsikre at oppdatteringer kommer fra kilder vi stoler på.
+- DNS klienter får ikke bruke TCP. Dette er for å redusere server load, men er et sikkerhetsproblem ettersom det er lett å lure klienter til å ta i mot misvisende UDP pakker der man kan utføre man in the middle angrep.
+- Naming hierarki: 13 root servers i verden. Root servere har ansvar for å oppløse oppslag til toppleveldomenene (.com, .gov, .no). Andre organisasjoner må så prøve å legge seg under et passende top level domene (f.eks. bedrifter under .com, universiteter under .edu, organisasjoner under .org, osv). Noder i dette treet har en tendens til å være veldig brede og grunne. Dette er fordi navn burde være korte og lette å huske. Internet council for assigned numbers and names (ICANN) har ansvar for root domenet og fordeler ansvar for underdomener som .no, .edu, .com. UNINETT har ansvar for .no. UIO har ansvar for .uio. UIO har også ansvar for .ifi. Organisasjoner kan velge om de vil fordele forvaltningen av domener eller beholde det sentralt.
+![DNS hierarki](./assets/dnshierarki.png "DNS hierarki")
+- For forvaltere av et subtre har de ansvar for å besvare alle oppslag for navn under det subtreet, også om navnene eksisterer eller ikke. Det betyr ikke at alle DNS servere inneholder alle navn under det subtreet. Men de må vite hvem de kan videresende forespørselen til for å slå opp alle navnene. F.eks. har .no ansvar for å slå opp alle navn under .no, men ikke å lagre alle disse navnene. Alle forvaltere må også ha minst 2 servere i tilfelle krasj. Alle DNS servere må også kunne addressene til root servere. Root servere kjenner alle top level domener og alle serverne som betjener disse domenene.
+- ICANN administrerer de 13 root serverne. 6 av disse er *anycasted*.
+
+#### Oppslag i DNS:
+- Rekursiv DNS query (gammel): Hver server på vei fra forespørrende klient til serveren som har svaret på queryen beholder forbindelsen/tilstanden oppe mens oppslaget prosesseres. Dette tillater serverne å cache svaret i det det returneres tilbake gjennom kjeden av servere. Men dette er en ganske dyr fremgangsmetode siden det bruker minne å opprettholde denne tilstanden.
+- Iterated DNS query (ny): Omdirigerer oppslag tilbake til lokal DNS server for å unngå lagring av tilstand mens oppslaget prosesseres på andre servere. Da kan vi bare cache resultatet i den lokale serveren og ikke de andre som omdirigerte oppslaget.
+![Iterated DNS query](./assets/iterdnsquery.png "Iterated DNS query")
+- Konflikt - Caching vs. Freshness: Når en server oppdaterer sin informasjon, en annen server har cachet den gamle informasjonen og en klient søker opp nettsiden og får informasjonen fra serveren med cachet informasjon vil denne cachete informasjonen være utdatert. Løsning: Når en server cacher informasjon lagres dette kun en viss periode (mellom 5 min og 72t).
+- Maskiner kan ha flere aliser (flere navn for en samme IP addresse), og et navn kan mappes til flere maskiner (et navn til flere IP addresser). Dette kan for eksempel brukes i *Content Delivery Networks (CDN)*. Siden DNS tillater *zoning* (servere gir forskjellig svar avhengig av vår lokasjon) kan vi basert på dette bestemme hvilken server vi skal bruke for et gitt navn. Et problem med dette er at DNS oppslag ikke alltid kan brukes for å identifisere forespørrerens faktiske lokasjon pga. `external resolvers`. F.eks. vil alle chrome DNS oppslag komme fra addressen `8.8.8.8` som er eid av google og dersom man prøver å redirigere til en server nærmere denne addressen vil det sannsynligvis ikke gi best resultat. På den andre siden kan dette være en fordel siden det gjør oppslag mer anonyme. Dette problemet kan ikke løses med DNS, men bedrifter kan gjøre private avtaler for å omgå dette problemet.
+- Siden vi kun cacher informasjon om nettsider i en viss periode kan vi i løpet av denne perioden bestemme om det er nødvendig å bytte hvilke servere vi ønsker å benytte for fremtidige oppslag for nettsiden. For eksempel hvis det i løpet av et "cachings interval" gjøres mange oppslag til en spesifikk server kan vi ved neste gang den lokale DNS serveren må oppdatere cachen omdirigere til en annen server som opplever mindre belastning.
+- DNS records:
+    - Serial number: oppdateres hver gang noe endres.
+    - Informasjon om hvor lenge en cache skal ta vare på data. 1800 - må oppdatere cachet etter 30 min. 900 - hvis et navneoppslag feiler må man vente 15 minutter før man kan prøve igjen. 960000 - etter 11 dager med gjentatte feilende forsøk på et navn skal det slettes fra recorden. 86400 - Minste tiden et navn må beholdes i cache før man har lov å spørre igjen eller oppdateringen spres til andre web servere.
+![DNS record](./assets/dnsrecord.png "DNS record")
+- Multicast DNS - måte for maskiner å dele tjenester over lag 2 (ethernet/wifi)
+![mDNS](./assets/mdns.png "mDNS")
