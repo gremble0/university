@@ -1,10 +1,9 @@
 # TODO: 
-- https://www.uio.no/studier/emner/matnat/ifi/IN2140/v23/ukeplan/uke-12.html
-- https://www.uio.no/studier/emner/matnat/ifi/IN2140/v23/ukeplan/uke-13.html
-- https://www.uio.no/studier/emner/matnat/ifi/IN2140/v23/ukeplan/uke-16.html
-- https://www.uio.no/studier/emner/matnat/ifi/IN2140/v23/ukeplan/uke-17.html
-- https://www.uio.no/studier/emner/matnat/ifi/IN2140/v23/ukeplan/uke-19.html
-- https://www.uio.no/studier/emner/matnat/ifi/IN2140/v23/ukeplan/uke-20.html
+- https://www.uio.no/studier/emner/matnat/ifi/IN2140/v23/ukeplan/uke-13.html 1t50
+- https://www.uio.no/studier/emner/matnat/ifi/IN2140/v23/ukeplan/uke-16.html 1t30
+- https://www.uio.no/studier/emner/matnat/ifi/IN2140/v23/ukeplan/uke-17.html 2t06
+- https://www.uio.no/studier/emner/matnat/ifi/IN2140/v23/ukeplan/uke-19.html 1t10
+- https://www.uio.no/studier/emner/matnat/ifi/IN2140/v23/ukeplan/uke-20.html 1t0
 
 # Prosesser:
 ## Prosess vs Tråd:
@@ -359,18 +358,18 @@ I dag er dynamisk og preemptive scheduleringsalgoritmer vanligst, men alle bruke
     - Hvis noe blir fysisk ødelagt vil disken prøve å gjennoprette den ødelagte dataen. Dette er derfor noe plass settes av i tilfelle noe feil skjer. Når OSet sorterer forespørslene (se disk scheduling algoritmer) kan det hende denne sorteringen blir feil siden dataen kanskje ikke ligger der OSet tror.
     - De indre og ytre sylindrene har ikke faktisk like mye plass (omkretsen på de indre er mindre enn de ytre).
         - Her er det to muligheter: vanlig CAV disker (Constant Angular Velocity) og Zoned CAV disker. Med vanlig CAV flytter disken seg like raskt uansett hvor du skal lese fra og mengden data ytterst og innerst er den samme. Zoned CAV disker (det man bruker i dag) deler disken inn i soner basert på hvor langt unna spindlen du er. De ytre sporene har da mer kapasitet enn de indre.
-    ![CAV disks](./cav.png "CAV disks")
+    ![CAV disks](./assets/cav.png "CAV disks")
 
 ### Disk scheduling algoritmer:
 - First come first serve: FIFO - lang søketid, kort responstid 
-![FCFS](./fcfs.png "FCFS")
+![FCFS](./assets/fcfs.png "FCFS")
 - Shortest seek time first: Sorter forespørsler etter distanse fra hodet - kort søketid, lengre responstid. Hvis det er mange forespørsler rundt hodet kan det føre til utsultning for forespørsler lengre vekk fra hodet. 
-![SSTF](./sstf.png "SSTF")
+![SSTF](./assets/sstf.png "SSTF")
 - SCAN (elevator): Kompromiss mellom FCFS og SSTF. Bidireksjonell. Først start med å gå i en retning. Sorter forespørsler etter det som er nærmest hodet, men alle forespørsler som ligger bak hodet legges bak de som ligger foran i køen av operasjoner.
-![SCAN](./scan.png "SCAN")
-- C-SCAN (Circular SCAN): Optimalisering av SCAN. uni-directional - dette gjør at vi slipper å aksellerere når vi skal endre retning. Når vi kommer til slutten i den valgte retningen går vi heller videre tilbake til starten før vi fortsetter videre. Bedre i fleste tilfeller, men vanlig SCAN kan være raskere hvis det er få forespørsler.![C-SCAN](./cscan.png "C-SCAN")
+![SCAN](./assets/scan.png "SCAN")
+- C-SCAN (Circular SCAN): Optimalisering av SCAN. uni-directional - dette gjør at vi slipper å aksellerere når vi skal endre retning. Når vi kommer til slutten i den valgte retningen går vi heller videre tilbake til starten før vi fortsetter videre. Bedre i fleste tilfeller, men vanlig SCAN kan være raskere hvis det er få forespørsler.![C-SCAN](./assets/cscan.png "C-SCAN")
 - Look og C-look: Optimalisering av SCAN og C-SCAN. I stedet for å gå mellom de helst ytterste og innerste sylindrene, går man mellom de ytterste- og innerste forespurte sylindrene.
-![LOOK](./look.png "LOOK")
+![LOOK](./assets/look.png "LOOK")
 
 ## Moderne diskscheduling:
 - Caching: Når OSet spør om å hente noe fra disk er det ikke sikkert man faktisk går helt til platene, siden disken gjerne har et cache.
@@ -378,9 +377,9 @@ I dag er dynamisk og preemptive scheduleringsalgoritmer vanligst, men alle bruke
     - Hvor stort skal dette bufferet i minnet være?
     - Hvor mye data skal vi prefetche? 
     - På Windows:
-    ![Buffer caching Windows](./buffercachew.png "Buffer caching Windows")
+    ![Buffer caching Windows](./assets/buffercachew.png "Buffer caching Windows")
     - På Linux:
-    ![Buffer caching Linux](./buffercachel.png "Buffer caching Linux")
+    ![Buffer caching Linux](./assets/buffercachel.png "Buffer caching Linux")
     - For caching strukturen brukes gjerne en LRU algoritme. I tillegg brukes en hash tabell der man kan hashe filnavn og blokknummer for raskere oppslag av den blokken. På den måten slipper du å søke gjennom hele listen.
 - NOOP (FCFS med request merging, brukt i linux) merger sammen flere forespørsler for å spare tid. Denne algoritmen funker på ikke mekaniske disker siden de ikke har noe søketid.
 - Deadline I/O 
@@ -392,12 +391,12 @@ I dag er dynamisk og preemptive scheduleringsalgoritmer vanligst, men alle bruke
 
 ## Plassering av data på disk:
 - **Interleaved**: Minimal disk arm bevegelse hvis man har et forutsigbart mønster for forespørsler. Ingen gevinst hvis vi har et uforutsigbart mønster.
-![Interleaved](./interleaved.png "Interleaved")
+![Interleaved](./assets/interleaved.png "Interleaved")
 - **Contiguous**: Minimal disk arm bevegelse hvis man leser en hel fil. Ingen bevegelse av hodet når man leser fra én fil (ingen søketid, rotasjons forsinkelse). Vanligvis vil man lese fra andre filer i tillegg som gjør at vi kan få store søk fra en fil til en annen.
-![Contiguous](./contiguous.png "Contiguous")
+![Contiguous](./assets/contiguous.png "Contiguous")
 - **Organ-pipe**: Plasserer oftest forespurte blokker i midten av disken siden det er der hodet i snitt trenger å gå kortest for å aksessere (bell-curve for hvor ofte blokker plasseres).
     - **Modified Organ-pipe**: Forskyver 'midten' litt lenger utover der det er plass til mer data og data kan leses raskere.
-![Organ-pipe](./organpipe.png "Organ-pipe")
+![Organ-pipe](./assets/organpipe.png "Organ-pipe")
 
 ## Filer:
 - En sekvens med bytes. I noen systemer tas det også hensyn til hva disse bytesene representerer når de leses, men vi ser på dem som **ustrukturerte filer**
@@ -405,15 +404,15 @@ I dag er dynamisk og preemptive scheduleringsalgoritmer vanligst, men alle bruke
     - **Storage management**: allokere plass, finne blokker, sortere sånn at de hører sammen.
     - **File management**: Hvem eier filen, hvilke tilganger har hvilke brukere?
 - Open:
-![Open](./open.png "Open")
+![Open](./assets/open.png "Open")
 - Read:
-![Read](./read.png "Read")
+![Read](./assets/read.png "Read")
 - VOP_READ(): Dette er en virtuell funksjonspeker. Dvs at det er en funksjon som peker på en annen funksjon avhengig av miljøet den kalles fra.
-![VOP_READ](./vopread.png "VOP_READ")
+![VOP_READ](./assets/vopread.png "VOP_READ")
 - getblk(): følg den lenkede hash listen. Hvis du ikke finner blokken i hash listen betyr det at vi ikke har blokken i cachet. Ifølge LRU bytter man da ut det least recently used elementet (i bildet den gule L'en) og legger inn blokk i cache.
-![getblk()](./getblk.png "getblk")
+![getblk()](./assets/getblk.png "getblk")
 - VOP_STRATEGY: Også en virtuell funksjonspeker. Avhenger av hva slags disk den skal lese fra. Den initierer endelig lesing fra selve disken. Etter dette er ferdig returnerer man tilbake til getblk() og oppdaterer hash listen, det innebærer å kaste ut det least recently used elementet og omorganisere lenkene i listen. Til slutt sender man en interrupt som sier at dataen ligger klar i buffercachen som gjør at man kan returnere til applikasjonen.
-![VOP_STRATEGY](./vopstrat.png "VOP_STRATEGY")
+![VOP_STRATEGY](./assets/vopstrat.png "VOP_STRATEGY")
 
 ### Filsystemet 
 - Hvordan finne riktige blokker på disken?
@@ -456,7 +455,7 @@ I dag er dynamisk og preemptive scheduleringsalgoritmer vanligst, men alle bruke
         - Første 16 bytes er reservert for metadata til filsystemet. 
         - Hver record har metadata og runs (samme som extents).
         - Hvis en record ikke er nok for en fil lages ekstra records kalt extension records. Indeksene i MFTen for ext recordsene legges så inn i base recorden.
-        ![NTFS](./ntfs.png "NTFS")
+        ![NTFS](./assets/ntfs.png "NTFS")
 
 ### Flere disker:
 #### Striping:
@@ -492,18 +491,18 @@ I dag er dynamisk og preemptive scheduleringsalgoritmer vanligst, men alle bruke
 # Inter-Process Communication (IPC):
 - Hvordan kommunisere imellom prosesser på samme maskin? Her kan man anvende mer effektive løsninger enn det som brukes for kommunikasjon over nettverk.
 - Intro:
-![IPC](./ipc.png "IPC")
+![IPC](./assets/ipc.png "IPC")
 - Indirekte kommunikasjon: Man forholder seg ofte til et mellomledd både avsender og mottakere sender til og leser fra (se på det som en mailbox). 
 - Mailboxes: Meldinger køet opp som FIFO for hver ID. Meldinger kan også gis typer. Hvis man ønsker å hente ut en spesiell type fra en kø må man ta hensyn til dette og passe på at man ikke henter ut feil type, må også oppdatere køen dersom det forespurte elementet ikke faktisk var først i køen.
-![Mailboxes](./mailboxes.png "Mailboxes")
+![Mailboxes](./assets/mailboxes.png "Mailboxes")
 - Pipes:
     - Oppretter nye prosesser for hver kommando. | kaller på systemkallet pipe. 
     - Hvis vi ser på kommandoen `ls -l | more` vil systemkallet Pipe opprette et minneområde og 2 fildeskriptorer, en for lesing og en for skriving. Vi får også en inode for pipen. Denne inoden vil ha en peker til pipen, en lengde, en start, samt informasjon om lesere og skrivere til pipen. Så setter den i gang prosessen til `ls` som vil skrive ut outputen sin til det dedikerte minneområde for pipen. Mens den skriver outputen sin vil den også endre på lengden i inoden til pipen. Hvis vi oppnår maksimal lengde før `ls` er ferdig vil vi måtte vente. Når `more` da skal begynne å lese ut fra pipen bruker den start pekeren i inoden og leser så mye som den klarer, eller helt fram til lengde variabelen. Etter den er ferdig med å lese oppdaterer den start variabelen til der den glapp av og senker lengde variabelen med like mye som den leste.
 - Mailboxes vs. Pipes:
-![Mailboxes vs Pipes](./mailvspipe.png "Mailboxes vs Pipes")
+![Mailboxes vs Pipes](./assets/mailvspipe.png "Mailboxes vs Pipes")
 - Shared memory:
     - Når to brukere har hver sine addresserom oppretter de et fysisk minneområde som mappes inn i addresseromene til begge brukerne. Da kan begge brukerne både skrive til og lese fra dette minneområdet. Utfordring: overskriving av hverandres variabler.
-![Shared Memory](./sharedmem.png "Shared Memory")
+![Shared Memory](./assets/sharedmem.png "Shared Memory")
 - Signals:
     - To måter å sende signaler: kill() og raise()
     - For å håndtere signaler: signal()
@@ -517,15 +516,15 @@ I dag er dynamisk og preemptive scheduleringsalgoritmer vanligst, men alle bruke
 - Nettet kan ses på som en graf der det er kanter mellom noder. Noder vil være et endesystem eller et intermediate system og en kant vil være en kobling mellom to noder.
 - **Point-to-point channels**: 
     - Docsis: Et sentralt intermediate system som kobler sammen alle endesystemene i et nettverk. Stjerne topologi
-    ![Docsis](./docsis.png "Docsis")
+    ![Docsis](./assets/docsis.png "Docsis")
     - Gigabit ethernet: Stjerne eller tre topologi.
-    ![Gigabit ethernet](./gbeth.png "Gigabit Ethernet")
+    ![Gigabit ethernet](./assets/gbeth.png "Gigabit Ethernet")
     - Andre strukturer:
         - Full mesh: alle noder er koblet mot hverandre - for mange kabler og tilkoblinger når det er mange noder.
         - Hypercube: Mye brukt
         - Torus: God skalerende topologi ettersom en node aldri trenger flere kanter dersom nettverket vokser.
         - Ring: Ikke brukt
-    ![Nettverk strukturer](./nettstrukt.png "Nettverk Strukturer")
+    ![Nettverk strukturer](./assets/nettstrukt.png "Nettverk Strukturer")
 - **Broadcasting kanaler**: Hvis en node sender kan alle andre høre på den. Problem: hvis to meldinger sendes samtidig kan de kollidere - dette må håndteres. Her kan man f.eks. sende et signal om at meldingen har blitt ødelagt og må sendes på nytt.
     - Kabel: Gammel ethernet brukte dette
     - Radio: Typisk bruk for dette i dag - trådløst. For å hindre kollisjoner: ikke sende med mindre mottakere har sagt at de vil høre etter.
@@ -559,23 +558,23 @@ I dag er dynamisk og preemptive scheduleringsalgoritmer vanligst, men alle bruke
 
 ## Strukturering av oppgaver:
 - **Lagdelt fremgangsmetode** - Brukes i dag
-    ![Lagdelt fremgangsmetode](./lagstrukt.png "Lagdelt fremgangsmetode")
+    ![Lagdelt fremgangsmetode](./assets/lagstrukt.png "Lagdelt fremgangsmetode")
 - **Komponent fremgangsmetode**
     + Hvert lag kan dele komponenter - slipper å duplisere funksjoner 
     - Trenger veldig fleksible algoritmer for å kunne dele dem på tvers av lag
     - Vanskelig å bli enig om hva å velge over et større nettverk med mange ulike systemer
-    ![Komponent fremgangsmetode](./komponent.png "Komponent fremgangsmetode")
+    ![Komponent fremgangsmetode](./assets/komponent.png "Komponent fremgangsmetode")
 - **Rekursiv fremgangsmetode**
     - Se på utfordringer lokalt først - hva trengs for å kommunisere med min direkte nabo?
     - Mye signaleringsoverhead for å sette opp en sti
-    ![Rekursiv fremgangsmetode](./rekursiv.png "Rekursiv fremgangsmetode")
+    ![Rekursiv fremgangsmetode](./assets/rekursiv.png "Rekursiv fremgangsmetode")
 
 ## Layering model:
 - To modeller: ISO OSI (Open Systems Interconnection) Reference Model og TCP/IP Reference Model Internet Architecture. 
     - OSI er mer teoretisk, TCP/IP brukes i praksis
 
 ### OSI:
-![OSI](./osi.png "OSI")
+![OSI](./assets/osi.png "OSI")
 - Fysiske laget: Sende bits mellom to direkte naboer i et nettverk - kan være wifi/4g/kabel osv.
     - Hvordan koble nettverksadapterne  
     - Hvilke elektroniske kretser trengs (ikke med implementasjon)
@@ -583,23 +582,103 @@ I dag er dynamisk og preemptive scheduleringsalgoritmer vanligst, men alle bruke
 - Linklaget: Skaper større enheter ut av bitsene (bytes) gjør dem om til frames (rammer)
     - En ramme består av: en start og en slutt (markeres ved et kjent bitmønster), en mengde data, og en checksum som hjelper med oppdaging av mulige feil som kan oppstå under transport.
     - Ansvar deles opp i to underliggende lag Logical Link Control (LLC) (rettet mot lag 3, detekterer feil i rammer og muligens forkaster ved feil) og Medium Access Controll (MAC) (Vi forholder oss mest til MAC, rettet mot lag 1, definerer hvordan en ramme ser ut). LLC muliggjør blant annet at vi kan ha et og samme internet for både trådfast og trådløst selv om de begge krever separate MAC lag, siden vi i dette tilfellet bare har et LCC lag. MAC laget finner nabo noden med sin MAC addresse, så bestemmer den om meldingen skal sendes enda eller om den skal vente på andre noder i nettet for å unngå kollisjon og bestemmer hvor stor rammene skal være.
-![Linklaget](./linklaget.png "Linklaget")
+![Linklaget](./assets/linklaget.png "Linklaget")
 - Nettverklaget (IP): Har ansvar for å sende pakker uavhengig av hverandre fra et endesystem til et annet. Finner hvordan addressene ser ut og hvordan man finner en sti fra en addresse til en annen - dette kalles routing. Laget abstraherer nettverket til en graf sånn at den kan bruke algoritmer for å finne den *beste* stien avhengig av en rekke parametre. Hvis addressene ser annerledes ut må nettverklaget også oversette dette. Hvis for mange pakker bruker samme sti kan nettverklaget også fikse dette - i værste fall forkaste noen pakker, beste fall finne en annen sti. Nettverklaget har også ansvar for metning(skontroll?). Det vil si at dersom det er flere avsendere til samme mottaker som gjør at ikke alle pakker kan sendes i full hastighet må nettverklaget håndtere dette - lage et minnebuffer der pakkene kan ligge fram til de kan sendes? forkaste noen pakker? Til slutt ansvar for å levere pakker opp til lag 4. 
-![Nettverklaget](./nettverklaget.png "Nettverklaget")
+![Nettverklaget](./assets/nettverklaget.png "Nettverklaget")
 - Transportlaget (TCP/UDP): Nettverklaget sender bare pakker mellom systemer - transportlaget skal så finne hvilke prosesser pakkene skal fram til. Legger til ekstra informasjon nødvendig for å finne prosessene når den sender pakker med nettverklaget. Skaper en relasjon mellom prosessene på ulike endesystemer. Dersom du har to prosesser som henter data fra samme endesystem må transportlaget håndtere hvilken prosess som skal motta hvilke pakker fra det andre endesystemet. På samme måte må transportlaget også tilby applikasjoner som sender flere strømmre med data til samme endesystem en måte å skille mellom formatet på de ulike dataene. Transportlaget håndterer også hastighetsforskjeller mellom avsender og mottaker. Dette kan gjøres ved å redusere hastigheten avsenderen kan sende pakker eller ved å forkaste pakker. Laget fikser også feil på endesystemer uten innflytelse på stien gjennom nettet.
-![Transportlaget](./transportlaget.png "Transportlaget")
+![Transportlaget](./assets/transportlaget.png "Transportlaget")
 - Session layer: Skaper en strukturert dialog mellom prosessene på endesystemene. Sesjoner skal støttes over lengre perioder - også på tvers av ulike nettverk. Identifiserer brukere og passer på hvilke tilganger brukerne har.
-![Session layer](./sesslayer.png "Session layer")
+![Session layer](./assets/sesslayer.png "Session layer")
 - Presentasjonslaget: Skal fikse ulikheter mellom endesystemer. 
-![Presentasjonslaget](./preslaget.png "Presentasjonslaget")
+![Presentasjonslaget](./assets/preslaget.png "Presentasjonslaget")
 - Applikasjonslaget: Alt annet! Benytter seg av funksjonalitet fra lagene under. Utvikleren kontrollerer hva som gjøres her.
 
 - I mellom to endesystemer er hvert lag en *peer*. Det vil si at alle protokollene i hvert lag må passe på tvers av endesystemer. Fysisk vil kommunikasjon mellom endesystemer gå ned gjennom lagene for å sendes fysisk av en avsender, før det kan rekonstrueres gjennom de samme protokollene av mottakeren. Dersom det skal sendes gjennom et intermediate system vil ISet kun rekonstruere pakkene opp til nettverklaget ettersom det ikke trenger å vite noe mer for å kunne videresende relevant data.
 
 ### TCP/IP modellen:
 - Laget i konkurranse med OSI. Består kun av 5 lag - ingen session og presentasjonslag. I tillegg kombineres ofte lag 1 og 2 til et lag (Network interface model).
-![TCP/IP](./tcpip.png "TCP/IP")
+![TCP/IP](./assets/tcpip.png "TCP/IP")
 - Nettverkslag og transport lag funker som i OSI, men applikasjonslaget må ta seg av oppgavene til presentasjonslaget og sesjonslaget.
 - Det er kun lag 1-4 som er essensielle for å kunne kommunisere over internettet så disse vil forbli noenlunde det samme uansett. Disse lagene er også som regel definert i kjernen. Altså kan man ikke endre deres funksjonalitet direkte fra våre applikasjoner. De andre øverste 3 lagene er det utviklerne har kontroll over. Siden det er utviklerne som bestemmer hvordan dette skal implementeres er det ikke nødvendig å opprettholde standardiserte protokoller for disse lagene. Det er derfor TCP/IP modellen ikke har noen spesifikke retningslinjer for disse lagene.
-![TCP/IP difference](./tcpipdiff.png "TCP/IP difference")
-![Hourglass model](./hourglass.png "Hourglass model")
+![TCP/IP difference](./assets/tcpipdiff.png "TCP/IP difference")
+![Hourglass model](./assets/hourglass.png "Hourglass model")
+
+## Naming:
+- **(N)-layer:** Abstraksjonsnivå for lag med definerte oppgaver tilbyr tjenester til laget over.
+- **(N)-entity:** Implementasjonen (brukerne?) av protokollene definert for et lag. Aktive elementer på et lag. Kjørende kodebiter som benytter seg av maskinens ressurser. Entiteter som snakker med hverandre på samme lag er **peer entities**.
+- **(N)-Service Access Point:** Et lag benytter seg av tjenestene til laget under og tilby tjenester til laget over. Hva slags tjenester et lag tilbyr er definert i denne *NSAP*en. Dette er en beskrivelse av disse tjenestene, interface, API. Et lag kan tilby flere NSAPer. F.eks. i lag 4 velger vi mellom to hovedprotokoller (TCP/UDP). 
+- **(N)-Protocol:** N-entiteter interagerer med hverandre gjennom en N-protocol. Strenge og entydige regler. Protokollen definerer hvilken rekkefølge meldinger må sendes i - en entitet vil først finde en forbindelse til en annen entitet på samme lag på en annen maskin, så kan de etablere et forhold for hvordan de kan kommunisere (f.eks. hvor mye data de kan overføre på en gang) før de til slutt kan kommunisere som vanlig. En protokoll må også definere hvordan pakker skal sendes og hvordan unntak skal håndteres (f.eks. en pakke når ikke fram). Definerer **ikke** hvilke tjenester som leveres til laget over eller hvordan disse tjenestene skal leveres.
+    - Protocol syntax: regler for formattering
+    - Protocol semantics: regler for håndtering av uforventede hendelser
+        - Begge disse må være likt mellom kommuniserende entiteter
+    - PDU: Melding mellom to entiteter på samme lag som utfører en protokoll med hverandre 
+        - Mer spesifikke begreper: 
+            - Symbol: Lag 1
+            - Frame: Lag 2
+            - Packet: Lag 3
+            - Message/datagram: Lag 4
+            - Kombinasjon av andre begreper: Lag 5
+
+### Hvordan sende pakker:
+- Sending av brev analogi: Man addresserer mottakeren og sender den gjennom flere ledd før den kommer fram. Hvert mellomledd pakker ut litt og litt av addresseinformasjonen (analogisk: pakker ut kontinent, så land, så addresse, så person).
+- Hver gang data sendes fra nivå N til N-1 legger nivå N til sine N-protokoller (som en header, her kan den også legge inn en checksum bakerst for å forsikre at dataen er valid). Hver gang data sendes fra nivå N til nivå N+1 pakker nivå N ut dataen fra nivå N-1.
+![Dataflow through network](./assets/dataflow.png "Dataflow through network")
+- Transport lag header (UDP): Bits sendes fra øverst til venstre ned til nederst til høyre. 64 bits/8 byte header. En port er en addresse en prosess fra lag 7 kan reservere for å bli identifisert etter mottak av en pakke fra den andre entiteten på lag 4 den skal sende til. Porten er internettets prosessaddresse. Source port er prosessaddressen til avsenderen. Destination port er prosessaddressen til mottakerprosessen. IPv4 kan ignorere checksum delen av UDP headeren.
+![UDP header](./assets/udpheader.png "UDP header")
+- Network lag header (IPv4 og IPv6): Version: sier om pakken er IPv4 eller 6 - mer om disse headersene senere
+![IP headers](./assets/ipheaders.png "IP headers")
+- Data link lag header (Ethernet): MAC addressene kan addressere både en IS eller et ES. Checksum for å sjekke at dataen har blitt overført riktig mellom nabonodene.
+![Ethernet header](./assets/ethheader.png "Ethernet header")
+
+### Network byte order:
+![Numbers](./assets/numbers.png "Numbers")
+![Numbers2](./assets/numbers2.png "Numbers2")
+- Argument for big endian: Intuitiv skrivemåte for å skrive tall i vestlig skrivemåte der man skriver tall fra venstre til høyre - tall lengst til venstre har størst verdi. I en big endian maskin, hvis man putter endrer en `unsigned char byte[8]` sin `byte[0]` med `+=1` endrer man byten lengst til høyre med en (se bilde). 
+![Numbers3](./assets/numbers3.png "Numbers3")
+- I tillegg ønsker man når man kommuiserer over nett å kunne sende de mest signifikante bitsene over nettet først siden da kan man allerede begynne å prosessere dataen før man har mottatt alt (analogi: telefonnummer - man kan se at telefonnummeret ligger i USA etter å ha lest 0d001... med big endian, mens hvis man hadde brukt little endian hadde man måttet lest hele telefonnummeret før man kan se landskoden). Denne analogien gjelder også for IP addresser ettersom de virker i stor grad på samme måte som telefonnummer (se bilde). OBS: pass på ved bruk av network byte order(big endian) på little endian maskiner ettersom dette kan skape bugs, bruk funksjoner for å konvertere byte order.
+![Numbers bonus](./assets/numbersbonus.png "Numbers bonus")
+- Argument for little endian: Type casting i minnet på little endian maskiner er mye mer effektivt siden man uavhengig av hvor mange bytes som er satt av for en variabel alltid kan aksessere de første n bytesene av variabelen på samme måte (f.eks. hvis man har en long for tallet 0x81 og ønsker å konvertere dette til en short kan man bare ta de første 2 bytesene av longen og få det samme tallet)
+![Numbers4](./assets/numbers4.png "Numbers4")
+
+### Addressering med MAC:
+- MAC addresser brukes for kommunikasjon mellom to direkte naboer. Dette kan brukes for maskiner koblet til samme nettverk. For kommunikasjon med maskiner på andre nettverk brukes IP addresser. MAC addresser lagres ofte også i maskiners cache for å kunne kommunisere raskere.
+- MAC addresser er ikke nødvendig i et true point-to-point nettverk. Dette er fordi hver gang lag 2 sender en pakke mha. tjenester fra lag 1 vil pakken gå rett til den fysiske forbindelsen som kommer til å sende bits til nabomaskinen og lag 2 addressen er ikke nødvendig fordi man kjenner identiteten til pakken kommer til å sendes til. Til tross for dette kan man fortsatt bruke MAC addressen i slike tilfeller siden de kan brukes for å identifisere maskiner over lengre perioder hvis de f.eks. kobler seg fra nettet og så kobler seg på igjen. Da slipper man å måtte oppdatere informasjonen om hvordan kommunisere med den noden på andre maskiner.
+- Men for ekte broadcast nettverk der en maskin sender og andre lytter er det nødvendig å kjenne addressen til maskinen man ønsker å nå. Da kan senderen legge inn mottakeraddressen sånn at nodene på nettverket skjønner hvem som skal lese hvilke pakker.
+- Det siste intermediate systemet som skal videresende pakken til et endesystem må også kunne finde riktig endesystem. Da må vi oversette fra IP addresse (lag 3) til Netadapter addresse (lag 2, f.eks. ethernet addresse). Dette må også gjøres for hver overgang fra et system til et annet, da må vi også ta hensyn til ulike datalinklagsprotokoller underveis som kan ha ulike hastigheter, underspesifikasjoner og lag2 addresseringsstiler (Wifi og ethernet har faktisk samme her, men DSL har forskjellig). Derfor kan vi ikke sende med informasjon om MAC addresser i pakkene på lag 3/4, dette må finnes ut lokalt.
+- Noen maskiner kan omskrive sin MAC addresse + virtuelle maskiners MAC addresser er forskjellig fra maskinen de kjører på så den globalt unike IDen er ikke perfekt. 
+![MAC address](./assets/macaddress.png "MAC address")
+- Hvordan oversette MAC til IP?
+    - **Direct mapping:** Legge IP addressene fra lag 3 inn i MAC addressen. Siden IPv4 er 32 bits og MAC addresser er 48 bits kan man ta hele IP addressen og legge det inn i MAC addressen, de første 16 bitsene i MAC addressen kan da være en prefix for lokale maskiner på det nettet. Da kan maskiner finne ut hvem pakken er ment til basert på IP addressen(?). Denne metoden virker ikke over internett siden IP addressen vil være for endesystemet, ikke den neste noden pakken skal sendes til.
+    - **Mapping table:** Hver node har en tabell for IP addresser og MAC addresser som kan oppdateres og slås opp i for å se hvilke MAC addresser passer til IP addressen fra lag 3 headeren(?) før pakken kan sendes videre. Det finnes to måter å generere denne tabellen:
+        - Manuelt vedlikehold: Mye arbeid men ikke urealistisk.
+        - Hver gang en ny maskin kobles til internettet broadcaster de sin MAC og IP addresse sånn at alle mottakere kan oppdatere sine tabeller. OBS: maskiner som kobles til senere vil ikke ha noen informasjon om andre maskiner på nettverket.
+        - **Address resolution protocol (ARP):** Hver maskin på nettet vedlikeholder en cache over sine direkte naboer som oversetter maskiners MAC addresser til IP addresser. Cachen benytter en timeout som gjør at dersom en maskin ikke har vært kontaktet over en gitt timeout sletter vi den fra cachen. Når en node ønsker å nå en gitt IP addresse i et nettverk mha. ARP vil avsenderen broadcaste *ARP requesten* over nettet som forespør den tilsvarende MAC addressen til IP addressen. Hvis noen svarer med sin MAC addresse oppdaterer avsenderen og mottakeren sine caches med hverandres data for lettere kommunikasjon i fremtiden, frem til forbindelsen timeouter. Andre noder ignorerer forespørselen.
+        ![ARP](./assets/arp.png "ARP")
+            - Hva med kommunikasjon over større nettverk, da vil det jo forekomme enorme mengder ARP requests? 
+                - Da kan vi bruke **proxy ARP**. Dette går ut på at vi deler opp nettverket i mindre nettverk. Hvert nettverk vil da ha en router som kjenner til de andre nettverkene som cacher et mapping table. Når noen broadcaster en ARP request og ingen maskiner på det lokale nettverket svarer vil det gå til routeren som sjekker om den allerede har den forespurte MAC addressen. Hvis den ikke har det vil den sende en forespørsel til de andre nettverkene. Hvis noen av de andre nettverkene svarer vil den oppdatere cachen sin sånn at neste gang noen broadcaster en ARP request slipper routeren å videreføre denne forespørselen til de andre nettverkene.
+                - Proxy ARP er mulig men lite brukt i dag. I stedet anser vi bare hvert mindre nettverk som et separat nettverk som er koblet sammen gjennom en router. Når et endesystem da skal sende en melding bruker den IP addressen til mottakeren og sender pakkene til routeren som kobler oss til det andre nettet som inneholder mottakernoden.
+        ![ARP2](./assets/arp2.png "ARP2")
+        - **Reverse Address Resolution Protocol (RARP):** I stedet for å forespørre MAC addresser basert på sin IP addresse kan man forespørre IP addresesr basert på sin MAC addresse. Når et system kobler seg på internettet med RARP broadcaster den en *RARP request* for å finne sin IP addresse. Da vil *RARP server*en utdele en IP addresse så lenge den er tilgjengelig på LAN. Dette brukes heller ikke noe særlig i dag.
+
+### Addressering med IP:
+- Internettet består av subnetverk som deles inn i 5 klasser basert på de første bitsene i IP addressen. Disse nettverkene er også koblet til hverandre.
+![Subnetworks](./assets/subnetworks.png "Subnetworks")
+- En nettverkaddresse definerer hvem som tilhører hvilket nettverk, ikke hvordan nettverk er sammenkoblet. For å finne stien fra et nettverk til et annet *Routing*.
+- Hvordan strukturere nettverk?
+    - Gammeldags metode: Ha et stort nettverk hvor addresering til naboer gjøres på lag 2, f.eks. med proxy ARP. Men denne metoden holder ofte ikke siden nettverk ofte vokser utover den tildelte nettverksklassen. 
+    - Alternativt: Dele opp nettverket i flere mindre deler som ligger under det større nettverket og bruke *routing* for å addressere noder internt. Men hvordan kan man skille de mindre nettverkene fra det store? Fjerne klasseindelingsbetydningen til den første biten i addressen. I stedet lager vi en lokal indikator for hvor mange bits vi bruker til nettverk/host. For å gjøre dette deler vi opp bitsene tidligere brukt for for host og deler den opp i en seksjon for undernettverk og en mindre andel bits for host. Da må vi også finne en måte å bestemme hvilke bits som definerer nettverket/subnetverket og hvilke som definerer hosten på nettverket - for dette bruker vi en subnet maske som er et tall med n antall 1 bits på rad i starten. Da kan vi gjøre en bitvis & operasjon mellom addressen og masken for å få ut subnet addressen. Hvis man router til subnet addressen kommer pakken fram til nettverksinngangen og man kan da se på resten av bitsene i addressen for å velge en maskin under subnettet. Routeren kan da bruke en algoritme for å gjøre 3 sjekker:
+        - Hvis & operasjon mellom subnet maske og nettverksdelen av addressen er forskjellige betyr det at det er en pakke ment for et annet nettverk
+        - Hvis & operasjon mellom subnet maske og nettverksdelen av addressen er like og & operasjon mellom subnet maske og subnetdelen av addressen er like er det en pakke som skal til det lokale systemet.
+        - Hvis & operasjon mellom subnet maske og nettverksdelen er like, men & operasjon mellom subnet maske og subnetdelen av addressen er ulike er det en pakke til et annet subnetverk.
+        ![Subnet mask](./assets/subnetmask.png "Subnet mask")
+
+#### Classless InterDomain Routing (CIDR): <!-- Skjønte lite her -->
+- Subnetverk er ikke bra nok
+- Klasse A nettverk med 16 millioner addresser for mye i mange tilfeller
+- Klasse C nettverk med 256 addresser for lite i mange tilfeller
+- De fleste organisasjoner er intereserte i klasse B nettverk, men de er det ikke nok av (16384)
+- Derfor kan vi i stedet ta ut deler av et 
+- I stedet for å ha et stort nettverk med en organisasjon som forvalter det kan vi ta noen av det nettets subnetverk og skille dem ut for å selge dem separat fra dets tidligere nettverk. For å identifisere disse nettverkene kan vi fortsatt bruke den samme subnetmasken. Antall mulige hosts under en addresse er lik 2^antall 0 bytes i subnet masken dette kan brukes for å fordele nettverk med passende størrelser.
+    - Med denne løsningen kan du ha flere nettverk med samme bits i starten, men med forskjellige subnet og subnetmasker. For å finne hvilket nettverk en pakke skal til i slike tilfeller bruker man ***longest mask*** prinsippet. Det vil si at da sendes pakkene til det nettverket med lengst subnetmaske som fortsatt returnerer en identisk streng etter & operasjon. 
+    - I bildet under ....
+    ![CIDR](./assets/cidr.png "CIDR")
