@@ -1,5 +1,4 @@
 # TODO: 
-- https://www.uio.no/studier/emner/matnat/ifi/IN2140/v23/ukeplan/uke-16.html 1t30
 - https://www.uio.no/studier/emner/matnat/ifi/IN2140/v23/ukeplan/uke-17.html 2t06
 - https://www.uio.no/studier/emner/matnat/ifi/IN2140/v23/ukeplan/uke-19.html 1t10
 - https://www.uio.no/studier/emner/matnat/ifi/IN2140/v23/ukeplan/uke-20.html 1t0
@@ -615,7 +614,7 @@ I dag er dynamisk og preemptive scheduleringsalgoritmer vanligst, men alle bruke
             - Symbol: Lag 1
             - Frame: Lag 2
             - Packet: Lag 3
-            - Message/datagram: Lag 4
+            - Message/datagram (segment?): Lag 4
             - Kombinasjon av andre begreper: Lag 5
 
 ### Hvordan sende pakker:
@@ -639,7 +638,7 @@ I dag er dynamisk og preemptive scheduleringsalgoritmer vanligst, men alle bruke
 - Argument for little endian: Type casting i minnet på little endian maskiner er mye mer effektivt siden man uavhengig av hvor mange bytes som er satt av for en variabel alltid kan aksessere de første n bytesene av variabelen på samme måte (f.eks. hvis man har en long for tallet 0x81 og ønsker å konvertere dette til en short kan man bare ta de første 2 bytesene av longen og få det samme tallet)
 ![Numbers4](./assets/numbers4.png "Numbers4")
 
-### Addressering med MAC:
+## Addressering med MAC:
 - MAC addresser brukes for kommunikasjon mellom to direkte naboer. Dette kan brukes for maskiner koblet til samme nettverk. For kommunikasjon med maskiner på andre nettverk brukes IP addresser. MAC addresser lagres ofte også i maskiners cache for å kunne kommunisere raskere.
 - MAC addresser er ikke nødvendig i et true point-to-point nettverk. Dette er fordi hver gang lag 2 sender en pakke mha. tjenester fra lag 1 vil pakken gå rett til den fysiske forbindelsen som kommer til å sende bits til nabomaskinen og lag 2 addressen er ikke nødvendig fordi man kjenner identiteten til pakken kommer til å sendes til. Til tross for dette kan man fortsatt bruke MAC addressen i slike tilfeller siden de kan brukes for å identifisere maskiner over lengre perioder hvis de f.eks. kobler seg fra nettet og så kobler seg på igjen. Da slipper man å måtte oppdatere informasjonen om hvordan kommunisere med den noden på andre maskiner.
 - Men for ekte broadcast nettverk der en maskin sender og andre lytter er det nødvendig å kjenne addressen til maskinen man ønsker å nå. Da kan senderen legge inn mottakeraddressen sånn at nodene på nettverket skjønner hvem som skal lese hvilke pakker.
@@ -659,7 +658,7 @@ I dag er dynamisk og preemptive scheduleringsalgoritmer vanligst, men alle bruke
         ![ARP2](./assets/arp2.png "ARP2")
         - **Reverse Address Resolution Protocol (RARP):** I stedet for å forespørre MAC addresser basert på sin IP addresse kan man forespørre IP addresesr basert på sin MAC addresse. Når et system kobler seg på internettet med RARP broadcaster den en *RARP request* for å finne sin IP addresse. Da vil *RARP server*en utdele en IP addresse så lenge den er tilgjengelig på LAN. Dette brukes heller ikke noe særlig i dag.
 
-### Addressering med IP:
+## Addressering med IP:
 - Internettet består av subnetverk som deles inn i 5 klasser basert på de første bitsene i IP addressen. Disse nettverkene er også koblet til hverandre.
 ![Subnetworks](./assets/subnetworks.png "Subnetworks")
 - En nettverkaddresse definerer hvem som tilhører hvilket nettverk, ikke hvordan nettverk er sammenkoblet. For å finne stien fra et nettverk til et annet *Routing*.
@@ -671,7 +670,7 @@ I dag er dynamisk og preemptive scheduleringsalgoritmer vanligst, men alle bruke
         - Hvis & operasjon mellom subnet maske og nettverksdelen er like, men & operasjon mellom subnet maske og subnetdelen av addressen er ulike er det en pakke til et annet subnetverk.
         ![Subnet mask](./assets/subnetmask.png "Subnet mask")
 
-#### Classless InterDomain Routing (CIDR):
+### Classless InterDomain Routing (CIDR):
 - Subnetverk er ikke bra nok
 - Klasse A nettverk med 16 millioner addresser for mye i mange tilfeller
 - Klasse C nettverk med 256 addresser for lite i mange tilfeller
@@ -688,7 +687,7 @@ I dag er dynamisk og preemptive scheduleringsalgoritmer vanligst, men alle bruke
         - For routere: Spiller ikke noe rolle om pakken er lokal. Hvis & operasjon er lik subnet addresse - send direkte til endesystem (kanskje først oppslag i ARP cache/ARP forespørsel så sende til MAC addresse). Hvis ikke likt oppslag i routing tabell så send til annen router.
     ![CIDR2](./assets/cidr2.png "CIDR2")
 
-#### IPv6:
+### IPv6:
 - Ingen får permanente addresser, de må lånes ut og byttes regelmessig. En fiks for dette er **NAT**, men den er ikke ideell siden det innebærer at vi ikke bruker en én til én oversettelse mellom IP addresser og maskiner.
 ![IPv6](./assets/ipv6.png "IPv6")
 - Mål med IPv6: 
@@ -711,7 +710,7 @@ I dag er dynamisk og preemptive scheduleringsalgoritmer vanligst, men alle bruke
 ![IPv6 addresse 2](./assets/ipv6addr2.png "IPv6 addresse 2")
 ![IPv6 addresse 3](./assets/ipv6addr3.png "IPv6 addresse 3")
 
-### Addressering i transportlaget:
+## Addressering i transportlaget:
 - Transportlagets oppgaver:
     - Addressere prosesser 
     - Forvalte en forbindelse mellom applikasjoner (evt. sende uavhengige pakker (forbindelsesløst))
@@ -734,7 +733,27 @@ I dag er dynamisk og preemptive scheduleringsalgoritmer vanligst, men alle bruke
         - Med disse identifikatorene har vi vesentlig flere muligheter for å identifisere TCP tilkoblinger ettersom en tilkobling er unik så lenge én av disse faktorene er forskjellige.
     ![TCP addressing](./assets/tcpaddr.png "TCP addressing")
 
-### Addressering i applikasjonslaget (DNS):
+### Metningskontroll og flytkontroll:
+- End to end principle: Endesystemer vet best hva de trenger så nettet burde blande seg inn så lite som mulig. F.eks. hvor mange pakker man skal sende per tidsenhet er en del av ansvarsområdet til transportlaget.
+- To delutfordringer: Avsender sender for raskt for mottakeren (flytkontroll/flow control) eller avsender sender for raskt for nettverket (metningskontroll/congestion control). Begge fører til packet loss, men krever to separate algoritmer for å løses.
+- Endesystem ønsker å øke sin egen ytelse, dvs. sende data til mottakeren så raskt og effektivt som mulig, uten hensyn til hva dette resulterer i for andre endesystemer/strømmer. Nettverket ønsker å øke total ytelse, uten å egentlig bry seg om ytelsen til individuelle endesystemer. Det vil si at nettverket gjerne skaper ulemper for noen endesystemer til fordel for andre. Dette er et problem som må løses av en uavhengig tredjepart - gjerne transportlagsimplementasjonen i kjernen.
+- Tjenester som tilbys av lag 4 protokoller: Multihoming - kan sende til flere mottakere samtidig
+![Lag 4 tabell](./assets/lag4tabell.png "Lag 4 tabell")
+
+### User Datagram protocl (UDP):
+- Upålitelig, forbindelsesløs, meldingsorientert
+![UDP](./assets/udp.png "UDP")
+- Checksum er ikke nødvendig i IPv4, men fullstendig fjernet i IPv6. Derfor gjøres checksuming nå i UDP.
+    - I TCP/IP verden: for å kunne addressere en mottaker trenger man source og destination addressene siden man må finne mottakerprosessen på maskinen. Derfor må UDP checksummen sjekke ting utover transportpakken og sjekke noen felt fra IP. Dette bryter lagdelingsprinsippet, men er nødvendig.
+    - UDP checksumming går også utover å sjekke felt fra UDP delen av pakken. Den sjekker også noen felt fra IP for å forsikre seg
+    ![UDP checksum](./assets/udpchecksum.png "UDP checksum")
+- Source port er ikke nødvendig i UDP. Dette går fint så lenge vi ikke forventer noe svar.
+- UDP brukes for:
+    - Enkle client-server interaksjoner som f.eks. klient sender én pakke til server og forventer én pakke respons.
+    - Kommunikasjon der lav latens er viktigere enn packet loss og duplication(?): video konferanser, gaming, IP telefoni
+    - Domain Name Service, Network Time Protocol, Simple Network Management Protocol, Bootstrap Protocol (BOOTP, broadcasting over nettet), Trivial File Transfer Protocol, Network File System, Real-time Transport Protocol.
+
+## Addressering i applikasjonslaget (DNS):
 - For å koble seg på en ekstern maskin: SSH/telnet(gammel). Denne bruker IP addresser med mindre noe annet er spesisert i `etc/hosts` (eller DNS server forbinder andre navn med  IP addresser). I denne filen kan du assosiere IP addresser med mer lesbare navn. For å forvalte slike assosiasjoner på en større skala bruker vi DNS (Domain Name System).
 - DNS benytter et hierarkisk namespace, f.eks. `.com -> google.com -> mail.google.com`.
 - Vi kan se på DNS som en distribuert database siden det ikke er én sentral server som tar var på disse forbindelsene.
@@ -746,7 +765,7 @@ I dag er dynamisk og preemptive scheduleringsalgoritmer vanligst, men alle bruke
 - For forvaltere av et subtre har de ansvar for å besvare alle oppslag for navn under det subtreet, også om navnene eksisterer eller ikke. Det betyr ikke at alle DNS servere inneholder alle navn under det subtreet. Men de må vite hvem de kan videresende forespørselen til for å slå opp alle navnene. F.eks. har .no ansvar for å slå opp alle navn under .no, men ikke å lagre alle disse navnene. Alle forvaltere må også ha minst 2 servere i tilfelle krasj. Alle DNS servere må også kunne addressene til root servere. Root servere kjenner alle top level domener og alle serverne som betjener disse domenene.
 - ICANN administrerer de 13 root serverne. 6 av disse er *anycasted*.
 
-#### Oppslag i DNS:
+### Oppslag i DNS:
 - Rekursiv DNS query (gammel): Hver server på vei fra forespørrende klient til serveren som har svaret på queryen beholder forbindelsen/tilstanden oppe mens oppslaget prosesseres. Dette tillater serverne å cache svaret i det det returneres tilbake gjennom kjeden av servere. Men dette er en ganske dyr fremgangsmetode siden det bruker minne å opprettholde denne tilstanden.
 - Iterated DNS query (ny): Omdirigerer oppslag tilbake til lokal DNS server for å unngå lagring av tilstand mens oppslaget prosesseres på andre servere. Da kan vi bare cache resultatet i den lokale serveren og ikke de andre som omdirigerte oppslaget.
 ![Iterated DNS query](./assets/iterdnsquery.png "Iterated DNS query")
@@ -759,3 +778,85 @@ I dag er dynamisk og preemptive scheduleringsalgoritmer vanligst, men alle bruke
 ![DNS record](./assets/dnsrecord.png "DNS record")
 - Multicast DNS - måte for maskiner å dele tjenester over lag 2 (ethernet/wifi)
 ![mDNS](./assets/mdns.png "mDNS")
+
+## Routing and switching (lag 3):
+- Nettverkslagets hovedoppgave er å tilby tjenester til transportlaget (enten forbindelsesløst eller forbindelsesorientert)
+- Routing: hvilken vei skal vi velge for å sende pakker? Må bestemmes kontinuerlig gjennom en pakkes reise.
+- Metningskontroll: Enkel løsning brukes - hvis det er for stor trafikk på en node, bare forkast noen pakker. Ellers kan metningskontroll utføres på lag 4.
+- Qaulity Of Service: Garantere til lag 4 at en pakke ankommer en mottaker innen en viss tid. Garantere at et visst antall pakker av en viss størrelse ankommer innen viss tid. Garantere at rekkefølgen til pakkene ankommer i samme rekkefølge som de sendes (gjøres gjerne i lag 4 i stedet).
+- I IP headers:
+    - Flow label: Kan brukes for å identifisere at pakken skal være forbindelsesorientert (denne brukes lite i dag). *Alternativt* kan man bare bruke destination address for å sende pakker forbindelsesløst. Ut ifra denne addressen kan man beregne seg fram til den beste neste noden å sende pakken til på vei mot mottakeren.
+    - Mange andre felt i header brukes for å forsikre QoS krav - DSCP (Differentiate Services Code Point - for å klassifisere en traffikklasse som kan bruke ressurser i mellomnodene reserver til den klassen (øke prioritet på pakkene)), ECN (hjelpemiddel for å gjøre det lettere å håndtere metning på lag 4)
+- Hva må en mellomnode vite? Mellomnoden må kjenne nettverkstopologien for sitt nærområde - kjenne sine subnett og nabonett. Må kunne sende til et endesystem hvis de har ansvar for det. Hvis den skal støtte QoS må den kjenne til regnekraft/minne og kapasitet for overførsel til nabonoder. Må også kjenne lasten på sitt system for å kunne kommunisere med forbindelsesorienterte tjenester på lag 4 hvor rask kommunikasjon de kan forvente. Etter dette kan en mellomnode videresende pakker enten gjennom *routing* eller *switching*.
+- Terminologi:
+    - Routing og switching har mye til felles - man har en mellomnode som skal finne ut hvilket interface den skal bruke for å videresende pakken (så lenge det ikke skal sendes til et endesystem på det lokale nettverket).
+    - Vanligvis: Switching på lag 2, routing på lag 3 - i dag noen ganger switching på lag 3, men ikke routing på lag 2.
+    - I bildet under: Identifier er felt som f.eks flow label. Det er ikke alltid tydelig om det er snakk om routing eller switching.
+    ![Routing vs Switching](./assets/routingswitching.png "Routing vs Switching")
+
+### Circuit switching (linjesvitsjing): 
+- Basert på fysiske elektriske forbindelser. Forbindelser mellom switching sentre på vei mellom endesystemer. Forbindelsene mellom switching sentre kan manipuleres. Dette er ting som telefonsentre der mennesker manuelt plugget kabler mellom den som ringer til den som blir ringt - da oppstår en fysisk elektrisk kobling mellom disse to. Dette kan også automatiseres basert på input-telefonnummeret. I dag: Wavelength Division Multiplexing (WDM). Koblingspunkter der lysfrekvenser representerer en deltaker i kommunikasjon. Samme som gamle switchboards, bare mindre og optiskt.
+- Egenskaper: 
+    - Tar lang tid å etablere en forbindelse mellom endesystemer. Dette må man også vente på før man kan sende pakker.
+    - Ressurser kan gå tapt hvis deltakere ikke har noe å sende - ingen andre endesystemer kan bruke samme kabel/frekvens.
+    + Ingenting kan stoppe kommunikasjon etter den er etablert (med mindre uhell med kabel eller lignende).
+
+### Packet Switching (pakkesvitshing):
+- Antar at hver pakke må routes på hver mellomnode mellom hvert endesystem.
+- Det er ingen forhåndsdefinert rute for kommunikasjon, når det finnes flere veier velger mellomnoden hvilken. Noen ganger kan mellomnoder velge feil vei.
+- Dette brukes i internettet.
+- Egenskaper:
+    - Kan ikke reservere ressurser for pakker siden de sendes uavhengig av hverandre og mellomnoder kan velge forskjellige veier for dem. I stedet kan man legge til tilstander på mellomnodene som sjekker mottakeraddressen til pakken og prioriterer spesifikke veier basert på addressen. Da kan dedikere båndbredde for pakker til samme addresse.
+    - Mulighet for metning hvis mange pakker skal i samme retning/til samme endesystem.
+    + God bruk av ressurser (potensielt 100%) når mange meldinger sendes samtidig.
+
+### Circuit Switching vs Packet Switching:
+- Etablering av forbindelse kan ta lang tid med circuit switching - etterpå er båndbredde reservert for denne forbindelsen uten fare for metning. Negativt at mye av kapasiteten til nettet kan være ubrukt hvis endesystemer kommuniserer når forbindelsen er opprettet uten å ha noe å kommunisere. For pakkesvitsjing slipper vi etableringsfasen og allokerer ikke båndbredde. Alle kan sende pakker til hvem de vil når de vil - dette kan føre til metning, men vi oppnår også god bruk av ressurser
+- Tid for overføring av data med circuit switching er konstant siden de alltid går samme vei, med packet switching kan dette variere basert på hvilken vei pakker ender opp med å gå.
+
+### Virtual circuit switching:
+- Ligner på circuit switching, men baserer seg på pakker. <!--Trenger ikke allokere ressurser for forbindelser.-->
+- Hvordan: Etabler en sti fra sender til mottaker som skal brukes så lenge forbindelsen varer. Tilstandsinformasjon lagres på alle mellomnoder og endesystem som garanterer at nodene har tilstrekkelige ressurser for å utføre kommunikasjonen. Når en mellomnode skal videresende en pakke slipper den å kalkulere hvilken nabo den må sende pakken til. Den kan heller sjekke identifier i pakken for å finne hvilken nabo den skal sende pakken til i en tabell etablert i etableringsfasen - mye mer effektivt.
+- Siden man kjenner stien, ressursene tilgjengelige og hvilke forbindelser som er etablert, kan man basert på informasjonen om pakkene tilby QoS (f.eks. definere gjennomsnittlig tid for å overføre pakker og worst case tid for å overføre pakker) og vedlikeholde rekkefølge på pakkene.
+- I IPv6 kan man bruke flow label for identifikasjon. Denne er kortere og mottas før destination address i headeren.
+
+#### Mer Virtual Circuit Switching:
+- I etableringsfasen:
+    - Velg en vei 
+    - Bestem en VC identifier for hele denne circuiten
+    - Alle IS må lagre informasjonen om veien med det gitte VC identifier
+    - Nettverket må reservere ressurser nødvendige for forbindelsen
+- I data transfer phase:
+    - Alle pakker følger samme vei og inneholder VC identifier (ingen addresseinformasjon, denne glemmes etter veien er funnet i etableringsfasen)
+    - Mellomnode bruker lagret vei for å bestemme neste node å sende til
+    - Kanskje oppdatere VC identifier i pakken
+        - VC identifier er ikke globalt unike. Valget av en VC identifier gjøres uavhengig på endesystemer, så når to endesystemer bruker en VC identifier betyr ikke det at dersom en mellomnode leser denne VC identifieren vet den hvilken vei å sende pakken til. Den må også ta hensyn til hvem som sender pakken. Når en mellomnode leser VC identifer fra en pakke og ser at dersom den videresender pakken til den neste naboen vil ikke naboen være i stand til å skille mellom pakker fra forskjellige sendere, må den mellomnoden omskrive VC identifieren til en av forbindelsene.
+        ![VC identifier](./assets/vcidentifier.png "VC identifier")
+- Disconnect phase:
+    - Alle mellomnoder frigjør reserverte ressurser
+    - Slett informasjon om den VC fra sine tabeller
+- Implementasjon:
+    - Veivalg (routing) er uavhengig av implementasjonen til VC. 
+    - Se på IN og sjekk om noden pakken kommer fra allerede har brukt den samme VC identifieren. Hvis ja endre den
+    ![VC implemenation](./assets/vcimpl.png "VC Implementation")
+
+### Virtual circuit vs packet switching:
+- Virtual circuits trenger fortsatt en etableringsfase som kan ta tid, dette slipper vi med packet switching.
+- I PS er det lett å endre på routingen dersom noe går feil ettersom det aldri blir definert noen foretrukket vei på forhånd. Dette er ikke like lett med VC, da vil hele forbindelsen kollapse dersom en mellomnode feiler. For å løse dette kan man signalere senderen, mottakeren og alle mellomnoder på veien sånn at de kan frigjøre ressurser for den tidligere forbindelsen sånn at man kan sette opp en ny forbindelse som igjen krever vesentlig oppsett.
+- I VC brukes kortere addresser for å finne neste nabo å sende pakke til - lavt overhead gjennom data transfer phase. Sammenlignet med PS som bruker lengre addresser for å addressere endesystemet direkte, som i tillegg gjør at pakker er større.
+- Virtual circuit switching kan reservere båndbredde som lar lag 3 kommunisere til lag 4 en sannsynlighet for packet loss og hvor lang tid den kan forvente å måtte vente for å motta pakker (tilbyr QoS), dette kan vi ikke gjøre med packet switching.
+- Når vi reserverer båndbredde med virtual circuit switching kan dette begrense kommunikasjonen mellom endesystemer. Dette lar oss garantere stabil kommunikasjon, i bytte mot lavere utilisering av båndbredde sammenlignet med packet switching.
+- Hverken av løsningene tilbyr konstant tid for overføring av data. For VC varierer denne tiden fortsatt mellom den gjennomsnittlige-, maksimale-, og litt under gjennomsnittlige- ventetiden.
+- Med VC går alle pakker samme vei, mens i PS kan pakker mellom to like endesystemer gå forskjellige veier.
+- VC krever mer minne i mellomnoder for å ta vare på tabeller for hver forbindelse. Her må den lagre både den naboen pakken kommer fra, VC identiferen den har brukt og hvilken neste nabo å videresende pakken til + muligens en oppdatert VC identifier + informasjon om hvilke ressurser som er allokert for den pakken.
+
+### Message switching:
+- Brukes sjeldent på lag 3, noen ganger lag 5.
+- Hvordan: Antar at all data er delt opp i meldinger. Melding sendes fra endesystem til mellomnode, der mellomnoden samler lag 2 frames fram til hele meldingen fra sender til mellomnoden er overført. Når mellomnoden har mottat hele meldingen videresender den dette til neste mellomnode med samme prosess. Dette innebærer at meldinger mellomlagres i mellomnoder. Dette lar oss korrigere feil før vi videresender data til neste mellomnode.
+- Denne metoden kan ta veldig lang tid
+- I dag brukes dette blant annet for NASA deep space network. Mars rover videresender lagrer data lokalt frem til den er innenfor rekkevidden til en satelitt som går rundt Mars. Når den kommer innen rekkevidde overfører den data mha. message switching for å forsikre sikker overførsel av data. Til slutt videresender satelitten dataen til jorda når mulig.
+- Egenskaper:
+    - Voldsomt minnebruk på mellomnoder (kanskje til og med utover primærminnet)
+    - Veldig tregt 
+    + Garanterer at meldinger sendes riktig
+    + Noder kan brukes til sine fulle kapasiteter over lengre perioder
