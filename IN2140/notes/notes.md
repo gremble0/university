@@ -1,8 +1,3 @@
-# TODO: 
-- https://www.uio.no/studier/emner/matnat/ifi/IN2140/v23/ukeplan/uke-17.html 2t06
-- https://www.uio.no/studier/emner/matnat/ifi/IN2140/v23/ukeplan/uke-19.html 1t10
-- https://www.uio.no/studier/emner/matnat/ifi/IN2140/v23/ukeplan/uke-20.html 1t0
-
 # Prosesser:
 ## Prosess vs Tråd:
 - Process krever context switch (her brukes CPU sykler for å overføre context til prosessen)
@@ -740,6 +735,83 @@ I dag er dynamisk og preemptive scheduleringsalgoritmer vanligst, men alle bruke
 - Tjenester som tilbys av lag 4 protokoller: Multihoming - kan sende til flere mottakere samtidig
 ![Lag 4 tabell](./assets/lag4tabell.png "Lag 4 tabell")
 
+#### Flytkontroll:
+- Kan gjøres på lag 2 og lag 4.
+- Stop and wait: Enklest. Sender venter på `ACK` fra mottaker før den sender neste pakke. Men dette er ikke nok, siden pakker kan gå tapt. Her må man fikse to problemer. 1: fikse tapte pakker, 2: skille mellom tapte pakker fra sender (data) og mottaker (ACK).
+    - For å fikse tapte pakker kan vi starte en timer hos senderen. Hvis timeren går ut og den ikke har mottatt en ACK kan vi sende pakken på nytt og start ny timer. Hvis vi mottar ACK etter vi har sendt en pakke kan vi gå videre til neste.
+    - For å skille mellom tapt data og tapte ACK pakker kan vi legge inn et sekvensnummer som er enten 0 eller 1. Sendere starter med å sende en pakke med sekvensnummer 0. Hvis senderen ikke mottar noe ACK innen sin timeout vil den sende den samme pakken på nytt også med sekvensnummer 0. Hvis mottakeren mottar denne pakken og den ikke har sett den før (data pakken gikk tapt) send ACK med sekvensnummer 0, hvis mottakeren har sett denne pakken før kan den gjette at ACK pakken gikk tapt og sender også tilbake ACK med sekvensnummer 0. Da vil mottakeren forvente at neste pakke er med sekvensnummer 1.
+    ![Stop and wait](./assets/stopandwait.png "Stop and wait")
+- Sliding window: Pipelining, send flere pakker og acks samtidig.
+    - To vinduer, et for sender (pakker som er sent men ikke acknowledged (in flight)) og et for mottaker (pakker som kan acknowledges)
+    - Hvordan vi plasserer dataen i mottakerbufferet bestemmes ut ifra et sekvensnummer som sendes med hver pakke. Annerledes fra stop and wait må dette sekvensnummeret være litt større siden det gjerne skal leses inn i fler enn 2 posisjoner samtidig. Dette betyr at vi trenger en større header. 
+    - For senderen:
+        - Algoritmen må ta vare på to variabler, lower bound og upper bound. Lower bound er det minste sekvensnummeret som ikke er acknowledged, upper bound er det neste sekvensnummeret som skal sendes. Hvis LB = UB er ingenting in flight og sending er idle. I tillegg lagrer vi en konstant for maksimal window size som sier hvor mange pakker vi kan ha in flight om gangen.
+        - Senderen *MÅ* også ta vare på alle pakker som ikke har blitt ACKet for å kunne retransmitte ved feil
+        - Når en ny pakke skal sendes må vi øke UB (modulo maks sekvensnummer+1).
+        - Når vi mottar en ACK må vi øke LB (modulo maks sekvensnummer+1).
+    - For mottakeren:
+        - Mottakerbufferet trenger ikke å ta vare på pakker den allerede har lest, de kan sendes rett til applikasjonen før de sender ACK. Mottakeren burde hvertfall ikke ta vare på flere pakker enn window size.
+        - UB starter som LB + window size.
+        - LB starter som 0
+        - Hvis LB == UB er bufferet fullt og vi har ikke klart å sende ut ACKer.
+        - Hvis UB == (LB + window size) % maks sekvensnummer+1 har vi ingenting å ACKe og plass til window size nye pakker.
+        - Når vi mottar en pakke må vi øke LB (modulo maks sekvensnummer+1), send ACK og øk UB (modulo maks sekvensnummer+1). ACK sendes bare hvis pakken er identifisert som korrekt og pakken kan transmittes på riktig måte til applikasjonen. Det vil si at pakken er i riktig rekkefølge og vanligvis at den ikke har noen bit errorer.
+
+##### Cumulative ACK:
+- Man trenger ikke sende ACK pakker for hver individuelle pakke man leser som mottaker, det holder å sende ACK for den nyeste pakken du har lest. Da forstår senderen at det innebærer at de andre pakkene også har blitt lest.
+- ? Hvis f.eks. pakker 1,2,3 og 5 sendes og ACKes på riktig måte, men 4 går tapt, hopper vi over dette og går på sendersiden over til å sende pakke 6 som neste pakke.
+    - Uten cumulative ACK i dette tilfellet: vent på timeout for pakke 4 og 5 før man retransmitter. ?
+
+##### Retransmission med sliding window:
+- To varianter:
+- Mottakerens buffer har kun plass til den neste forventede pakken:
+    - Hvis f.eks. pakke 0 og 2 sendes riktig, men pakke 1 går tapt vil mottakeren godta pakke 0, videresende det til applikasjonen og svare med ACK, men forkaste pakke 2 siden den forventet at neste pakke skulle være pakke 1. Når senderen mottar ACK for pakke 0 vil den prøve å sende pakker etter pakke 2, men disse vil alle forkastes. Når timeouten for pakke 1 slår inn vil senderen igjen sende pakke 1 som mottakeren så godtar og svarer med ACK. Etter dette kan kommunikasjon fortsette som vanlig.
+    - Denne varianten kalles **Go-Back-N**. Forkortet: når en pakke feiler, forkast alle pakker etter den, gå tilbake til den pakken og send alt etter på nytt. Fordeler med dette er at mottakeren slipper å ha et buffer for å gjøre beregninger før den leverer ting til applikasjonen. Det er ofte tilfellet at dersom et av lagene under mister en pakke er det sannsynlig at den mister flere på rad, og Go back N vil fikse dette fort. Ulempen er at andre vi forkaster pakker som har blitt sendt på riktig måte.
+- Mottakeren har et buffer på samme størrelse som vinduet sånn at den kan motta en pakke per vinduselement:
+    - Hvis f.eks pakke 0 og 2 sendes riktig, men pakke 1 går tapt vil mottakeren godta pakke 0, videresende det til applikasjonen og svare med ACK. Den lagrer også pakke 2 i bufferet og svarer med ACK for denne, men den kan ikke sende det opp til applikasjonen enda siden den er i feil rekkefølge. Merk at ACK som sendes for pakke 2 sendes med sekvensnummeret til den siste pakken som kom i riktig rekkefølge (pakke 0). Når senderen mottar ACK for pakke 0 og 2 vil den fortsette å sende pakker opp til window size som mottakeren lagrer i bufferet sitt. Når timeouten for pakke 1 går ut vil den sende denne pakken på nytt og mottakeren kan da svare med en cumulative ACK for alle pakkene den har i bufferet (ACK 3) og sende pakkene i bufferet opp til applikasjonen.
+    - Denne varianten kalles **Selective Repeat**. Denne fører generelt til at det er mindre trafikk og færre pakker som må retransmittes siden man bare retransmitter de pakkene som utløste en timeout fremfor å retransmitte alle pakker sendt etter en timeout ble utløst som i **Go back n**. Dette fører til bedre utnytelse av båndbredden, i bytte mot mulighet for flere timeouts hvis nettet mister flere pakker på rad. Dette fører til bedre utnytelse av båndbredden, i bytte mot mulighet for flere timeouts hvis nettet mister flere pakker på rad. **Derfor må man vite litt om de underliggende lagene for å velge mellom Go back N og Selective Repeat.**
+![Sliding window](./assets/slidingwindow.png "Sliding window")
+- Sammenheng mellom vindu størrelse og antall mulig sekvensnummer.
+![Go back n](./assets/gobackn.png "Go back n")
+![Selective repeat](./assets/selectiverepeat.png "Selective repeat")
+- Hvordan velge mellom *Go back n* eller *Selective repeat*?
+    - Burst errorer er ikke så vanlig i moderne nettverk - kanskje hvis nettverket er i et område med mye støy.
+    - Selective Repeat må bruke flere bits, og kan bare ha et vindu halvparten så stort som maksimal sekvensnummer, mens go back n kan ha så mange pakker in flight som maksimal sekvensnummer - 1. Dvs. at for å ha like mange pakker in flight må selective repeat ha flere bits i en header enn go back n, men dette er nok ikke et stort problem.
+
+##### Credit mechanism:
+- Sender forespør et visst antall buffere sånn at den kan sende pakker etter egen evne.
+- Mottaker reserverer så mange buffere som maskinen dens tillater.
+- Mottaker sender tilbake ACK som inneholder hvor mange buffere den kan allokere for senderen (credit felt) i tillegg til sekvensnummeret.
+- Dette lar systemene tilpasse seg dynamisk til situasjonen. Hvis mottakeren har masse ledig kapasitet kan den allokere flere buffere for sine forbindelser, og hvis den har mange forbindelser og lite plass kan den dele dette opp mellom hver forbindelse. For forbindelser med høy throughput (typ videoavspilling) kan den allokere mange buffere, mens for forbindelser med lav throughput (typ SSH) kan den allokere få buffere.
+- Eksempel: Sender A forespør 8 buffere, men får bare 4 fra mottaker B.
+![Credit mechanism](./assets/creditmechanism.png "Credit mechanism")
+- TCP bruker credit mechanism i sin header under `Window` feltet. Denne lar mottakeren fortelle senderen hvor mye plass den har på sitt receive buffer. TCP teller dette i bytes framfor pakker.
+- Flytkontroll i TCP:
+![Flytkontroll TCP](./assets/flytkontrolltcp.png "Flytkontroll TCP")
+
+#### Metningskontroll:
+- Metningskontroll skal finne ut hvordan man best sender data over nettet, hvilken senderate skal man bruke fra en sender til en mottaker og over alle mellomnodene og hvor flaskehalsen ligger.
+- *Persistent congestion:* Router er mettet over en lengre periode, excessive traffic offered.
+- *Transient (forbigående) congestion:* Korte perioder der noder i nettet er overlastet. Ofte er dette pga. *burstiness* - traffik sendes mye på en gang og lite andre perioder.
+- Ofte en ruter som er problematisk (flaskehals).
+- En router har gjerne et visst antall inngående forbindelser og utgående forbindelser i tillegg til noe minne. Den deler da minnet sitt over hver utgående forbindelse.
+![Reasons for congestion](./assets/reasonscong.png "Reasons for congestion")
+- Med endelige køer (buffere) vil vi tape pakker etter køen fylles. Latensen er konstant fram til køen fylles, når køen fylles vil latensen øke til et maksimalpunkt og forbli der fram til køen tømmes. Men vi ønsker ikke at routerne alltid skal ha fulle køer siden det vil føre til mye latens.
+- Noen data MÅ retransmittes og vi kan ikke godta pakketap for disse (f.eks filnedlastning og operativsystemoppdatering). En løsning for dette er å bare sende pakker flere ganger for å øke sannsynligheten for at minst en av dem kommer fram på riktig måte. Ellers må vi oppdage når pakker går tapt og retransmitte dem.
+![Reasons for congestion2](./assets/reasonscong2.png "Reasons for congestion 2")
+![Reasons for congestion3](./assets/reasonscong3.png "Reasons for congestion 3")
+- Historisk: første idéer om metningskontroll antok at hver gang en pakke gikk tapt var dette på grunn av metning - kanskje ikke veldig god antagelse i dag.
+- TCP metningskontroll: lite trafikk - øk sendingsrate, mye traffik - senk sendingsrate. For å gjette seg fram til om vi har mye traffik - sjekk om vi taper mange pakker.
+    - Additive-increase, multiplicative-decrease (AIMD). Dette går ut på at så lenge det ikke er problemer med overføring av data øk antall pakker sendt om gangen med 1, dette gjøres fram til en pakke ikke kommer fram - da halverer vi antall pakker sendt om gangen.
+    - Slow start. For at det ikke skal ta for lang tid å sende pakker over nettverk med høy kapasitet (1 pakke, 2 pakker, 3 pakker...) kan vi doble antall pakker sendt hver gang i starten (1 pakke, 2 pakker, 4 pakker, 8 pakker...). Denne doblingen gjøres fram til vi når et `ssthresh`(hold), etter det vil den gå tilbake til AIMD. `ssthresh` har historisk vært 65kb men denne verdien avhenger av algoritmen brukt.
+    - Reaction to timeout events - for å skjønne om ting går galt.
+    - Algoritmer brukt i dag: TCP New Reno, TCP Cubic, TCP PRR, TCP BBR, TCP Prague
+    ![TCP congestion control](./assets/tcpcongcont.png "TCP congestion control")
+    ![TCP congestion control 2](./assets/tcpcongcont2.png "TCP congestion control2")
+    ![ssthresh](./assets/ssthresh.png "ssthresh")
+    ![Metningsfaser](./assets/metningsfaser.png "Metningsfaser")
+    - Fairness: TCP ønsker at når N TCP strømmer deler en flaskehals skal hver TCP strøm motta en N'te-del av flaskehalsens båndbredde. Mer realistisk: Når N TCP strømmer med samme RTT og loss rate deler en flaskehals og de er uendelig lange skal hver TCP strøm motta en N'te-del av flaskehalsens båndbredde.
+
 ### User Datagram protocl (UDP):
 - Upålitelig, forbindelsesløs, meldingsorientert
 ![UDP](./assets/udp.png "UDP")
@@ -752,6 +824,43 @@ I dag er dynamisk og preemptive scheduleringsalgoritmer vanligst, men alle bruke
     - Enkle client-server interaksjoner som f.eks. klient sender én pakke til server og forventer én pakke respons.
     - Kommunikasjon der lav latens er viktigere enn packet loss og duplication(?): video konferanser, gaming, IP telefoni
     - Domain Name Service, Network Time Protocol, Simple Network Management Protocol, Bootstrap Protocol (BOOTP, broadcasting over nettet), Trivial File Transfer Protocol, Network File System, Real-time Transport Protocol.
+
+### Transmission Control Protocol (TCP):
+- Pålitelig 
+- Ende til ende: leverer til endesystemer, multiplexing og demultiplexing for å komme fram til rett applikasjon. Demultiplexing oppnår man ved å se på destination port feltet i TCP headeren.
+- Byte stream: (ustrukturert) datastrøm-orientert. Går ut fra at applikasjonen ikke bryr seg om hvordan dataen er delt opp. TCP støtter ikke gruppering av data - dette er opp til applikasjonen for håndtering, men dataen kommer fram i riktig rekkefølge.
+- Over en upelitelig nettverk tjeneste. 
+![TCP](./assets/tcp.png "TCP")
+- Tilbyr feilhåndtering: duplikater, feil rekkefølge, feil pakker
+- Forbindelsesorientert: Virtuell forbindelse ettersom nettverklaget ikke har evne til å levere forbindelser til TCP. TCP bryr seg ikke om hvordan routingen mellom endesystemer foregår. TCP forbindelser står bare på endesystemene. Dette krever også en etableringsfase der tilstanden på hvert endepunkt (***OBS: ikke nødvendigvis endesystem siden det kan være på samme system***) opprettes. Etter en forbindelse er opprettet kan begge sider sende meldinger - håndtering av dette er opp til applikasjonen.
+- TCP tilstandsmaskin: Brukes på klientsiden (for å holde styr på opprettelse av forbindelsen) og serversiden (for å holde styr på venting og opprettelse av forbindelsen). Tilstandsmaskinen starter i `CLOSED`. Overføring er kun tillatt hvis begge endepunkter er i tilstanden `ESTABLISHED`.
+    - Opprettelse for klient: Oppretter forbindelse med `socket()` - tilstand `CLOSED`. Først sender den gjennom `connect()` en SYN pakke uten data for å synkronisere maskinene mellom endepunktene - tilstand `SYN SENT`. Når klienten mottar en pakke fra serveren markert som `SYN` og `ACK` vet den serveren er klar, da sender klienten `ACK` til serveren - tilstand `ESTABLISHED`. Hvis den ikke mottar noe svar fra serveren vil `connect()` returnere en feil til applikasjonen - tilstand `CLOSED`. Når klienten er ferdig med forbindelsen kaller applikasjonen `close()` og sender den en `FIN` pakke til serveren - tilstand `FIN WAIT 1`. Når serveren mottar `FIN` pakken fra klienten svarer den med en `ACK` - tilstand `FIN WAIT 2`. Når klienten mottar `ACK` fra serveren sender den tilbake en `ACK` - tilstand `TIME WAIT`. For å forsikre seg om at ingen pakker sendes gjennom denne gamle forbindelsen venter vi en viss periode (1-3 min) før vi lukker forbindelsen - tilstand `CLOSED`.
+    [TCP client](./assets/tcpclient.png "TCP client")
+    - Opprettelse for server: Starter med å gå fra `CLOSED` til `LISTEN` (funksjonskall `socket()`, `bind()`, `listen()`)der den venter på `SYN` pakker fra klienter. Når serveren mottar en `SYN` pakke oppretter man tilstanden for en forbindelse og svare med pakke markert som `SYN` og `ACK` til klient - tilstand `SYN RCVD`. Hvis serveren mottar en `ACK` fra klienten går den inn i tilstanden `ESTABLISHED`. Hvis klienten avslutter forbindelsen mottar serveren en `FIN` pakke som serveren svarer med en `ACK` - tilstand `CLOSE WAIT`. Så kan serveren sende tilbake en `FIN` pakke - tilstand `LAST ACK` før den avslutter forbindelsen med å gå direkte tilbake til `CLOSED`.
+    ![TCP server](./assets/tcpclient.png "TCP server")
+    - For å identifisere forbindelser ser man på de 4 feltene til en socket (source addr., dest. addr., source port, dest. port.).
+- Ulemper sammenlignet med UDP: Bruker flere ressurser både for klient og server. Trenger buffering både for sender og mottaker for å kunne gjenoverføre data med feil. Trenger timer for å bestemme når den må gjenoverføre pakker (hvis de har gått tapt), for å kunne etablere en forbindelse (markere feil ved oppsett av forbindelse) og for å identifisere feil underveis i en forbindelse. Krever tid for `connect` og `disconnect` (pakker må sendes over nettet 3 ganger).
+- Brukes for: Web (HTTP), filoverføring (SCP, FTP), Interactive terminal (SSH, telnet), E-mail (STMP, IMAP).
+
+#### TCP begreper:
+- Båndbredde: Klassisk definisjon: antall signaler per sekund målt i hertz. Ny definisjon (informasjonsrate, brukt i lag 3-5): antall bits overført korrekt per sekund.
+    - **Nominal båndbredde:** Maksimal båndbredde mulig å overføre i bits/sek. på en link.
+    - **Tilgjengelig båndbredde:** Båndbredden en sender klarer å sende gjennom et nett, når det allerede er traffik på nettet.
+    - **Bottleneck båndbredde (viktig i metningskontroll):** Minste nominale båndbredde over en sti fra en sender gjennom et nett (den tregeste mellomnoden på vei mellom to endesystemer).
+    - **Throughput:** Mengden bits som kommer fram til mottakeren / båndbredden sett av mottakeren.
+    - **Goodput:** Båndbredden den mottakende applikasjonen opplever. Alle meningsfulle bytes transportlaget klarer å videresende opp til applikasjonen. Kan være lik throughput hvis det ikke er noen problemer under overføring av data.
+- Delay:
+    - **Propagation delay:** Tid for å overføre en bit mellom to endesystem
+    - **Latens:** Propagation delay + msg_length / bottleneck bandwitch + queuing delay. Dette er kun et estimat av latensen, f.eks. kan prosesserings delay også være relevant.
+    - **Jitter:** Endringer i delay. Kritisk for real-time applikasjoner ettersom vi ikke vil at f.eks. når noen snakker kommer det siste ordet i en setning fram før det første.
+    - **End-to-end delay:** Tiden det tar for en melding å sendes fra et endepunkt til det mottas av et annet endepunkt. 2 typer ende til ende delay: for applikasjonslaget går all prosessering av data på lagene under applikasjonslaget under ende til ende delay. For transportlaget refererer dette til tiden det tar for en pakke å komme fra en transportentitet til en annen, kun pakkene som kommer fram, ikke pakkene som må gjenoverføres.
+    - **Round-trip time (RTT):** Tiden for å overføre en bit fram og tilbake mellom to endesystem.
+
+#### TCP pålitelighet:
+- Må detektere om bytes som mottas allerede finnes hos mottakeren, i så fall forkast dem. Det er tre alternativer for mottakelse av data. Enten kan det være data man allerede har lest, data som er ny og kan leveres rett til applikasjonen, eller om det er data som allerede er kommet fram men som manglet noe vi nå har mottat. For å finne ut av dette bruker vi et felt som heter `piggyback acknowledgement`. Denne inneholder bytenummeret fra pakkestarten som er den neste mottakeren forventer. Hvis mottakeren tar imot en forventet pakke med data som kommer i riktig rekkefølge vil piggyback acknowledgement inneholde bytenummeret til den byten etter den siste byten den har mottat. Hvis mottakeren mottar en pakke som inneholder data med et sekvensnummer som ligger etter et hull av data som ikke har kommet frem vil TCP sende tilbake en `ACK` til senderen markert med et flagg i headeren. Pakken TCP sender til senderen inneholder byten(sevensnummeret?) til den første byten den mangler. Siden alle disse pakkene kan gå tapt startes det en timer hver gang en pakke sendes. Hvis senderen av pakken ikke mottar noe `ACK` svar for pakken de sendte kan de anta at pakken ikke har blitt lest og må i så fall sende pakken på nytt. Grunnen til at senderen av en pakke ikke mottar en `ACK` kan også være at `ACK` pakken gikk tapt, for dette må vi håndtere muligheter for gjentatt lesing av samme pakke dersom noen sender en pakke 2 (eller flere) ganger siden de aldri leste noen `ACK`. 
+![TCP ACK](./assets/tcpack.png "TCP ACK")
+- Hvordan beregne retransmission timer? Må være lengre enn RTT. Hvis den er for kort vil det forekomme mange spurious retransmissions. Hvis den er for lang vil senderen reagere tregt og flytkontroll bufferet fylles opp. Løsning: estimated RTT. 
+![Estimated RTT](./assets/estimatedrtt.png "Estimated RTT")
 
 ## Addressering i applikasjonslaget (DNS):
 - For å koble seg på en ekstern maskin: SSH/telnet(gammel). Denne bruker IP addresser med mindre noe annet er spesisert i `etc/hosts` (eller DNS server forbinder andre navn med  IP addresser). I denne filen kan du assosiere IP addresser med mer lesbare navn. For å forvalte slike assosiasjoner på en større skala bruker vi DNS (Domain Name System).
@@ -860,3 +969,43 @@ I dag er dynamisk og preemptive scheduleringsalgoritmer vanligst, men alle bruke
     - Veldig tregt 
     + Garanterer at meldinger sendes riktig
     + Noder kan brukes til sine fulle kapasiteter over lengre perioder
+
+### Routing:
+- Routingalgoritmer jobber med grafer.
+- IPv6: for forbindelsesorienterte tjenester - route label i IP header, for forbindelsesløse tjenester - endesystemets addresse i destination address.
+- I virtual circuits må man bare route en gang (evt på nytt når feil oppstår), mens med pakkesvitsjing gjøres routing for hver pakke.
+- Routingalgoritmen må definere hvilken utgående linje en innkommende pakke skal sendes gjennom, eventuelt om pakken skal videresendes til den lokale maskinens lag 4.
+- Routing og forwarding: vi skiller mellom prosessen om å velge hvilken linje vi skal sende pakker gjennom (routing) og prosessen om å videresende pakker (forwarding).
+![Routing and forwarding](./assets/routingforwarding.png "Routing and forwarding")
+- Egenskaper til gode routingalgoritmer: Simplicity - minimer last på ISer, Robustness - Compensere for IS og link feil og håndtere endring i topologi og traffik, Staibility - consistent resultater (pakker skal ta omtrent samme tid å overføre mellom to endesystemer), Fairness - noen pakker skal ikke bli sendt over høyt belastede stier mens andre blir sendt over lavt belastede stier, Optimality - nettet skal utnyttes perfekt.
+- Konflikter: Fairness vs optimization.
+![Routing conflicts](./assets/routingconflicts.png "Routing conflicts")
+- Klassifisering av routingalgoritmer: Ikke adaptive algoritmer og adaptive algoritmer.
+- Ikke adaptive algoritmer: Aktuell tilstand av nettet tas ikke hensyn til i algoritmen. Dvs. last på rutenettet, avstand mellom noder, antall hopp.
+![Routing klassifisering](./assets/routingclass.png "Routing klassifisering")
+![Sink tree](./assets/sinktree.png "Sink tree")
+- Sink tree bruker minimalitetsprinsipp for å definere korteste vei fra en node til roten.
+![Sink tree 2](./assets/sinktree2.png "Sink tree 2")
+- Sink trær har ingen løkker. Ikke nødvendigvis unikt - det finnes flere sink trær som løser det samme problemet.
+
+#### Link state routing:
+- IS-IS (intermediate system)
+- Open Shortest Path First (OSPF)
+- Prinsipp: hvert IS måler avstanden til sine naboer, så sprer den sine målinger over nettet og beregner den ideelle routen fra seg selv til alle andre.
+- Fremgangsmetode: distribute med flooding.
+![Link state routing](./assets/linkstaterouting.png "Link state routing")
+- 1 fase: hent informasjon om nabonoder og lag graf basert på dette. Hvis en ny node kobles til nettet sender den en HELLO melding over alle sine lag 2 kanaler, den nye nodens nabonoder må så svare med sin egne addresse.
+- 2 fase: måle avstand i latens mellom alle nabonoder. Sjekk hvor lang tid det tar å sende en pakke. Da må vi også måle queueing delay og vi må bestemme om vi vil måle forsinkelsen dersom pakken lå på starten av køen til ISet eller på slutten.
+- 3 fase: organiser informasjonen som en link state pakke. Link state pakker består av: Sekvensnummer - brukes for å forsikre seg at pakkene ikke går i løkke når det floodes gjennom nettet (hvis en node leser et sekvensnummer den allerede har sett, forkaster den den kopien og sender den første pakken). Age - settes opp for å kunne slette gammel informasjon om noder (som kanskje ikke lenger fins). De andre feltene er de nyeste målingene av distanser til andre nabonoder. Her trenger det ikke være symmetriske veier fra og til en node, f.eks. kan den beste veien fra A til C være gjennom B, mens den beste veien fra C til A kan være gjennom D. Dette går fint, men vil kanskje endres ved nye state updates.
+- 4 fase: distribuer den lokale informasjonen til alle ISer.
+- 5 fase: compute nye router. Konstruer graf over nettverk og beregn Dijkstras shortest path for å finne korteste vei mellom to noder.
+
+#### Distance Vector routing:
+- Unngår kalkulering av dijkstra, gjør kun tabelloppslag.
+- Hvert IS har en tabell (vektor) som inneholder den beste kjente avstanden til alle andre noder i nettet og hvilken linje som må brukes for å komme seg dit. Disse tabellene oppdateres ved å utveksle informasjon mellom sine direkte naboer (ingen flooding) som gjør dette mer skalerbart. Ingen noder trenger å kjenne hele topologien til nettet, men må kjenne sine naboer.
+![Distance vector routing](./assets/distvectrouting.png "Distance vector routing")
+![Distance vector routing 2](./assets/distvectrouting2.png "Distance vector routing 2")
+- Distance vector routing er dårlig på å oppdage feil.
+![Distance vector routing 3](./assets/distvectrouting3.png "Distance vector routing 3")
+- For å fikse count to infinity problem: Split horizon algorithm. Prinsipp: generelt publiser distansen til alle naboer, men hvis naboen vi skal sende til rapporterer at routen har feilet vil vi i stedet for å påstå at vi kan komme dit best gjennom den noden, oppdatere informasjon om at den beste avstanden til den noden ikke lenger er kjent. Distansen mellom to noder settes til uendelig i neste oppdatering hvis noden som til nå trodde den var den beste veien rapporterer at den nå ikke vet en vei til den noden.
+![Distance vector routing 4](./assets/distvectrouting4.png "Distance vector routing 4")
