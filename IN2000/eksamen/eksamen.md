@@ -1,9 +1,9 @@
 # Eksamen v22:
-- Oppgave 1 - c
-- Oppgave 2 - c
-- Oppgave 3 - b
-- Oppgave 4 - d
-- Oppgave 5 - d
+- Oppgave 1: c
+- Oppgave 2: c
+- Oppgave 3: b
+- Oppgave 4: d
+- Oppgave 5: d
 
 ## Oppgave 6:
 1. Lagring av lange hardkodede strenger direkte i koden. Hvis strengene er nødvendig lagre dem i en database, strings.xml fil, eller lignende.
@@ -46,3 +46,13 @@ Derfor velger mange gjerne en kombinasjon av disse - scrumban - for korte prosje
 Ettersom kravet "Appen skal være universelt utformet" er et ikke-funksjonelt krav(?) det er vanskelig å hente kvantita
 For å vurdere kravet "Appen skal være universelt utformet" kan man for eksempel lage en spørreundersøkelse der man kan spørre brukeren om de klarte å interagere med appens funksjonalitet. For brukere med spesielle krav kan vi da spørre spørsmål som: "Dersom du har problemer med syn, var de spesielle tilpasningene for dette tilstrekkelig (ting som skjermleser, muligheter for forstørring av bilder, tekststørrelse, osv.)", "Dersom du har problemer med hørsel, var de spesielle tilpasningene for dette tilstrekkelig (ting som closed captions og vibrering)" og åpne spørsmål som "Var det noen oppgaver du ønsket å utføre du ikke fikk til?". Dette kan gi oss kvantitative data å forebdre seg etter, men med universell utforming er man gjerne opptatt av å tilpasse tjenester til individer med spesielle krav så i denne sammenheng kan det også lønne seg å hente noe kvalitativ data i tillegg. Dette kan man f.eks. gjøre i intervjuer med folk som har spesielle krav. Da kan man observere dem interagere med appen, se om det er noen problemer (kanskje det er noe funksjonalitet brukeren ikke vet om en gang på grunn av sine handicap?) og stille oppfølgingsspørsmål og få en dypere (kvalitativ) forståelse for hva som kanskje trengs å utvides for å tilpasse appen til et bredere publikum.
 Målbare egenskaper som støtter opp under universell utforming kan være: Appen støtter skjermlesing, Brukere av appen utfører få døde trykk (trykker på ting som ikke er ment å trykke på/som ikke har noen funksjonalitet når trykket på), Appen tilbyr alternativer som closed captions for avspilling av lyd.
+
+
+# Eksamen v19:
+- Oppgave 1: c
+- Oppgave 2: a
+- Oppgave 3: a
+- Oppgave 4: c
+- Oppgave 5: a
+- Oppgave 6: c
+- Oppgave 7e: For å hente data fra et API over nettet burde dette gjøres asynkront. Da kan man for eksempel ha en suspend funksjon man kaller fra et viewmodelScope i en viewmodel. Suspend funksjonen kan så prosessere responsen fra APIet og returnere det til viewmodelen. Når den er i viewmodelen kan den oppdatere passende komponenter
