@@ -8,8 +8,11 @@ I am currently in my 4th semester out of the 6 required for a completed bachelor
 - [IN1020 - Introduction to data technology](https://www.uio.no/studier/emner/matnat/ifi/IN1020/) ✔️
 - [IN1030 - Systems, requirements and consequences](https://www.uio.no/studier/emner/matnat/ifi/IN1030/) ✔️
 - [IN1150 - Logical methods](https://www.uio.no/studier/emner/matnat/ifi/IN1150/) ✔️
-- [IN2000 - Software engineering with project work](https://www.uio.no/studier/emner/matnat/ifi/IN2000/) - language: Kotlin + Jetpack Compose ⭕
+- [IN2000 - Software engineering with project work](https://www.uio.no/studier/emner/matnat/ifi/IN2000/) - language: Kotlin + Jetpack Compose ✔
 - [IN2010 - Algorithms and datastructures](https://www.uio.no/studier/emner/matnat/ifi/IN2010/) - language: Python & Java ✔️
+- [IN2030 - Project assignment in programming](https://www.uio.no/studier/emner/matnat/ifi/IN2030) - language: Java (& the primitive language asp similar to python)
+- [IN2040 - Functional programming](https://www.uio.no/studier/emner/matnat/ifi/IN2040) - language: Scheme ⭕
 - [IN2090 - Databases and data modeling](https://www.uio.no/studier/emner/matnat/ifi/IN2090/) - language: SQL + PostgreSQL ✔️
 - [IN2120 - Information security](https://www.uio.no/studier/emner/matnat/ifi/IN2120/) ✔️
-- [IN2140 - Introduction to operating systems and data communication](https://www.uio.no/studier/emner/matnat/ifi/IN2140/) - language: C ⭕
+- [IN2140 - Introduction to operating systems and data communication](https://www.uio.no/studier/emner/matnat/ifi/IN2140/) - language: C ✔
+- [IN3110 - Problem solving with high level languages](https://www.uio.no/studier/emner/matnat/ifi/IN3110/) - language: Bash, C, Regex, Python (incl. libraries for data analysis)
