@@ -1,4 +1,4 @@
-					; Oppgave 1
+;;; Oppgave 1
 ;; a: `(* (+ 4 2) 5)' evaluerer til 30 siden uttrykket er skrevet på riktig form. Pluss 4 med 2 og så gang det med 5.
 
 ;; b: `(* (+ 4 2) (5))' fører til en error siden uttrykket prøver å kalle på prosedyren (5). Scheme lar oss heller ikke definere prosedyrer med tall som navn så denne vil aldri virke.
@@ -12,7 +12,7 @@
 
 ;; f: `(/ (* bar 3 4 1) bar)' evaluerer til 12 siden den først multipliserer `bar * 3 * 4 * 1 = 22 * 3 * 4 *1 = 264' før dette deles på `bar' (22). Gyldig så lenge `bar' er bundet.
 
-					; Oppgave 2
+;;; Oppgave 2
 ;; a:
 ;; `(or (= 1 2)
 ;;      "paff!"
@@ -32,8 +32,11 @@
 
 ;; b:
 (define (sign-if num)
-  (if (zero? num) 0
-      (if (positive? num) 1 -1)))
+  (if (zero? num)
+      0
+      (if (positive? num)
+	  1
+	  -1)))
 
 (define (sign-cond num)
   (cond ((positive? num) 1)
@@ -46,7 +49,7 @@
       (and (negative? num) -1)
       0))
 
-					; Oppgave 3
+;;; Oppgave 3
 ;; a:
 (define (add1 num)
   (+ 1 num))
@@ -56,13 +59,20 @@
 
 ;; b:
 (define (plus-iter num1 num2)
-  (if (zero? num2) num1
+  (if (zero? num2)
+      num1
       (plus-iter (add1 num1) (sub1 num2))))
 
 ;; c:
-(define (plus-rec num1 num2))
-  
+;; Min løsning i oppgave b gir opphav til en iterativ prosess siden vi kan se at den er halerekursiv.
+;; Dvs. at siden det siste som skjer i prosedyren (det som er i haleposisjon) er det rekursive prosedyrekallet,
+;; vil det ikke bygge seg opp en stabel av ventende prosedyrekall og minnet vil vokse lineært når num1 og num2 øker.
 
+;; Her er en løsning som fører til en rekursiv prosess.
+(define (plus-rec num1 num2)
+  (if (zero? num2)
+      num1
+      (add1 (plus-rec num1 (sub1 num2)))))
 
 ;; d:
 ;; Siden (power-iter) arver mye av variablene den bruker fra (power-close-to) gir det mening å definere denne prosedyren 
@@ -76,6 +86,8 @@
   (power-iter 1))
 
 ;; e:
+;; Siden (fib-iter) modifiserer argumentene a og b i sine rekursive prosedyrekall (i kallet på (+ a b) er det ikke mulig
+;; å fjerne noen av parametrene til den indre prosedyren.
 (define (fib n)
   (define (fib-iter a b count)
     (if (= count 0)
