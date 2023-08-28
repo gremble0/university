@@ -18,13 +18,67 @@
 ;;      "paff!"
 ;;      "piff!"
 ;;      (zero? (1 - 1)))' evaluerer til "paff!" siden det er det første uttrykket gitt til (or) som evalueres til noe annet enn #f. (or) vil da avslutte tidlig siden den allerede vet returverdien sin, og hverken "piff!", (zero?) eller syntaksfeilen (1 - 1) evalueres.
+
 ;; `(and (= 1 2)
 ;;       "paff!"
 ;;       "piff!"
 ;;       (zero? (1 - 1)))' evaluerer til #f siden det første uttrykket (= 1 2) evalueres til #f. (and) vil da avslutte tidlig siden den da allerede vet returverdien sin, og hverken strengene "paff!" og "piff!", (zero?) eller syntaksfeilen (1 - 1) evalueres.
+
 ;; `(if (positive? 42)
 ;;      "poff!"
 ;;      (i-am-undefined))' evaluerer til "poff!" siden resultaten til (positive? 42) er #t. (if) vet derfor at den skal returnere sitt andre argument "poff!" fremfor det tredje argumentet (i-am-undefined) som derfor aldri evalueres.
-;; 
+
+;; Vi ser også i disse eksemplene at or, and og if er special forms siden de ikke bryter ned alle symbolene til primitive verdier før de ser at de må, de tar heller noen snarveier for å optimalisere prosedyrene ettersom man ofte ikke trenger å evaluere alle mulige utfall for prosedyren.
 
 ;; b:
+(define (sign-if num)
+  (if (zero? num) 0
+      (if (positive? num) 1 -1)))
+
+(define (sign-cond num)
+  (cond ((positive? num) 1)
+	((negative? num) -1)
+	(else 0)))
+
+;; c:
+(define (sign-or-and num)
+  (or (and (positive? num) 1)
+      (and (negative? num) -1)
+      0))
+
+					; Oppgave 3
+;; a:
+(define (add1 num)
+  (+ 1 num))
+
+(define (sub1 num)
+  (- num 1))
+
+;; b:
+(define (plus-iter num1 num2)
+  (if (zero? num2) num1
+      (plus-iter (add1 num1) (sub1 num2))))
+
+;; c:
+(define (plus-rec num1 num2))
+  
+
+
+;; d:
+;; Siden (power-iter) arver mye av variablene den bruker fra (power-close-to) gir det mening å definere denne prosedyren 
+;; lokalt under for (power-close-to). Da trenger vi ikke ta b og n som parametre til (power-iter) prosedyren siden de
+;; allerede er synlige og ikke modifiseres for de rekursive prosedyrekallene.
+(define (power-close-to b n)
+  (define (power-iter e)
+    (if (> (expt b e) n)
+	e
+	(power-iter (+ 1 e))))
+  (power-iter 1))
+
+;; e:
+(define (fib n)
+  (define (fib-iter a b count)
+    (if (= count 0)
+	b
+	(fib-iter (+ a b) a (- count 1))))
+  (fib-iter 1 0 n))
