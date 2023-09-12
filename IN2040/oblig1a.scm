@@ -40,8 +40,8 @@
 
 (define (sign-cond num)
   (cond ((positive? num) 1)
-	((negative? num) -1)
-	(else 0)))
+        ((negative? num) -1)
+        (else 0)))
 
 ;; c:
 (define (sign-or-and num)
