@@ -23,9 +23,18 @@
 ;; Oppgave 2
 ;;; a:
 (define (take n items)
-  (define (impl n items acc)
+  (if (or (equal? n 0)
+          (empty? items))
+      '()
+      (cons (car items) (take (- n 1) (cdr items)))))
+
+;;; b:
+;;;; Vi kan ikke fjerne noen av argumentene til den indre prosedyren siden de alle blir modifisert
+;;;; i de rekursive prosedyrekallene (av prosedyrekallene (-) (cdr) og (cons))
+(define (take n items)
+  (define (take-impl n rest acc)
     (if (or (equal? n 0)
-            (empty? items))
+            (empty? rest))
         (reverse acc)
-        (impl (- n 1) (cdr items) (cons (car items) acc))))
-  (impl n items '()))
+        (take-impl (- n 1) (cdr rest) (cons (car rest) acc))))
+  (take-impl n items '()))
