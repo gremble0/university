@@ -22,19 +22,27 @@
 
 ;; Oppgave 2
 ;;; a:
-(define (take n items)
+(define (take-rec n items)
   (if (or (equal? n 0)
           (empty? items))
       '()
-      (cons (car items) (take (- n 1) (cdr items)))))
+      (cons (car items) (take-rec (- n 1) (cdr items)))))
 
 ;;; b:
 ;;;; Vi kan ikke fjerne noen av argumentene til den indre prosedyren siden de alle blir modifisert
 ;;;; i de rekursive prosedyrekallene (av prosedyrekallene (-) (cdr) og (cons))
-(define (take n items)
-  (define (take-impl n rest acc)
+(define (take-iter n items)
+  (define (take-iter-impl n rest acc)
     (if (or (equal? n 0)
             (empty? rest))
         (reverse acc)
-        (take-impl (- n 1) (cdr rest) (cons (car rest) acc))))
-  (take-impl n items '()))
+        (take-iter-impl (- n 1) (cdr rest) (cons (car rest) acc))))
+  (take-iter-impl n items '()))
+
+;;; c:
+(define (take-while pred items)
+  (define (take-while-impl rest acc)
+    (if (pred (car rest))
+        (take-while-impl (cdr rest) (cons (car rest) acc))
+        (reverse acc)))
+  (take-while-impl items '()))
