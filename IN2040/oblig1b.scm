@@ -46,3 +46,19 @@
         (take-while-impl (cdr rest) (cons (car rest) acc))
         (reverse acc)))
   (take-while-impl items '()))
+
+
+;;; d:
+(define (map2 proc list1 list2)
+  (define (map2-impl rest1 rest2 acc)
+    (if (or (empty? rest1)
+            (empty? rest2))
+        (reverse acc)
+        (map2-impl (cdr rest1) (cdr rest2) (cons (proc (car rest1) (car rest2)) acc))))
+  (map2-impl list1 list2 '()))
+
+
+;;; e:
+(map2 (lambda (x y)
+        (/ (+ x y) 2))
+      '(1 2 3 4) '(3 4 5)) ;; -> '(2 3 4)
