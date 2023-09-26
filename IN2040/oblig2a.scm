@@ -117,18 +117,10 @@
 
 ;;; f:
 (define (huffman-leaves tree)
-  (define (huffman-leaves-impl flat-tree out)
-    (cond ((null? flat-tree) out)
-          ((leaf? (caar flat-tree)) (huffman-leaves-impl (cdr flat-tree) (cons (car flat-tree) out)))
-          (else (huffman-leaves-impl (cdr flat-tree) out))))
-  (huffman-leaves-impl (flatten tree) '()))
+  (define (huffman-leaves-impl current-branch out)
+    (if (leaf? tree)
+        (cons (list (symbol-leaf tree) (weight-leaf tree)) out)
+        (append (huffman-leaves (left-branch tree)) (huffman-leaves (right-branch tree)))))
+  (huffman-leaves-impl tree '()))
 
-(define (huffman-leaves tree)
-  (define (huffman-leaves-impl tree out)
-    (if (null? tree)
-        out
-        
-    
-
-(format sample-tree)
-(huffman-leaves sample-tree)
+(huffman-leaves sample-tree) ;; => ((fight 6) (ninjas 5) (samurais 4) (night 2) (by 1))
