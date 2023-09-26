@@ -75,6 +75,60 @@
         (grow-huffman-tree-impl (adjoin-set (make-code-tree (car freqs) (cadr freqs)) (cddr freqs)))))
   (grow-huffman-tree-impl (make-leaf-set freqs)))
 
-(define freqs '((a 2) (b 5) (c 1) (d 3) (e 1) (f 3)))
-(define codebook (grow-huffman-tree freqs))
+(define freqs-2d '((a 2) (b 5) (c 1) (d 3) (e 1) (f 3)))
+(define codebook-2d (grow-huffman-tree freqs-2d))
 (decode (encode '(a b c) codebook) codebook) ;; => (a b c)
+
+;;; e:
+;;;; - Vi ser fra returverdien til (length encoded-2e) at meldingen tar 43 bits å kode.
+;;;;
+;;;; - For å finne gjennomsnittlig antall bits brukt per kodeord i meldingen kan vi ta
+;;;;   antall bits for hele meldingen delt på antall symboler i meldingen. Da får vi:
+;;;;   (/ (length encoded-2e) (length freqs-2e)) = 43/16
+;;;;   Vi kan så runde dette opp med (round) for å få 3
+;;;; 
+;;;; - Siden alle symboler representers av et likt antall bits i fixed-length code trenger
+;;;;   vi bare finne ut hvor mange bits hvert symbol krever for vårt alfabet. For å gjøre
+;;;;   dette må vi runde opp lengden av alfabetet vårt til den nærmeste eksponenten av 2.
+;;;;   (det er 2 muligheter per bit) Siden (length freqs-2e) = 16 og 2^4 = 16 ser vi at
+;;;;   hvert symbol krever 4 bits. Nå gjenstår det bare å multiplisere kodeordlengden 4 med
+;;;;   antall symboler som gir oss (* 4 (length message-2e)) = 68
+(define freqs-2e '((samurais 57) (ninjas 20) (fight 45) (night 12) (hide 3)
+                   (in 2) (ambush 2) (defeat 1) (the 5) (sword 4) (by 12)
+                   (assassin 1) (river 2) (forest 1) (wait 1) (poison 1)))
+(define codebook-2e (grow-huffman-tree freqs-2e))
+
+(define message-2e '(ninjas fight
+                     ninjas fight ninjas
+                     ninjas fight samurais
+                     samurais fight
+                     samurais fight ninjas
+                     ninjas fight by night))
+(define encoded-2e (encode message-2e codebook-2e))
+
+;;;; e1
+(length encoded-2e) ;; => 43
+
+;;;; e2
+(round (/ (length encoded-2e) (length freqs-2e))) ;; => 3
+
+;;;; e3
+(* 4 (length message-2e)) ;; => 68
+
+;;; f:
+(define (huffman-leaves tree)
+  (define (huffman-leaves-impl flat-tree out)
+    (cond ((null? flat-tree) out)
+          ((leaf? (caar flat-tree)) (huffman-leaves-impl (cdr flat-tree) (cons (car flat-tree) out)))
+          (else (huffman-leaves-impl (cdr flat-tree) out))))
+  (huffman-leaves-impl (flatten tree) '()))
+
+(define (huffman-leaves tree)
+  (define (huffman-leaves-impl tree out)
+    (if (null? tree)
+        out
+        
+    
+
+(format sample-tree)
+(huffman-leaves sample-tree)
