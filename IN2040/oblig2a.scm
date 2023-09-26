@@ -59,10 +59,22 @@
         (reverse out)
         (cond ((leaf? current-branch)
                (encode-impl (cdr message) tree out))
-              ((memq (car message) (symbols (right-branch current-branch)))
+              ((memq (car message) (symbols (right-branch current-branch))) ;; memq sjekker om et element er i en liste
                (encode-impl message (right-branch current-branch) (cons 1 out)))
-              (else
+              (else ;; Antar at `message' aldri inneholder symboler ikke definert i `tree'
                (encode-impl message (left-branch current-branch) (cons 0 out))))))
   (encode-impl message tree '()))
 
 (decode (encode '(ninjas fight ninjas) sample-tree) sample-tree) ;; => (ninjas fight ninjas)
+
+;;; d:
+(define (grow-huffman-tree freqs)
+  (define (grow-huffman-tree-impl freqs)
+    (if (null? (cdr freqs))
+        (car freqs)
+        (grow-huffman-tree-impl (adjoin-set (make-code-tree (car freqs) (cadr freqs)) (cddr freqs)))))
+  (grow-huffman-tree-impl (make-leaf-set freqs)))
+
+(define freqs '((a 2) (b 5) (c 1) (d 3) (e 1) (f 3)))
+(define codebook (grow-huffman-tree freqs))
+(decode (encode '(a b c) codebook) codebook) ;; => (a b c)
