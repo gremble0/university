@@ -58,4 +58,40 @@ count ;; -> 42
 (pop! s1) ;; -> (zip zap bah bar)
 (stack s1) ;; -> (zip zap bah bar)
 (push! s1 'foo 'faa) ;; -> (faa foo zip zap bah bar)
-(stack s1) ;; ;; -> (faa foo zip zap bah bar)
+(stack s1) ;; -> (faa foo zip zap bah bar)
+
+;; Oppgave 3
+;;; c:
+'2222
+(define bar (list 'a 'b 'c 'd 'e))
+(set-cdr! (cdddr bar) (cdr bar))
+bar
+(list-ref bar 0)
+(list-ref bar 3)
+(list-ref bar 4)
+(list-ref bar 5)
+
+(define bah (list 'bring 'a 'towel))
+(set-car! bah (cdr bah))
+(set-car! (car bah) 42)
+
+
+(define (cycle? lst)
+  (define (cycle?-impl slow fast)
+    (cond ((null? fast) #f)
+          ((null? (cdr fast)) #f)
+          ((eq? slow fast) #t)
+          (else (cycle?-impl (cdr slow) (cddr fast)))))
+  (cycle?-impl lst (cdr lst)))
+           
+
+(cycle? '(hey ho))
+(cycle? '(la la la))
+(cycle? bah)
+(cycle? bar)
+
+;;; d:
+;;;; Lister i scheme er definert som en kjede med par som avsluttes med den tomme
+;;;; listen '(). Siden sirkulære lister aldri avsluttes med '() er de derfor strengt
+;;;; tatt ikke lister. Siden bar er sirkulær er den derfor ikke en list?, mens siden
+;;;; bah avsluttes av en '() stemmer det at den er en list?.
