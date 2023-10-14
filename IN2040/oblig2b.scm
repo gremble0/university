@@ -27,11 +27,10 @@ count ;; -> 42
   (define (pop!)
     (cond ((null? stack) stack)
           (else (set! stack (cdr stack)) stack)))
-  (define (dispatch . args)
-    (let ((message (car args)))
-          (cond ((eq? message 'push!) (push! (cdr args)))
-                ((eq? message 'pop!)  (pop!))
-                ((eq? message 'stack) stack))))
+  (define (dispatch message . args)
+    (cond ((eq? message 'push!) (push! args))
+          ((eq? message 'pop!)  (pop!))
+          ((eq? message 'stack) stack)))
   dispatch)
 
 (define s1 (make-stack (list 'foo 'bar)))
@@ -73,22 +72,62 @@ count ;; -> 42
 (list-ref bar 4) ;; -> b
 (list-ref bar 5) ;; -> c
 
-;;; b:
-+-------+-------+    +-------+-------+
-|       |       |    |       |       |
-|   o   |   o---+--->|   o   |   o   +
-|   |   |       |    |   |   |       |
-+---+---+-------+    +---+---+---+---+
-    |                    |
-    |                    |
-    V                    V
-   'a                   'b
+;;;;
+;;;;                          +-------------------------------------------------+
+;;;;                          |                                                 |
+;;;;                          V                                                 |
+;;;; +-------+-------+    +---+---+-------+    +-------+-------+    +-------+---+---+
+;;;; |       |       |    |       |       |    |       |       |    |       |   |   |
+;;;; |   o   |   o---+--->|   o   |   o---+--->|   o   |   o---+--->|   o   |   o   |
+;;;; |   |   |       |    |   |   |       |    |   |   |       |    |   |   |       |
+;;;; +---+---+-------+    +---+---+---+---+    +---+---+-------+    +---+---+-------+
+;;;;     |                    |                    |                    |
+;;;;     |                    |                    |                    |
+;;;;     V                    V                    V                    V
+;;;;    'a                   'b                   'c                   'd
+;;;;
 
-;;; c:
+;;; b:
+;;;; bah evaluerer til ((42 towel) 42 towel) etter det siste kallet på set-car! siden
+;;;; vi først endrer det første elementet i bah til å peke på (cdr bah). Det vil si at
+;;;; vi erstatter 'bring med det stedet i minnet '(a towel) peker på og vi får listen
+;;;; ((a towel) a towel). Siden de to sekvensene av "a towel" peker til det samme stedet
+;;;; i minnet, vil endringen av (car bah) til 42 gjelde for begge sekvensene sånn at
+;;;; vi ender opp med listen ((42 towel) 42 towel)
 (define bah (list 'bring 'a 'towel))
 (set-car! bah (cdr bah))
 (set-car! (car bah) 42)
 
+;;;;
+;;;; FØR:
+;;;;
+;;;; +-------+-------+    +-------+-------+    +-------+-------+
+;;;; |       |       |    |       |       |    |       |    /  |
+;;;; |   o   |   o---+--->|   o   |   o---+--->|   o   |   /   |
+;;;; |   |   |       |    |   |   |       |    |   |   |  /    |
+;;;; +---+---+-------+    +---+---+-------+    +---+---+-------+
+;;;;     |                    |                    |
+;;;;     |                    |                    |
+;;;;     V                    V                    V
+;;;;  'bring                 'a                 'towel
+;;;;
+;;;; ETTER:
+;;;;
+;;;;     +---------------------
+;;;;     |                    |
+;;;;     |                    V
+;;;; +---+---+-------+    +---+---+-------+    +-------+-------+
+;;;; |   |   |       |    |       |       |    |       |    /  |
+;;;; |   o   |   o---+--->|   o   |   o---+--->|   o   |   /   |
+;;;; |       |       |    |   |   |       |    |   |   |  /    |
+;;;; +-------+-------+    +---+---+-------+    +---+---+-------+
+;;;;                          |                    |
+;;;;                          |                    |
+;;;;                          V                    V
+;;;;                         'a                 'towel
+;;;;
+
+;;; c:
 (define (cycle? lst)
   (define (cycle?-impl slow fast)
     (cond ((null? fast) #f)
