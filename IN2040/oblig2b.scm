@@ -61,20 +61,22 @@ count ;; -> 42
 (stack s1) ;; -> (faa foo zip zap bah bar)
 
 ;; Oppgave 3
-;;; c:
-'2222
+;;; a:
+;;;; Siden prosedyrekallet set-cdr! gjør listen bar til en sirkulær liste vil å
+;;;; kalle cdr på listen etter hvert gjøre at man ender opp på starten av listen igjen.
+;;;; Derfor starter man på b igjen etter å gjøre car av 4xcdr (list-ref bar 4), så
+;;;; teller man opp igjen derfra frem til man går tilbake til starten igjen.
 (define bar (list 'a 'b 'c 'd 'e))
 (set-cdr! (cdddr bar) (cdr bar))
-bar
-(list-ref bar 0)
-(list-ref bar 3)
-(list-ref bar 4)
-(list-ref bar 5)
+(list-ref bar 0) ;; -> a
+(list-ref bar 3) ;; -> d
+(list-ref bar 4) ;; -> b
+(list-ref bar 5) ;; -> c
 
+;;; c:
 (define bah (list 'bring 'a 'towel))
 (set-car! bah (cdr bah))
 (set-car! (car bah) 42)
-
 
 (define (cycle? lst)
   (define (cycle?-impl slow fast)
@@ -83,7 +85,6 @@ bar
           ((eq? slow fast) #t)
           (else (cycle?-impl (cdr slow) (cddr fast)))))
   (cycle?-impl lst (cdr lst)))
-           
 
 (cycle? '(hey ho))
 (cycle? '(la la la))
