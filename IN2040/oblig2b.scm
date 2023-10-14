@@ -73,6 +73,17 @@ count ;; -> 42
 (list-ref bar 4) ;; -> b
 (list-ref bar 5) ;; -> c
 
+;;; b:
++-------+-------+    +-------+-------+
+|       |       |    |       |       |
+|   o   |   o---+--->|   o   |   o   +
+|   |   |       |    |   |   |       |
++---+---+-------+    +---+---+---+---+
+    |                    |
+    |                    |
+    V                    V
+   'a                   'b
+
 ;;; c:
 (define bah (list 'bring 'a 'towel))
 (set-car! bah (cdr bah))
