@@ -140,25 +140,8 @@ foo ;; -> (1 . #<promise>)
 (define (remove-duplicates stream)
   (if (stream-null? stream)
       the-empty-stream
-      (cons-stream (stream-car stream)
-                   (remove-duplicates
-                    (stream-filter (lambda (item)
-                                     (not (stream-memq item stream)))
-                                   (stream-cdr stream))))))
-
-(define a (cons-stream 1 (cons-stream 1 the-empty-stream)))
-(show-stream a)
-(show-stream (remove-duplicates a))
-
-(define b (cons-stream 1 (cons-stream 1 (cons-stream 1 the-empty-stream))))
-(show-stream b)
-(show-stream (remove-duplicates b))
-
-(define c (cons-stream 1 (cons-stream 1 (cons-stream 2 (cons-stream 2 the-empty-stream)))))
-(show-stream c)
-(show-stream (remove-duplicates c))
-
-(define d (cons-stream 1 (cons-stream 1 (cons-stream 2 (cons-stream 2 (cons-stream 3 the-empty-stream))))))
-(show-stream d)
-(show-stream (remove-duplicates d))
-
+      ;; trenger ikke kjøre cons-stream
+      (stream-filter (lambda (item)
+                       (set! stream (stream-cdr stream))
+                       (not (stream-memq item (stream-cdr stream))))
+                     (stream-cdr stream))))
