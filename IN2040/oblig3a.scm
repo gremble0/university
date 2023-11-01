@@ -127,21 +127,25 @@ foo ;; -> (1 . #<promise>)
 
 ;;; c:
 ;;;; Å bytte ut alle listeoperasjoner for memq og remove-duplicates med strømoperasjoner
-;;;; virker som forventet på endelige strømmer. Problemet oppstår hvis man prøver å
+;;;; virker som forventet på endelige strømmer. Et potensielt problem er hvis man prøver å
 ;;;; å bruke den på en udendelig strøm. Da vil den gå i en uendelig løkke fordi predikatet
 ;;;; `stream-null?' alltid vil returnere #f.
+;;;; (det vil i grunn også skje med definisjonen nedenfor)
 
 ;;; d:
-(define (stream-memq item x)
-  (cond ((stream-null? x) #f)
-        ((eq? item (stream-car x)) x)
-        (else (stream-memq item (stream-cdr x)))))
-
 (define (remove-duplicates stream)
   (if (stream-null? stream)
       the-empty-stream
-      ;; trenger ikke kjøre cons-stream
+      ;; trenger ikke kalle cons-stream eller remove-duplicates rekursivt
       (stream-filter (lambda (item)
                        (set! stream (stream-cdr stream))
-                       (not (stream-memq item (stream-cdr stream))))
+                       ;; anonym definisjon og prosedyrekall for
+                       ;; prosedyren `(not (memq ...))' for strømmer
+                       ((lambda (proc item x)
+                          (proc proc item x))
+                        (lambda (proc item x)
+                          (cond ((stream-null? x) x)
+                                ((eq? item (stream-car x)) #f)
+                                (else (proc proc item (stream-cdr x)))))
+                        item (stream-cdr stream)))
                      (stream-cdr stream))))
