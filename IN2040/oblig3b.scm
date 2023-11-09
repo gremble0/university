@@ -19,3 +19,33 @@
 ;;;; returnerer resultatet av å kalle prosedyren bundet til else med argumentet 4.
 ;;;; else bruker den globale bindingen til prosedyren (lambda (x) (/ x 2)).
 ;;;; ((lambda (x) (/ x 2)) 4) -> 2. Så vi returnerer 2.
+
+;; Oppgave 2
+;;; a:
+;;;; Endret prosedyre
+(define primitive-procedures
+  (list (list 'car car)
+        (list 'cdr cdr)
+        (list 'cons cons)
+        (list 'null? null?)
+        (list 'not not)
+        (list '+ +)
+        (list '- -)
+        (list '* *)
+        (list '/ /)
+        (list '= =)
+        (list 'eq? eq?)
+        (list 'equal? equal?)
+        (list 'display 
+              (lambda (x) (display x) 'ok))
+        (list 'newline 
+              (lambda () (newline) 'ok))
+        (list '1+ ;; ENDRING: oppgave 2a
+              (lambda (x) (+ x 1)))
+        (list '1- ;; ENDRING: oppgave 2a
+              (lambda (x) (- x 1)))
+        ))
+
+;; for kopiering:
+(set! the-global-environment (setup-environment))
+(the-global-environment)

@@ -351,6 +351,27 @@
 
 (define (primitive-implementation proc) (cadr proc))
 
+;; UENDRET VERSJON FRA PREKODE:
+;; (define primitive-procedures
+;;   (list (list 'car car)
+;;         (list 'cdr cdr)
+;;         (list 'cons cons)
+;;         (list 'null? null?)
+;;         (list 'not not)
+;;         (list '+ +)
+;;         (list '- -)
+;;         (list '* *)
+;;         (list '/ /)
+;;         (list '= =)
+;;         (list 'eq? eq?)
+;;         (list 'equal? equal?)
+;;         (list 'display 
+;;               (lambda (x) (display x) 'ok))
+;;         (list 'newline 
+;;               (lambda () (newline) 'ok))
+;; ;;      her kan vi legge til flere primitiver.
+;;         ))
+
 (define primitive-procedures
   (list (list 'car car)
         (list 'cdr cdr)
@@ -368,8 +389,17 @@
               (lambda (x) (display x) 'ok))
         (list 'newline 
               (lambda () (newline) 'ok))
-;;      her kan vi legge til flere primitiver.
+        (list '1+ ;; ENDRING: oppgave 2a
+              (lambda (x) (+ x 1)))
+        (list '1- ;; ENDRING: oppgave 2a
+              (lambda (x) (- x 1)))
         ))
+
+;; ENDRING: oppgave 2b
+(define (install-primitive! name proc)
+  (let ((updated-vars (cons name (caar the-global-environment)))
+        (updated-vals (cons (list 'primitive proc) (cdar the-global-environment))))
+    (set! the-global-environment (list (cons updated-vars updated-vals)))))
 
 (define (primitive-procedure-names)
   (map car
