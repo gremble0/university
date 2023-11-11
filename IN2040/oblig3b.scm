@@ -55,6 +55,7 @@
 
 ;; Oppgave 3
 ;;; a:
+;;;; Alle nye og endrede prosedyrer:
 (define (and? exp) (tagged-list? exp 'and))
 
 (define (and-exprs exp) (cdr exp))
@@ -104,6 +105,53 @@
         ((and? exp) #t) ;; ENDRING
         ((or? exp) #t) ;; ENDRING
         (else #f)))
+
+;;; b:
+;;;; Alle nye og endrede prosedyrer:
+(define (if? exp) (tagged-list? exp 'if))
+(define (elsif? exp) (tagged-list? exp 'elsif))
+(define (else? exp) (tagged-list? exp 'else))
+
+(define (next-else-or-elsif exp) (cddddr exp))
+
+(define (next-elsif exp)
+  (if (elsif? exp)
+      (cddddr exp)
+      (error "expected elsif token" exp)))
+
+(define (if/elsif-predicate exp) (cadr exp))
+
+(define (if/elsif-consequent exp)
+  (if (eq? (caddr exp) 'then)
+      (cadddr exp)
+      (error "expected then token" exp)))
+
+(define (else-consequent exp) (cadr exp))
+
+;; Underliggende scheme gjør ikke dette, men oppgaveteksten sier else skal
+;; være obligatorisk
+(define (else-exists? exp)
+  (cond ((null? exp) (error "expected expression to end with else"))
+        ((else? exp) #t)
+        (else (else-exists? (next-else-or-elsif exp)))))
+
+(define (eval-if exp env)
+  (if (true? (mc-eval (if/elsif-predicate exp) env))
+      (if (else-exists? exp)
+          (mc-eval (if/elsif-consequent exp) env))
+          ;; (error "expected expression to end with else"))
+      (eval-elsifs (next-else-or-elsif exp) env)))
+
+(define (eval-elsifs exp env)
+  (if (else? exp)
+      (mc-eval (else-consequent exp) env)
+      (if (true? (mc-eval (if/elsif-predicate exp) env))
+          (if (else-exists? exp)
+              (mc-eval (if/elsif-consequent exp) env))
+              ;; (error "expected expression to end with else"))
+          (eval-elsifs (next-elsif exp) env))))
+
+
 
 ;; for kopiering:
 (set! the-global-environment (setup-environment))

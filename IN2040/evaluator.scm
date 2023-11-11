@@ -125,14 +125,18 @@
 ;; START ENDRINGER OPPGAVE 3b:
 (define (eval-if exp env)
   (if (true? (mc-eval (if/elsif-predicate exp) env))
-      (mc-eval (if/elsif-consequent exp) env)
+      (if (else-exists? exp)
+          (mc-eval (if/elsif-consequent exp) env))
+          ;; (error "expected expression to end with else"))
       (eval-elsifs (next-else-or-elsif exp) env)))
 
 (define (eval-elsifs exp env)
   (if (else? exp)
       (mc-eval (else-consequent exp) env)
       (if (true? (mc-eval (if/elsif-predicate exp) env))
-          (mc-eval (if/elsif-consequent exp) env)
+          (if (else-exists? exp)
+              (mc-eval (if/elsif-consequent exp) env))
+              ;; (error "expected expression to end with else"))
           (eval-elsifs (next-elsif exp) env))))
 ;; SLUTT ENDRINGER OPPGAVE 3b
 
@@ -269,6 +273,13 @@
       (error "expected then token" exp)))
 
 (define (else-consequent exp) (cadr exp))
+
+;; Underliggende scheme gjør ikke dette, men oppgaveteksten sier else skal
+;; være obligatorisk
+(define (else-exists? exp)
+  (cond ((null? exp) (error "expected expression to end with else"))
+        ((else? exp) #t)
+        (else (else-exists? (next-else-or-elsif exp)))))
 ;; SLUTT ENDRINGER OPPGAVE 3b
 
 (define (begin? exp) (tagged-list? exp 'begin))
