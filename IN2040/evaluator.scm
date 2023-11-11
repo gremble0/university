@@ -124,20 +124,16 @@
 
 ;; START ENDRINGER OPPGAVE 3b:
 (define (eval-if exp env)
-  ;; (cond ((if?
-          
-  ;; (cond ((or (if? exp) (elsif? exp))
-  ;;        (if (true? (mc-eval (if/elsif-predicate exp) env))
-  ;;            (mc-eval (if/else-consequent exp) env)
-  ;;       ((else? exp)
+  (if (true? (mc-eval (if/elsif-predicate exp) env))
+      (mc-eval (if/elsif-consequent exp) env)
+      (eval-elsifs (next-else-or-elsif exp) env)))
 
-  (cond 
-   ((else? exp)
-    (mc-eval (else-consequent exp) env))
-   ((true? (mc-eval (if/elsif-predicate exp) env))
-    (mc-eval (if/elsif-consequent exp) env))
-   (else (eval-if (next-elsif exp) env))))
-
+(define (eval-elsifs exp env)
+  (if (else? exp)
+      (mc-eval (else-consequent exp) env)
+      (if (true? (mc-eval (if/elsif-predicate exp) env))
+          (mc-eval (if/elsif-consequent exp) env)
+          (eval-elsifs (next-elsif exp) env))))
 ;; SLUTT ENDRINGER OPPGAVE 3b
 
 (define (eval-sequence exps env)
@@ -257,6 +253,8 @@
 (define (if? exp) (tagged-list? exp 'if))
 (define (elsif? exp) (tagged-list? exp 'elsif))
 (define (else? exp) (tagged-list? exp 'else))
+
+(define (next-else-or-elsif exp) (cddddr exp))
 
 (define (next-elsif exp)
   (if (elsif? exp)
