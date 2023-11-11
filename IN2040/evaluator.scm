@@ -116,10 +116,29 @@
       (cons (mc-eval (first-operand exps) env)
             (list-of-values (rest-operands exps) env))))
 
+;; UENDRET VERSJON FRA PREKODE:
+;; (define (eval-if exp env)
+;;   (if (true? (mc-eval (if-predicate exp) env))
+;;       (mc-eval (if-consequent exp) env)
+;;       (mc-eval (if-alternative exp) env)))
+
+;; START ENDRINGER OPPGAVE 3b:
 (define (eval-if exp env)
-  (if (true? (mc-eval (if-predicate exp) env))
-      (mc-eval (if-consequent exp) env)
-      (mc-eval (if-alternative exp) env)))
+  ;; (cond ((if?
+          
+  ;; (cond ((or (if? exp) (elsif? exp))
+  ;;        (if (true? (mc-eval (if/elsif-predicate exp) env))
+  ;;            (mc-eval (if/else-consequent exp) env)
+  ;;       ((else? exp)
+
+  (cond 
+   ((else? exp)
+    (mc-eval (else-consequent exp) env))
+   ((true? (mc-eval (if/elsif-predicate exp) env))
+    (mc-eval (if/elsif-consequent exp) env))
+   (else (eval-if (next-elsif exp) env))))
+
+;; SLUTT ENDRINGER OPPGAVE 3b
 
 (define (eval-sequence exps env)
   (cond ((last-exp? exps) (mc-eval (first-exp exps) env))
@@ -219,20 +238,40 @@
 (define (or-rest-exp exp) (cdr exp))
 ;; SLUTT ENDRINGER 3a
 
+;; UENDRET VERSJON FRA PREKODE
+;; (define (if? exp) (tagged-list? exp 'if))
+;;
+;; (define (if-predicate exp) (cadr exp))
+;;
+;; (define (if-consequent exp) (caddr exp))
+;;
+;; (define (if-alternative exp)
+;;   (if (not (null? (cdddr exp)))
+;;       (cadddr exp)
+;;       'false))
+;;
+;; (define (make-if predicate consequent alternative)
+;;   (list 'if predicate consequent alternative))
+
+;; START ENDRINGER OPPGAVE 3b:
 (define (if? exp) (tagged-list? exp 'if))
+(define (elsif? exp) (tagged-list? exp 'elsif))
+(define (else? exp) (tagged-list? exp 'else))
 
-(define (if-predicate exp) (cadr exp))
+(define (next-elsif exp)
+  (if (elsif? exp)
+      (cddddr exp)
+      (error "expected elsif token" exp)))
 
-(define (if-consequent exp) (caddr exp))
+(define (if/elsif-predicate exp) (cadr exp))
 
-(define (if-alternative exp)
-  (if (not (null? (cdddr exp)))
+(define (if/elsif-consequent exp)
+  (if (eq? (caddr exp) 'then)
       (cadddr exp)
-      'false))
+      (error "expected then token" exp)))
 
-(define (make-if predicate consequent alternative)
-  (list 'if predicate consequent alternative))
-
+(define (else-consequent exp) (cadr exp))
+;; SLUTT ENDRINGER OPPGAVE 3b
 
 (define (begin? exp) (tagged-list? exp 'begin))
 
