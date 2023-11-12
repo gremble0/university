@@ -81,7 +81,7 @@
 ;;         ((cond? exp) #t)
 ;;         (else #f)))
 
-;; START ENDRINGER OPPGAVE 3a, 3c:
+;; START ENDRINGER OPPGAVE 3a, 3c, 3d:
 (define (eval-special-form exp env)
   (cond ((quoted? exp) (text-of-quotation exp))
         ((assignment? exp) (eval-assignment exp env))
@@ -96,7 +96,7 @@
         ((cond? exp) (mc-eval (cond->if exp) env))
         ((and? exp) (eval-and (and-exprs exp) env)) ;; ENDRING 3a
         ((or? exp) (eval-or (or-exprs exp) env)) ;; ENDRING 3a
-        ((let? exp) (eval-let exp env)))) ;; ENDRING 3c
+        ((let? exp) (eval-let-special exp env)))) ;; ENDRING 3c, 3d (endre til eval-let for 3c)
 
 (define (special-form? exp)
   (cond ((quoted? exp) #t)
@@ -110,7 +110,7 @@
         ((or? exp) #t) ;; ENDRING 3a
         ((let? exp) #t) ;; ENDRING 3c
         (else #f)))
-;; SLUTT ENDRINGER OPPGAVE 3a, 3c
+;; SLUTT ENDRINGER OPPGAVE 3a, 3c, 3d
 
 (define (list-of-values exps env)
   (if (no-operands? exps)
@@ -157,7 +157,7 @@
                     env)
   'ok)
 
-;; START ENDRINGER OPPGAVE 3a, 3c:
+;; START ENDRINGER OPPGAVE 3a, 3c, 3d:
 ;;; 3a:
 (define (eval-and exp env)
   (cond ((null? exp) #t)
@@ -174,7 +174,31 @@
 (define (eval-let exp env)
   (let ((proc (make-lambda (let-vars exp) (let-body exp))))
     (mc-eval (cons proc (let-vals exp)) env)))
-;; SLUTT ENDRINGER OPPGAVE 3c, 3c
+
+;;; 3d:
+(define (eval-let-special exp env)
+  (let* ((bindings (let-bindings-special (cdr exp)))
+         (vars (map car bindings))
+         (vals (map cadr bindings))
+         (proc (make-lambda vars (map caddr bindings))))
+    (display bindings)
+    (mc-eval (cons proc vals) env)))
+
+;; (define (eval-if exp env)
+;;   (if (true? (mc-eval (if/elsif-predicate exp) env))
+;;       (if (else-exists? exp)
+;;           (mc-eval (if/elsif-consequent exp) env))
+;;       (eval-elsifs (next-else-or-elsif exp) env)))
+
+;; (define (eval-elsifs exp env)
+;;   (if (else? exp)
+;;       (mc-eval (else-consequent exp) env)
+;;       (if (true? (mc-eval (if/elsif-predicate exp) env))
+;;           (if (else-exists? exp)
+;;               (mc-eval (if/elsif-consequent exp) env))
+;;           (eval-elsifs (next-elsif exp) env))))
+
+;; SLUTT ENDRINGER OPPGAVE 3a, 3c, 3d
 
 ;;; Predikater + selektorer som definerer syntaksen til uttrykk i språket 
 ;;; (seksjon 4.1.2, SICP)
@@ -229,7 +253,7 @@
 (define (make-lambda parameters body)
   (cons 'lambda (cons parameters body)))
 
-;; START ENDRINGER OPPGAVE 3a, 3c:
+;; START ENDRINGER OPPGAVE 3a, 3c, 3d:
 ;; 3a:
 (define (and? exp) (tagged-list? exp 'and))
 
@@ -251,7 +275,35 @@
 (define (let-vars exp) (map car (cadr exp)))
 (define (let-vals exp) (map cadr (cadr exp)))
 (define (let-body exp) (cddr exp))
-;; SLUTT ENDRINGER 3a, 3c
+
+;; 3d:
+(define (let-and? exp)
+  (eq? (cadddr exp) 'and))
+(define (final-assignment? exp)
+  (eq? (cadddr exp) 'in))
+
+(define (next-assignment-or-body) (cddddr exp))
+
+(define (next-assignment exp)
+  (if (let-and? exp)
+      (cddddr exp)
+      (error "expected and or in token" exp)))
+
+(define (let-var exp) (car exp))
+(define (let-val exp)
+  (if (eq? (cadr exp) '=)
+      (caddr exp)
+      (error "expected = token" exp)))
+(define (let-body exp) (cddddr exp))
+
+(define (let-bindings-special exp)
+  (let ((var (let-var exp))
+        (val (let-val exp)))
+    (if (final-assignment? exp)
+        (cons (cons var val) (let-body exp))
+        (cons (cons var val) (let-bindings-special (next-assignment exp))))))
+
+;; SLUTT ENDRINGER 3a, 3c, 3d
 
 ;; UENDRET VERSJON FRA PREKODE
 ;; (define (if? exp) (tagged-list? exp 'if))

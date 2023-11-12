@@ -1,3 +1,6 @@
+;; Denne filen inneholder kopier av alle endringer gjort i evaluator.scm + tekst-
+;; svar på andre oppgaver
+
 ;; Oppgave 1
 ;;; a:
 ;;;; Når `mc-eval' kalles på prosedyren `foo' ignoreres de forekomstene av
