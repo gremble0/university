@@ -108,7 +108,7 @@
         ((cond? exp) #t)
         ((and? exp) #t) ;; ENDRING 3a
         ((or? exp) #t) ;; ENDRING 3a
-        ((let? exp) #t) ;; ENDRING 3c
+        ((let? exp) #t) ;; ENDRING 3c, 3d
         (else #f)))
 ;; SLUTT ENDRINGER OPPGAVE 3a, 3c, 3d
 
@@ -177,27 +177,11 @@
 
 ;;; 3d:
 (define (eval-let-special exp env)
-  (let* ((bindings (let-bindings-special (cdr exp)))
+  (let* ((bindings (let-special-bindings (cdr exp)))
          (vars (map car bindings))
-         (vals (map cadr bindings))
-         (proc (make-lambda vars (map caddr bindings))))
-    (display bindings)
+         (vals (map cdr bindings))
+         (proc (make-lambda vars (let-special-body (cdr exp)))))
     (mc-eval (cons proc vals) env)))
-
-;; (define (eval-if exp env)
-;;   (if (true? (mc-eval (if/elsif-predicate exp) env))
-;;       (if (else-exists? exp)
-;;           (mc-eval (if/elsif-consequent exp) env))
-;;       (eval-elsifs (next-else-or-elsif exp) env)))
-
-;; (define (eval-elsifs exp env)
-;;   (if (else? exp)
-;;       (mc-eval (else-consequent exp) env)
-;;       (if (true? (mc-eval (if/elsif-predicate exp) env))
-;;           (if (else-exists? exp)
-;;               (mc-eval (if/elsif-consequent exp) env))
-;;           (eval-elsifs (next-elsif exp) env))))
-
 ;; SLUTT ENDRINGER OPPGAVE 3a, 3c, 3d
 
 ;;; Predikater + selektorer som definerer syntaksen til uttrykk i språket 
@@ -277,32 +261,33 @@
 (define (let-body exp) (cddr exp))
 
 ;; 3d:
-(define (let-and? exp)
+(define (let-special-and? exp)
   (eq? (cadddr exp) 'and))
-(define (final-assignment? exp)
+(define (let-special-final-assignment? exp)
   (eq? (cadddr exp) 'in))
 
-(define (next-assignment-or-body) (cddddr exp))
-
-(define (next-assignment exp)
-  (if (let-and? exp)
-      (cddddr exp)
-      (error "expected and or in token" exp)))
-
-(define (let-var exp) (car exp))
-(define (let-val exp)
+(define (let-special-var exp) (car exp))
+(define (let-special-val exp)
   (if (eq? (cadr exp) '=)
       (caddr exp)
       (error "expected = token" exp)))
-(define (let-body exp) (cddddr exp))
 
-(define (let-bindings-special exp)
-  (let ((var (let-var exp))
-        (val (let-val exp)))
-    (if (final-assignment? exp)
-        (cons (cons var val) (let-body exp))
-        (cons (cons var val) (let-bindings-special (next-assignment exp))))))
+(define (let-special-next-assignment exp)
+  (if (let-special-and? exp)
+      (cddddr exp)
+      (error "expected and or in token" exp)))
 
+(define (let-special-body exp)
+  (if (let-special-final-assignment? exp)
+      (cddddr exp)
+      (let-special-body (let-special-next-assignment exp))))
+
+(define (let-special-bindings exp)
+  (let ((var (let-special-var exp))
+        (val (let-special-val exp)))
+    (if (let-special-final-assignment? exp)
+        (cons (cons var val) '())
+        (cons (cons var val) (let-special-bindings (let-special-next-assignment exp))))))
 ;; SLUTT ENDRINGER 3a, 3c, 3d
 
 ;; UENDRET VERSJON FRA PREKODE
