@@ -139,7 +139,6 @@
   (if (true? (mc-eval (if/elsif-predicate exp) env))
       (if (else-exists? exp)
           (mc-eval (if/elsif-consequent exp) env))
-          ;; (error "expected expression to end with else"))
       (eval-elsifs (next-else-or-elsif exp) env)))
 
 (define (eval-elsifs exp env)
@@ -148,9 +147,51 @@
       (if (true? (mc-eval (if/elsif-predicate exp) env))
           (if (else-exists? exp)
               (mc-eval (if/elsif-consequent exp) env))
-              ;; (error "expected expression to end with else"))
           (eval-elsifs (next-elsif exp) env))))
 
+;;; c:
+(define (eval-special-form exp env)
+  (cond ((quoted? exp) (text-of-quotation exp))
+        ((assignment? exp) (eval-assignment exp env))
+        ((definition? exp) (eval-definition exp env))
+        ((if? exp) (eval-if exp env))
+        ((lambda? exp)
+         (make-procedure (lambda-parameters exp)
+                         (lambda-body exp)
+                         env))
+        ((begin? exp) 
+         (eval-sequence (begin-actions exp) env))
+        ((cond? exp) (mc-eval (cond->if exp) env))
+        ((and? exp) (eval-and (and-exprs exp) env))
+        ((or? exp) (eval-or (or-exprs exp) env))
+        ((let? exp) (eval-let exp env)))) ;; ENDRING
+
+(define (special-form? exp)
+  (cond ((quoted? exp) #t)
+        ((assignment? exp) #t)
+        ((definition? exp) #t)
+        ((if? exp) #t)
+        ((lambda? exp) #t)
+        ((begin? exp) #t)
+        ((cond? exp) #t)
+        ((and? exp) #t)
+        ((or? exp) #t)
+        ((let? exp) #t) ;; ENDRING
+        (else #f)))
+
+
+(define (eval-let exp env)
+  (let ((proc (make-lambda (let-vars exp) (let-body exp))))
+    (mc-eval (cons proc (let-vals exp)) env)))
+
+
+(define (let? exp) (tagged-list? exp 'let))
+
+;; Litt ueffektivt å mappe over samme exp to ganger, men mye simplere sånn
+;; (kunne alternativt lagd en prosedyre som returnerer et par av de to)
+(define (let-vars exp) (map car (cadr exp)))
+(define (let-vals exp) (map cadr (cadr exp)))
+(define (let-body exp) (cddr exp))
 
 
 ;; for kopiering:

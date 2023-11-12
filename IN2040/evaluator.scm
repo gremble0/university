@@ -81,7 +81,7 @@
 ;;         ((cond? exp) #t)
 ;;         (else #f)))
 
-;; START ENDRINGER OPPGAVE 3a:
+;; START ENDRINGER OPPGAVE 3a, 3c:
 (define (eval-special-form exp env)
   (cond ((quoted? exp) (text-of-quotation exp))
         ((assignment? exp) (eval-assignment exp env))
@@ -94,8 +94,9 @@
         ((begin? exp) 
          (eval-sequence (begin-actions exp) env))
         ((cond? exp) (mc-eval (cond->if exp) env))
-        ((and? exp) (eval-and (and-exprs exp) env)) ;; ENDRING
-        ((or? exp) (eval-or (or-exprs exp) env)))) ;; ENDRING
+        ((and? exp) (eval-and (and-exprs exp) env)) ;; ENDRING 3a
+        ((or? exp) (eval-or (or-exprs exp) env)) ;; ENDRING 3a
+        ((let? exp) (eval-let exp env)))) ;; ENDRING 3c
 
 (define (special-form? exp)
   (cond ((quoted? exp) #t)
@@ -105,10 +106,11 @@
         ((lambda? exp) #t)
         ((begin? exp) #t)
         ((cond? exp) #t)
-        ((and? exp) #t) ;; ENDRING
-        ((or? exp) #t) ;; ENDRING
+        ((and? exp) #t) ;; ENDRING 3a
+        ((or? exp) #t) ;; ENDRING 3a
+        ((let? exp) #t) ;; ENDRING 3c
         (else #f)))
-;; SLUTT ENDRINGER OPPGAVE 3a
+;; SLUTT ENDRINGER OPPGAVE 3a, 3c
 
 (define (list-of-values exps env)
   (if (no-operands? exps)
@@ -127,7 +129,6 @@
   (if (true? (mc-eval (if/elsif-predicate exp) env))
       (if (else-exists? exp)
           (mc-eval (if/elsif-consequent exp) env))
-          ;; (error "expected expression to end with else"))
       (eval-elsifs (next-else-or-elsif exp) env)))
 
 (define (eval-elsifs exp env)
@@ -136,7 +137,6 @@
       (if (true? (mc-eval (if/elsif-predicate exp) env))
           (if (else-exists? exp)
               (mc-eval (if/elsif-consequent exp) env))
-              ;; (error "expected expression to end with else"))
           (eval-elsifs (next-elsif exp) env))))
 ;; SLUTT ENDRINGER OPPGAVE 3b
 
@@ -157,7 +157,8 @@
                     env)
   'ok)
 
-;; START ENDRINGER OPPGAVE 3a:
+;; START ENDRINGER OPPGAVE 3a, 3c:
+;;; 3a:
 (define (eval-and exp env)
   (cond ((null? exp) #t)
         ((false? (mc-eval (and-first-exp exp) env)) #f)
@@ -168,7 +169,12 @@
         ((false? (mc-eval (or-first-exp exp) env))
          (eval-or (or-rest-exp exp) env))
         (else #t)))
-;; SLUTT ENDRING 3a
+
+;;; 3c:
+(define (eval-let exp env)
+  (let ((proc (make-lambda (let-vars exp) (let-body exp))))
+    (mc-eval (cons proc (let-vals exp)) env)))
+;; SLUTT ENDRINGER OPPGAVE 3c, 3c
 
 ;;; Predikater + selektorer som definerer syntaksen til uttrykk i språket 
 ;;; (seksjon 4.1.2, SICP)
@@ -223,8 +229,8 @@
 (define (make-lambda parameters body)
   (cons 'lambda (cons parameters body)))
 
-
-;; START ENDRINGER OPPGAVE 3a:
+;; START ENDRINGER OPPGAVE 3a, 3c:
+;; 3a:
 (define (and? exp) (tagged-list? exp 'and))
 
 (define (and-exprs exp) (cdr exp))
@@ -236,7 +242,16 @@
 (define (or-exprs exp) (cdr exp))
 (define (or-first-exp exp) (car exp))
 (define (or-rest-exp exp) (cdr exp))
-;; SLUTT ENDRINGER 3a
+
+;; 3c:
+(define (let? exp) (tagged-list? exp 'let))
+
+;; Litt ueffektivt å mappe over samme exp to ganger, men mye simplere sånn
+;; (kunne alternativt lagd en prosedyre som returnerer et par av de to)
+(define (let-vars exp) (map car (cadr exp)))
+(define (let-vals exp) (map cadr (cadr exp)))
+(define (let-body exp) (cddr exp))
+;; SLUTT ENDRINGER 3a, 3c
 
 ;; UENDRET VERSJON FRA PREKODE
 ;; (define (if? exp) (tagged-list? exp 'if))
