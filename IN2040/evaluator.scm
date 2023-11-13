@@ -81,7 +81,7 @@
 ;;         ((cond? exp) #t)
 ;;         (else #f)))
 
-;; START ENDRINGER OPPGAVE 3a, 3c, 3d:
+;; START ENDRINGER OPPGAVE 3a, 3c, 3d, 4:
 (define (eval-special-form exp env)
   (cond ((quoted? exp) (text-of-quotation exp))
         ((assignment? exp) (eval-assignment exp env))
@@ -96,7 +96,8 @@
         ((cond? exp) (mc-eval (cond->if exp) env))
         ((and? exp) (eval-and (and-exprs exp) env)) ;; ENDRING 3a
         ((or? exp) (eval-or (or-exprs exp) env)) ;; ENDRING 3a
-        ((let? exp) (eval-let-special exp env)))) ;; ENDRING 3c, 3d (endre til eval-let for 3c)
+        ((let? exp) (eval-let-special exp env)) ;; ENDRING 3c, 3d (endre til eval-let for 3c)
+        ((while? exp) (eval-while exp env)))) ;; ENDRING 4
 
 (define (special-form? exp)
   (cond ((quoted? exp) #t)
@@ -109,8 +110,9 @@
         ((and? exp) #t) ;; ENDRING 3a
         ((or? exp) #t) ;; ENDRING 3a
         ((let? exp) #t) ;; ENDRING 3c, 3d
+        ((while? exp) #t) ;; ENDRING 4
         (else #f)))
-;; SLUTT ENDRINGER OPPGAVE 3a, 3c, 3d
+;; SLUTT ENDRINGER OPPGAVE 3a, 3c, 3d, 4
 
 (define (list-of-values exps env)
   (if (no-operands? exps)
@@ -157,7 +159,7 @@
                     env)
   'ok)
 
-;; START ENDRINGER OPPGAVE 3a, 3c, 3d:
+;; START ENDRINGER OPPGAVE 3a, 3c, 3d, 4
 ;;; 3a:
 (define (eval-and exp env)
   (cond ((null? exp) #t)
@@ -182,7 +184,18 @@
          (vals (map cdr bindings))
          (proc (make-lambda vars (let-special-body (cdr exp)))))
     (mc-eval (cons proc vals) env)))
-;; SLUTT ENDRINGER OPPGAVE 3a, 3c, 3d
+
+;;; 4:
+(define (eval-while exp env)
+  (define (eval-iter exp)
+    (mc-eval exp env))
+    
+  (if (mc-eval (while-cond exp) env)
+      (begin
+        (map eval-iter (while-body exp))
+        (eval-while exp env))
+      'ok))
+;; SLUTT ENDRINGER OPPGAVE 3a, 3c, 3d, 4
 
 ;;; Predikater + selektorer som definerer syntaksen til uttrykk i språket 
 ;;; (seksjon 4.1.2, SICP)
@@ -237,7 +250,7 @@
 (define (make-lambda parameters body)
   (cons 'lambda (cons parameters body)))
 
-;; START ENDRINGER OPPGAVE 3a, 3c, 3d:
+;; START ENDRINGER OPPGAVE 3a, 3c, 3d, 4:
 ;; 3a:
 (define (and? exp) (tagged-list? exp 'and))
 
@@ -288,7 +301,15 @@
     (if (let-special-final-assignment? exp)
         (cons (cons var val) '())
         (cons (cons var val) (let-special-bindings (let-special-next-assignment exp))))))
-;; SLUTT ENDRINGER 3a, 3c, 3d
+
+;; 4:
+;;; (while <cond>
+;;;   <body>)
+(define (while? exp) (tagged-list? exp 'while))
+(define (while-cond exp) (cadr exp))
+(define (while-body exp) (cddr exp))
+
+;; SLUTT ENDRINGER 3a, 3c, 3d, 4
 
 ;; UENDRET VERSJON FRA PREKODE
 ;; (define (if? exp) (tagged-list? exp 'if))
