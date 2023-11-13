@@ -20,6 +20,41 @@
 ;;;; else bruker den globale bindingen til prosedyren (lambda (x) (/ x 2)).
 ;;;; ((lambda (x) (/ x 2)) 4) -> 2. Så vi returnerer 2.
 
+;; Oppgave 4
+;;; Syntaks for while løkke:
+;;; (while <predicate>
+;;;   <exp1>
+;;;   <exp2>
+;;;    ...
+;;;   <expn>)
+;;;
+;;; for eksempel:
+(define x 5)
+
+(while (not (= x 0))
+       (display x) (newline)
+       (set! x (- x 1)))
+;;~> 5
+;;   4
+;;   3
+;;   2
+;;   1
+;;   'ok
+
+;;; while som destruktiv filter:
+(define lst '(1 #f foo () -1))
+(define truthy-values '())
+
+(while (not (eq? lst '()))
+       (if (car lst) then
+           (set! truthy-values (cons (car lst) truthy-values))
+           else (display "falsy value"))
+       (set! lst (cdr lst)))
+;; ~> falsy value
+truthy-values
+;; -> (-1 () foo 1)
+
+
 ;; for kopiering:
 (set! the-global-environment (setup-environment))
 (read-eval-print-loop)

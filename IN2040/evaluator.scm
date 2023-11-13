@@ -186,6 +186,7 @@
     (mc-eval (cons proc vals) env)))
 
 ;;; 4:
+;;;; 
 (define (eval-while exp env)
   (define (eval-iter exp)
     (mc-eval exp env))
@@ -303,8 +304,6 @@
         (cons (cons var val) (let-special-bindings (let-special-next-assignment exp))))))
 
 ;; 4:
-;;; (while <cond>
-;;;   <body>)
 (define (while? exp) (tagged-list? exp 'while))
 (define (while-cond exp) (cadr exp))
 (define (while-body exp) (cddr exp))
