@@ -35,8 +35,8 @@
   (if (zero? num)
       0
       (if (positive? num)
-	  1
-	  -1)))
+	      1
+	      -1)))
 
 (define (sign-cond num)
   (cond ((positive? num) 1)
@@ -81,8 +81,8 @@
 (define (power-close-to b n)
   (define (power-iter e)
     (if (> (expt b e) n)
-	e
-	(power-iter (+ 1 e))))
+	    e
+	    (power-iter (+ 1 e))))
   (power-iter 1))
 
 ;; e:
@@ -91,6 +91,6 @@
 (define (fib n)
   (define (fib-iter a b count)
     (if (= count 0)
-	b
-	(fib-iter (+ a b) a (- count 1))))
+	    b
+	    (fib-iter (+ a b) a (- count 1))))
   (fib-iter 1 0 n))

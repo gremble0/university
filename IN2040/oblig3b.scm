@@ -51,6 +51,7 @@
            else (display "falsy value"))
        (set! lst (cdr lst)))
 ;; ~> falsy value
+;;    'ok
 truthy-values
 ;; -> (-1 () foo 1)
 
