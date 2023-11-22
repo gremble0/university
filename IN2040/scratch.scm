@@ -4,6 +4,7 @@
       1
       (* n (fac-rec (- n 1)))))
 
+;; Three-recursive process
 (define (fib-rec n)
   (cond ((= n 0) 0)
         ((= n 1) 1)
@@ -17,3 +18,12 @@
         acc
         (fac-iter-impl (- n 1) (* n acc))))
   (fac-iter-impl n 1))
+
+(define (fib-iter n)
+    (define (fib-iter-impl next cur count)
+      (if (= count n)
+          cur
+          (fib-iter-impl (+ next cur)
+                         next
+                         (+ count 1))))
+    (fib-iter-impl 1 0 0))
