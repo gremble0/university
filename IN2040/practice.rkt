@@ -114,6 +114,17 @@
                 (car lst2))
           (my-map-2 proc (cdr lst1) (cdr lst2)))))
 
+(define (my-map-n proc . lsts)
+  (if (null? (car lsts))
+    '()
+    (cons (apply proc (my-map car lsts))
+          (apply my-map-n proc (my-map cdr lsts)))))
+
+(my-map (lambda (x) (* x x)) '(1 2 3))
+(my-map-2 + '(1 2 3) '(1 2 3))
+(my-map-n + '(1 2 3) '(4 5 6) '(7 8 9))
+(my-map-n cons '(1 2 3) '(4 5 6) '(7 8 9))
+
 (define (my-map-iter proc lst)
   (define (my-map-iter-impl rest acc)
     (if (null? rest)
@@ -140,8 +151,10 @@
        (dot-prod (cdr lst1)
                  (cdr lst2)))))
 
-(define (dot-prod lst1 lst2)
-  (my-reduce + (my-map-2 * lst1 lst2) 0))
+(define (dot-prod-ho . lsts)
+  (my-reduce + (apply my-map-n * lsts) 0))
+
+(dot-prod-ho '(1 2 3) '(3 2 1))
 
 (define (my-filter pred lst)
   (cond ((null? lst) '())
@@ -153,5 +166,6 @@
 (my-filter odd? '(1 2 3 4 5))
 (my-filter (lambda (x)
              (and (> x 10)
-                  (< x 100))) '(1 15 20 50 30 550 124))
+                  (< x 100)))
+           '(1 15 20 50 30 550 124))
 (my-reduce cons '(1 2 3 4) '())
