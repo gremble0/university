@@ -51,5 +51,37 @@
 ((lambda (l) (cadar l)) '((0 42) (#t bar)))
 ((lambda (l) (caadr l)) '((0) (42 #t (bar))))
 
-(cons '(0 42) (cons '(#t bar) '()))
 (list '(0 42) '(#t bar))
+(cons (cons 0 (cons 42 '())) (cons (cons #t (cons 'bar '())) '()))
+
+(define (take-rec n items)
+  (if (= n 0)
+    '()
+    (cons (car items)
+          (take-rec (- n 1)
+                (cdr items)))))
+
+(define (take-iter n items)
+  (define (take-iter-impl n rest acc)
+    (if (= n 0)
+      (reverse acc)
+      (take-iter-impl (- n 1)
+                 (cdr rest)
+                 (cons (car rest) acc))))
+  (take-iter-impl n items '()))
+
+(define (take-while pred items)
+  (let ((cur (car items)))
+    (if (pred cur)
+      (cons cur (take-while pred (cdr items))) 
+      '())))
+
+(define (map2 proc lst1 lst2)
+    (if (or (null? lst1)
+            (null? lst2))
+      '()
+      (cons (proc (car lst1)
+                  (car lst2))
+            (map2 proc (cdr lst1) (cdr lst2)))))
+
+(map2 (lambda (x y) (/ (+ x y) 2)) '(1 2 3 4) '(3 4 5))
