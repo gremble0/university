@@ -169,3 +169,30 @@
                   (< x 100)))
            '(1 15 20 50 30 550 124))
 (my-reduce cons '(1 2 3 4) '())
+
+(define (percentages lst)
+  (let ((lst-sum (my-reduce + lst 0)))
+    (map (lambda (x) (* (/ x lst-sum) 100)) lst)))
+
+(define (percentages-expanded lst)
+  ((lambda (lst-sum)
+     (map (lambda (x) (* (/ x lst-sum) 100)) lst))
+   (my-reduce + lst 0)))
+
+(define (nested-lets)
+  ((lambda (x)
+    ((lambda (y)
+       (list x y))
+     42))
+    7))
+
+(define (my-cons x y)
+  (lambda (msg)
+    (cond ((eq? msg 'x) x)
+          ((eq? msg 'y) y))))
+
+(define (my-car lst)
+  (lst 'x))
+
+(define (my-cdr lst)
+  (lst 'y))
