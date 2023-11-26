@@ -187,12 +187,60 @@
     7))
 
 (define (my-cons x y)
-  (lambda (msg)
-    (cond ((eq? msg 'x) x)
-          ((eq? msg 'y) y))))
+  (let ((cell (lambda (msg)
+                (cond ((eq? msg 'x) x)
+                      ((eq? msg 'y) y)))))
+    (display "(") (display x) (display " . ") (display y) (display ")") (newline)
+    cell));; scuffed
 
-(define (my-car lst)
-  (lst 'x))
+(define (my-car pair)
+  (pair 'x))
 
-(define (my-cdr lst)
-  (lst 'y))
+(define (my-cdr pair)
+  (pair 'y))
+
+(define (my-cons-2 x y)
+  (lambda (proc) (proc x y)))
+
+(define (my-car-2 pair)
+  (pair (lambda (x y) x)))
+
+(define (my-cdr-2 pair)
+  (pair (lambda (x y) y)))
+
+(define (count-leaves-cheat tree)
+  (length (flatten tree)))
+
+(define (count-leaves tree)
+  (cond ((null? tree) 0)
+        ((pair? tree)
+         (+ (count-leaves (car tree))
+            (count-leaves (cdr tree))))
+        (else 1)))
+
+(define tree '((1 2 4 4) 3 4))
+
+(define (my-flatten tree)
+  (cond ((null? tree) '())
+        ((list? tree)
+         (append (my-flatten (car tree))
+                 (my-flatten (cdr tree))))
+        (else (list tree))))
+
+(define (my-append lst1 lst2)
+  (define (my-append-iter iter acc)
+    (if (null? iter)
+      acc
+      (my-append-iter (cdr iter)
+                      (cons (car iter)
+                             acc))))
+  (my-append-iter (reverse lst1) lst2))
+
+(define (tree-map proc tree)
+  (cond ((null? tree) '())
+        ((pair? tree)
+         (cons (tree-map proc (car tree))
+               (tree-map proc (cdr tree))))
+        (else (proc tree))))
+
+(tree-map (lambda (x) (* x x)) '((1 2) 3 4))
