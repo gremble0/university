@@ -208,6 +208,7 @@
 (define (my-cdr-2 pair)
   (pair (lambda (x y) y)))
 
+;; Trees
 (define (count-leaves-cheat tree)
   (length (flatten tree)))
 
@@ -243,4 +244,46 @@
                (tree-map proc (cdr tree))))
         (else (proc tree))))
 
-(tree-map (lambda (x) (* x x)) '((1 2) 3 4))
+(define (tree-map-2 proc tree)
+  (my-map (lambda (tree)
+            (if (pair? tree)
+              (tree-map-2 proc tree)
+              (proc tree)))
+          tree))
+
+(tree-map-2 (lambda (x) (* x x)) '((1 2) 3 4))
+
+;; sets
+(define (element-of-set? element set)
+  (cond ((null? set) #f)
+        ((eq? element (car set)) #t)
+        (else (element-of-set? element (cdr set)))))
+
+(define (adjoin-set element set)
+  (if (element-of-set? element set)
+    set
+    (cons element set)))
+
+(define (intersection-set set1 set2)
+  (define (intersection-set-impl iter acc)
+    (cond ((null? iter) acc)
+          ((element-of-set? (car iter) set2)
+           (intersection-set-impl (cdr iter)
+                                  (cons (car iter)
+                                         acc)))
+          (else (intersection-set-impl (cdr iter)
+                                       acc))))
+  (intersection-set-impl set1 '()))
+
+(define (union-set set1 set2)
+  (cond ((null? set1) set2)
+        ((element-of-set? (car set1) set2)
+         (union-set (cdr set1) set2))
+        (else (union-set (cdr set1)
+                         (cons (car set1)
+                               set2)))))
+
+(define my-set '(5 19 22 42))
+(define my-set2 '(5 2 44 19))
+(intersection-set my-set my-set2)
+(union-set my-set my-set2)
