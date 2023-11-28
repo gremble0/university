@@ -189,3 +189,29 @@
 
 (weights sample-tree)
 (huffman-leaves sample-tree)
+
+;; 2b:
+(define (make-counter)
+  (let ((count 0))
+    (lambda ()
+      (set! count (+ count 1))
+      count)))
+
+(define (make-stack stack)
+  (lambda (proc . args)
+    (cond ((eq? proc 'push!)
+           (set! stack (append args stack)))
+          ((eq? proc 'pop!)
+           (if (not (null? stack))
+             (set! stack (cdr stack))))
+          ((eq? proc 'stack)
+           stack))))
+
+(define (push! s . args)
+  (apply s 'push! args))
+
+(define (pop! s)
+  (s 'pop!))
+
+(define (stack s)
+  (s 'stack))
