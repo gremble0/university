@@ -1,5 +1,3 @@
-#lang racket
-
 ;; Recursive process
 (define (fac-rec n)
   (if (= n 1)

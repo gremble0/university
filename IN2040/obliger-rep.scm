@@ -1,5 +1,3 @@
-#lang racket
-
 ;; 1a
 (define (sign-if x)
   (if (positive? x)
@@ -85,3 +83,6 @@
             (map2 proc (cdr lst1) (cdr lst2)))))
 
 (map2 (lambda (x y) (/ (+ x y) 2)) '(1 2 3 4) '(3 4 5))
+
+;; 2a:
+(load "huffman.scm")
