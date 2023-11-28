@@ -269,10 +269,8 @@
     (cond ((null? iter) acc)
           ((element-of-set? (car iter) set2)
            (intersection-set-impl (cdr iter)
-                                  (cons (car iter)
-                                         acc)))
-          (else (intersection-set-impl (cdr iter)
-                                       acc))))
+                                  (cons (car iter) acc)))
+          (else (intersection-set-impl (cdr iter) acc))))
   (intersection-set-impl set1 '()))
 
 (define (union-set set1 set2)
@@ -280,10 +278,44 @@
         ((element-of-set? (car set1) set2)
          (union-set (cdr set1) set2))
         (else (union-set (cdr set1)
-                         (cons (car set1)
-                               set2)))))
+                         (cons (car set1) set2)))))
 
 (define my-set '(5 19 22 42))
 (define my-set2 '(5 2 44 19))
-(intersection-set my-set my-set2)
-(union-set my-set my-set2)
+
+;; Ordered list for set implementation (for numbers)
+(define (element-of-set2? element set)
+  (cond ((null? set) #f)
+        ((= element (car set)) #t)
+        ((< element (car set)) #f)
+        (else (element-of-set2? element (cdr set)))))
+
+(define my-set3 '(1 2 4 5 6))
+
+;; Binary trees for set implementation (for numbers)
+(define (make-tree entry left right)
+  (list entry left right))
+
+(define (entry tree) (car tree))
+(define (left-branch tree) (cadr tree))
+(define (right-branch tree) (caddr tree))
+
+(define (element-of-set3? element set)
+  (cond ((null? set) #f)
+        ((= element (entry set)) #t)
+        ((< element (entry set))
+         (element-of-set3? element (left-branch set)))
+        (else
+          (element-of-set3? element (right-branch set)))))
+
+(define (adjoin-set3 element set)
+  (cond ((null? set) (make-tree element '() '()))
+        ((= element (entry set)) set)
+        ((< element (entry set))
+         (make-tree (entry set)
+                    (adjoin-set3 element (left-branch set))
+                    (right-branch set)))
+        (else
+          (make-tree (entry set)
+                     (left-branch set)
+                     (adjoin-set3 element (right-branch set))))))
