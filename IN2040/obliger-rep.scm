@@ -86,3 +86,63 @@
 
 ;; 2a:
 (load "huffman.scm")
+
+(define (p-cons x y)
+  (lambda (proc) (proc x y)))
+
+(define (p-car pair)
+  (pair (lambda (x y) x)))
+
+(define (p-cdr pair)
+  (pair (lambda (x y) y)))
+
+(p-car (p-cons "foo" "bar"))
+(p-cdr (p-cons "foo" "bar"))
+(p-car (p-cdr (p-cons "zoo" (p-cons "foo" "bar"))))
+
+(define foo 42)
+
+((lambda (foo x)
+   (if (= x foo)
+     'same
+     'different))
+   5 foo)
+
+((lambda (bar baz)
+   ((lambda (bar foo)
+      (list foo bar))
+    (list bar baz) baz))
+ foo 'towel)
+
+(define (infix-eval exp)
+  (let ((exp1 (car exp))
+        (operand (cadr exp))
+        (exp2 (caddr exp)))
+    (operand exp1 exp2)))
+
+(define foo (list 21 + 21))
+(define baz (list 21 list 21))
+(define bar (list 84 / 2))
+(infix-eval foo)
+(infix-eval baz)
+(infix-eval bar)
+
+;; error siden '/ ikke er en prosedyre
+(define bah '(84 / 2))
+(infix-eval (list '84 / '2))
+
+(decode sample-code sample-tree)
+
+(define (decode-iter bits tree)
+  (define (decode-iter-impl bits current-branch acc)
+    (if (null? bits)
+      (reverse acc)
+      (let ((next-branch
+              (choose-branch (car bits) current-branch)))
+        (if (leaf? next-branch)
+          (decode-iter-impl (cdr bits) tree (cons (symbol-leaf next-branch)
+                                                  acc))
+          (decode-iter-impl (cdr bits) next-branch acc)))))
+  (decode-iter-impl bits tree '()))
+
+(decode-iter sample-code sample-tree)
