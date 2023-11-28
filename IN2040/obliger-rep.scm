@@ -134,15 +134,58 @@
 (decode sample-code sample-tree)
 
 (define (decode-iter bits tree)
-  (define (decode-iter-impl bits current-branch acc)
+  (define (decode-iter-impl bits current-branch message)
     (if (null? bits)
-      (reverse acc)
+      (reverse message)
       (let ((next-branch
               (choose-branch (car bits) current-branch)))
         (if (leaf? next-branch)
           (decode-iter-impl (cdr bits) tree (cons (symbol-leaf next-branch)
-                                                  acc))
-          (decode-iter-impl (cdr bits) next-branch acc)))))
+                                                  message))
+          (decode-iter-impl (cdr bits) next-branch message)))))
   (decode-iter-impl bits tree '()))
 
-(decode-iter sample-code sample-tree)
+(define (encode message tree)
+  (define (encode-impl message current-branch code)
+    (if (null? message)
+      (reverse code)
+      (cond ((leaf? current-branch)
+             (encode-impl (cdr message) tree code))
+            ((memq (car message) (symbols (left-branch current-branch)))
+             (encode-impl message (left-branch current-branch) (cons 0 code)))
+            (else
+              (encode-impl message (right-branch current-branch) (cons 1 code))))))
+  (encode-impl message tree '()))
+
+(define (grow-huffman-tree freqs)
+  (define (grow-huffman-tree-impl freqs)
+    (if (null? (cdr freqs))
+        (car freqs)
+        (grow-huffman-tree-impl (adjoin-set (make-code-tree (car freqs)
+                                                            (cadr freqs))
+                                            (cddr freqs)))))
+  (grow-huffman-tree-impl (make-leaf-set freqs)))
+
+(define freqs '((a 2) (b 5) (c 1) (d 3) (e 1) (f 3)))
+(define codebook (grow-huffman-tree freqs))
+(decode-iter (encode '(a b c) codebook) codebook)
+
+(define freqs '((samurais 57) (ninjas 20) (fight 45) (night 12) (hide 3)
+                (in 2) (ambush 2) (defeat 1) (the 5) (sword 4) (by 12)
+                (assassin 1) (river 2) (forest 1) (wait 1) (poison 1)))
+(define message '(ninjas fight ninjas fight ninjas ninjas fight
+                         samurais samurais fight samurais fight ninjas
+                         ninjas fight by night))
+(define codebook (grow-huffman-tree freqs))
+
+(define (weights tree)
+  (if (leaf? tree)
+    (list (weight tree))
+    (append (weights (left-branch tree))
+            (weights (right-branch tree)))))
+
+(define (huffman-leaves tree)
+  (map list (symbols tree) (weights tree)))
+
+(weights sample-tree)
+(huffman-leaves sample-tree)
