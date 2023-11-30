@@ -318,13 +318,19 @@
                      (left-branch set)
                      (adjoin-set3 element (right-branch set))))))
 
-;; Destructive operations:
+;; Destructive operations and procedure based object orientation:
+;; Block structure with multiple procedures avoids variable parameters and apply
 (define (make-account balance)
   (lambda (message . args)
     (cond ((eq? message 'withdraw)
-           (set! balance (apply - balance args)))
+           (if (<= (car args) balance)
+             (begin
+               (set! balance (apply - balance args))
+               balance)
+             "Insufficient funds"))
           ((eq? message 'deposit)
-           (set! balance (apply + balance args)))
+             (set! balance (apply + balance args))
+             balance)
           ((eq? message 'balance)
            balance))))
 
@@ -343,4 +349,47 @@
 (define (append-imp lst1 lst2)
   (if (null? (cdr lst1))
     (set-cdr! lst1 lst2)
+    ;; (set! lst1 123)) would not change anything
     (append-imp (cdr lst1) lst2)))
+
+(define a '(1 2 3))
+(define b '(4 5 6))
+
+(append-imp a b))
+(set! b '(7 8 9))
+a ;; -> (1 2 3 4 5 6) ;; not affacted by changing b with `set!'
+b ;; -> (7 8 9)
+
+(define (make-queue queue)
+  (define (add x)
+    (define (add-iter q)
+      (if (null? (cdr q))
+        (set-cdr! q (cons x '()))
+        (add-iter (cdr q))))
+    (if (null? queue)
+      (set! queue (cons x '()))
+      (add-iter queue)))
+  (define (pop)
+    (if (null? queue)
+      '()
+      (let ((popped (car queue)))
+        (set! queue (cdr queue))
+        popped)))
+  (lambda (message)
+    (cond ((eq? message 'add) add)
+          ((eq? message 'pop) pop)
+          ((eq? message 'queue) queue))))
+
+(define (q-add queue x)
+  ((queue 'add) x))
+
+(define (q-pop queue)
+  ((queue 'pop)))
+
+(define (q-get queue)
+  (queue 'queue))
+
+(define q (make-queue '()))
+(q-get q)
+(q-pop q)
+(q-add 4)
