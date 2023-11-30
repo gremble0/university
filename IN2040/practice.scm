@@ -317,3 +317,30 @@
           (make-tree (entry set)
                      (left-branch set)
                      (adjoin-set3 element (right-branch set))))))
+
+;; Destructive operations:
+(define (make-account balance)
+  (lambda (message . args)
+    (cond ((eq? message 'withdraw)
+           (set! balance (apply - balance args)))
+          ((eq? message 'deposit)
+           (set! balance (apply + balance args)))
+          ((eq? message 'balance)
+           balance))))
+
+(define (append-fun-iter lst1 lst2)
+  (define (append-fun-iter-impl lst1 lst2)
+    (if (null? lst1)
+      lst2
+      (append-fun-iter-impl (cdr lst1) (cons (car lst1) lst2))))
+  (append-fun-iter-impl (reverse lst1) lst2))
+
+(define (append-fun-rec lst1 lst2)
+  (if (null? lst1)
+    lst2
+    (cons (car lst1) (append-fun-rec (cdr lst1) lst2))))
+
+(define (append-imp lst1 lst2)
+  (if (null? (cdr lst1))
+    (set-cdr! lst1 lst2)
+    (append-imp (cdr lst1) lst2)))
