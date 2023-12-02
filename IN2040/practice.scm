@@ -392,4 +392,49 @@ b ;; -> (7 8 9)
 (define q (make-queue '()))
 (q-get q)
 (q-pop q)
-(q-add 4)
+(q-add q 4)
+(q-add q 3)
+(q-add q 2)
+(eval '(+ 1 2))
+
+;; exams:
+;;; 2022:
+;;; 1a:
+;;; Memoisering er nyttig for rent funksjonelle programmer siden det lar oss enkelt
+;;; aksessere resultater av prosedyrekall ved gitte parametre. Dette lar seg gjøre
+;;; for rent funksjonelle programmer siden i et slikt paradigme vil prosedyrer med
+;;; samme parametre alltid gi samme returverdi. På den andre siden gjelder dette ikke
+;;; for prosedyrer med bieffekter siden vi da ikke kan garantere at prosedyrekall alltid
+;;; vil gi samme returverdi til enhver tid. Derfor vil å lagre returverdier og returnere
+;;; en memoisert verdi ikke alltid gi riktig svar avhengig av når den kalles.
+
+;;; 2a:
+(define one (list 1))
+(set-cdr! one 7)
+one ;; -> (1 . 7)
+
+;;; 2b:
+(define foo '(1 2 3))
+(let ((bar foo))
+  (set! bar (cons 17 (cdr foo))))
+foo ;; -> (1 2 3)
+
+;;; 2c:
+(define foo '(1 2 3))
+(let ((baz foo))
+  (set-cdr! baz (cons 17 (cdr foo))))
+foo ;; -> (1 17 2 3)
+
+;;; 3:
+;;; 3a:
+(define (reverse-all lst)
+  (reverse
+    (map (lambda (elem)
+           (if (list? elem)
+             (reverse-all elem)
+             elem)) lst)))
+
+(reverse-all (list 1 (list 2 3) (list 4 5)))
+
+;;; 3b:
+;;; (list)
