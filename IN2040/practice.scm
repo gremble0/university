@@ -434,21 +434,62 @@ b ;; -> (7 8 9)
                      (+ (car rest) acc))))
   (sum-iter-impl args 0))
 
-(define (display+ . rest)
+(define (display+ . args)
   (for-each (lambda (m)
               (display m) (newline))
-            rest))
+            args))
+
+;; Associative lists (tables, hashmaps)
+(define table '((a . 1) (b . 2) (c . 3)))
+
+(define (assoc key table)
+  (cond ((null? table) #f)
+        ((eq? (car table) '*table*)
+         (assoc key (cdr table)))
+        ((equal? key (caar table))
+         (car table))
+        (else
+          (assoc key (cdr table)))))
+
+(define (make-table) (list '*table*))
+
+(define (insert! key value table)
+  (let ((record (assoc key table)))
+    (if record
+      (set-cdr! record value)
+      (set-cdr! table (cons (cons key value) (cdr table))))))
+
+(define (remove! key table)
+  (define (remove!-impl prev-rest rest)
+    (cond ((null? rest) #f)
+          ((equal? key (caar rest))
+           (set-cdr! prev-rest (cdr rest)))
+          (else (remove!-impl rest
+                              (cdr rest)))))
+  (if (null? (cdr table))
+    #f
+    (remove!-impl table
+                  (cdr table))))
+
+;; Anonymous recursion (below is implementation of (fac 5))
+((lambda (proc n)
+   (proc proc n))
+   (lambda (proc n)
+     (if (= n 1)
+       1
+       (* n (proc proc (- n 1))))) 5)
 
 ;; exams:
 ;; 2022:
 ;;; 1a:
 ;;; Memoisering er nyttig for rent funksjonelle programmer siden det lar oss enkelt
-;;; aksessere resultater av prosedyrekall ved gitte parametre. Dette lar seg gjøre
-;;; for rent funksjonelle programmer siden i et slikt paradigme vil prosedyrer med
-;;; samme parametre alltid gi samme returverdi. På den andre siden gjelder dette ikke
-;;; for prosedyrer med bieffekter siden vi da ikke kan garantere at prosedyrekall alltid
-;;; vil gi samme returverdi til enhver tid. Derfor vil å lagre returverdier og returnere
-;;; en memoisert verdi ikke alltid gi riktig svar avhengig av når den kalles.
+;;; aksessere resultater av prosedyrekall ved gitte parametre, uten å måtte kalkulere
+;;; hele prosedyren på nytt. Dette lar seg gjøre for rent funksjonelle programmer siden 
+;;; i et slikt paradigme vil prosedyrer med samme parametre alltid gi samme returverdi.
+;;; På den andre siden gjelder dette ikke for prosedyrer med bieffekter siden vi da ikke
+;;; kan garantere at prosedyrekall alltid vil gi samme returverdi til enhver tid. Derfor 
+;;; vil å lagre returverdier og returnere en memoisert verdi ikke alltid gi riktig svar 
+;;; avhengig av når den kalles.
 
 ;;; 2a:
 (define one (list 1))

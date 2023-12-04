@@ -215,3 +215,21 @@
 
 (define (stack s)
   (s 'stack))
+
+;; 3a:
+(define mem
+  (let ((procs (make-table)))
+    (lambda (message proc)
+      (cond ((eq? 'unmemoize message)
+             (lookup proc procs))
+            ((eq? 'memoize message)
+             (let* ((results (make-table))
+                    (memoized-proc
+                      (lambda args
+                        (let ((memoized (lookup args results)))
+                          (or memoized ;; effectively (if memoized memoized ...)
+                            (let ((result (apply proc args)))
+                              (insert! args result results)
+                              result))))))
+               (insert! memoized-proc proc procs)
+               memoized-proc))))))
