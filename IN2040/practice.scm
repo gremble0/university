@@ -397,8 +397,50 @@ b ;; -> (7 8 9)
 (q-add q 2)
 (eval '(+ 1 2))
 
+(define (i-cons x y)
+  (lambda (m)
+    (cond ((eq? m 'car) x)
+          ((eq? m 'cdr) y)
+          ((eq? m 'set-car!) (lambda (v) (set! x v)))
+          ((eq? m 'set-cdr!) (lambda (v) (set! y v))))))
+
+(define (i-car p)
+  (p 'car))
+
+(define (i-cdr p)
+  (p 'cdr))
+
+(define (i-set-car! p v)
+  ((p 'set-car!) v))
+
+(define (i-set-cdr! p v)
+  ((p 'set-cdr!) v))
+
+(define a (i-cons 1 2))
+(i-car a)
+(i-set-car! a 5)
+
+(define (sum-rec . args)
+  (if (null? args)
+    0
+    (+ (car args)
+       (apply sum-rec (cdr args)))))
+
+(define (sum-iter . args)
+  (define (sum-iter-impl rest acc)
+    (if (null? rest)
+      acc
+      (sum-iter-impl (cdr rest)
+                     (+ (car rest) acc))))
+  (sum-iter-impl args 0))
+
+(define (display+ . rest)
+  (for-each (lambda (m)
+              (display m) (newline))
+            rest))
+
 ;; exams:
-;;; 2022:
+;; 2022:
 ;;; 1a:
 ;;; Memoisering er nyttig for rent funksjonelle programmer siden det lar oss enkelt
 ;;; aksessere resultater av prosedyrekall ved gitte parametre. Dette lar seg gjøre
@@ -438,3 +480,19 @@ foo ;; -> (1 17 2 3)
 
 ;;; 3b:
 ;;; (list)
+
+;; 2023 prøveeksamen:
+;;; 6a:
+(define (tree-mirror tree)
+  (if (leaf? tree)
+    tree
+    (make-tree (entry tree)
+               (right-branch tree)
+               (left-branch tree))))
+;;; 6b:
+(define (tree-map proc tree)
+  (if (leaf? tree)
+    (make-leaf (proc (entry tree)))
+    (make-tree (proc (entry tree))
+               (tree-map (left-branch tree))
+               (tree-map (right-branch tree)))))
