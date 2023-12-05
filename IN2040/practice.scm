@@ -120,7 +120,7 @@
 
 (my-map (lambda (x) (* x x)) '(1 2 3))
 (my-map-2 + '(1 2 3) '(1 2 3))
-(my-map-n + '(1 2 3) '(4 5 6) '(7 8 9))
+(my-map-n + '(1 2 3) '(4 5 6) '(7 8 9) '(10 11 12))
 (my-map-n cons '(1 2 3) '(4 5 6) '(7 8 9))
 
 (define (my-map-iter proc lst)
@@ -355,7 +355,7 @@
 (define a '(1 2 3))
 (define b '(4 5 6))
 
-(append-imp a b))
+(append-imp a b)
 (set! b '(7 8 9))
 a ;; -> (1 2 3 4 5 6) ;; not affacted by changing b with `set!'
 b ;; -> (7 8 9)
@@ -395,7 +395,6 @@ b ;; -> (7 8 9)
 (q-add q 4)
 (q-add q 3)
 (q-add q 2)
-(eval '(+ 1 2))
 
 (define (i-cons x y)
   (lambda (m)
@@ -478,6 +477,94 @@ b ;; -> (7 8 9)
      (if (= n 1)
        1
        (* n (proc proc (- n 1))))) 5)
+
+;; Streams:
+(define the-empty-stream '())
+
+(define (stream-car stream)
+  (car stream))
+
+(define (stream-cdr stream)
+  (force (cdr stream)))
+
+(define (stream-null? stream)
+  (null? stream))
+
+;; (define (memoize proc)
+;;   (let ((forced? #f)
+;;         (result #f))
+;;     (lambda ()
+;;       (if (not forced?)
+;;         (begin (set! result (proc))
+;;                (set! forced #t)))
+;;       result)))
+
+(define (my-force promise) (promise))
+
+;; (define-syntax (my-delay x) (lambda () x))
+
+(define-syntax cons-stream
+  (syntax-rules ()
+    ((cons-stream head tail) (cons head (delay tail)))))
+
+(define (stream-filter pred stream)
+  (cond ((stream-null? stream) the-empty-stream)
+        ((pred (stream-car stream))
+         (cons-stream (stream-car stream)
+                      (stream-filter pred (stream-cdr stream))))
+        (else
+          (stream-filter pred (stream-cdr stream)))))
+
+(define (any? pred . targets)
+  (cond ((null? targets) #f)
+        ((pred (car targets)) #t)
+        (else (apply any? pred (cdr targets)))))
+
+(define (fin-stream-map proc . streams)
+  (if (apply any? stream-null? streams)
+    the-empty-stream
+    (cons-stream (apply proc (map stream-car streams))
+                 (apply stream-map proc (map stream-cdr streams)))))
+
+(define (inf-stream-map proc . streams)
+  (cons-stream (apply proc (map stream-car streams))
+               (apply stream-map proc (map stream-cdr streams))))
+
+(define (stream-interval low high)
+  (if (> low high)
+    the-empty-stream
+    (cons-stream low (stream-interval (+ low 1) high))))
+
+(define (show-stream stream . n)
+  (define (show-stream-impl rest i)
+    (cond ((= i 0) (display "...") (newline))
+          ((stream-null? rest) (newline))
+          (else
+            (display (stream-car rest))
+            (display " ") (show-stream (stream-cdr rest) (- i 1)))))
+  (show-stream-impl stream (if (null? n) 15 (car n))))
+
+(define (integers-from n)
+  (cons-stream n (integers-from (+ n 1))))
+
+(define nats (integers-from 1))
+(define evens (cons-stream 0 (stream-filter even? nats)))
+(define odds (stream-filter odd? nats))
+
+(integers-from 2)
+(even-numbers)
+(stream-interval 1 99999999999999999999999999999999999)
+
+(define fibs (cons-stream 0 (cons-stream 1 (inf-stream-map + fibs (stream-cdr fibs)))))
+(show-stream fibs)
+
+(define (powers-of base)
+  (define (powers-of-impl exponent)
+    (cons-stream exponent (powers-of-impl (* base exponent))))
+  (cons-stream 1 (powers-of-impl base)))
+
+(define power-table (inf-stream-map powers-of nats))
+(show-stream power-table)
 
 ;; exams:
 ;; 2022:
