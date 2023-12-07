@@ -644,6 +644,9 @@ foo ;; -> (1 17 2 3)
 
 (reverse-all (list 1 (list 2 3) (list 4 5)))
 
+;;; 3b:
+;;; (list)
+
 ;;; 4:
 ;;; 4a:
 (define (magic n)
@@ -735,7 +738,20 @@ foo ;; -> (1 17 2 3)
                  (set! balance (+ balance to-deposit))
                  balance)
           (begin (set! pass-fails (+ pass-fails 1))
-                 (error "wrong password")))))) ;; or (display ...)
+                 (error "wrong password"))))))) ;; or (display ...)
+
+;; better
+(define (make-account balance password)
+  (let ((pass-fails 0))
+    (lambda (to-deposit in-password)
+      (cond ((>= pass-fails 3)
+             (error "account blocked"))
+            ((eq? in-password password)
+             (set! balance (+ balance to-deposit))
+             balance)
+            (else
+              (set! pass-fails (+ pass-fails 1))
+              (error "wrong password"))))))
 
 (define (deposit account amount password)
   (account amount password))
@@ -743,11 +759,75 @@ foo ;; -> (1 17 2 3)
 (define myaccount (make-account 100 'qwerty))
 (deposit myaccount 50 'qwerty)
 
-
-;;; 3b:
-;;; (list)
-
 ;; 2023 prøveeksamen:
+;;; 2a:
+(define (remove-first pred lst)
+  (cond ((null? lst) '())
+        ((pred (car lst)) (cdr lst))
+        (else
+          (cons (car lst) (remove-first pred (cdr lst))))))
+
+(define (atom? x)
+  (not (list? x)))
+
+(define (flatten lst)
+  (cond ((null? lst) '())
+        ((pair? lst)
+         (append (flatten (car lst)) (flatten (cdr lst))))
+        (else
+          (list lst))))
+
+(define (map+ proc lst)
+  (cond ((null? lst) '())
+        ((pair? (car lst))
+         (cons (map+ proc (car lst)) (map+ proc (cdr lst))))
+        (else
+          (cons (proc (car lst)) (map+ proc (cdr lst))))))
+
+(define (repeat proc n init)
+  (if (= n 0)
+    init
+    (repeat proc (- n 1) (proc init))))
+
+(define (repeat2 proc n)
+  (lambda (init)
+    (repeat proc n init)))
+
+(define (repeat2-2 proc n)
+  (lambda (init)
+    (let loop ((acc init))
+      (if (= n 0)
+        acc
+        (loop (proc acc))))))
+
+(repeat (lambda (x) (* x 2)) 3 5)
+
+(define (curry proc)
+  (lambda (x)
+    (lambda (y)
+      (proc x y))))
+
+(define (undo-cycle-imp lst)
+  (define (iter slow fast)
+    (cond ((equal? slow fast) ;; we assume input is always circular so never check for nulls
+           (set-cdr! slow '()))
+          (else
+            (iter (cdr slow) (cddr fast)))))
+  (iter lst (cdr lst)))
+
+(define (undo-cycle-fun lst)
+  (define (iter slow fast acc)
+    (cond ((equal? slow fast)
+           (reverse (cons (car slow) acc)))
+          (else
+            (iter (cdr slow) (cddr fast) (cons (car slow) acc)))))
+  (iter lst (cdr lst) '()))
+
+(define a '(1 2 3))
+(define b (cdr (cdr a)))
+(set-cdr! b a)
+(undo-cycle-imp a)
+
 ;;; 6a:
 (define (tree-mirror tree)
   (if (leaf? tree)
@@ -762,3 +842,62 @@ foo ;; -> (1 17 2 3)
     (make-tree (proc (entry tree))
                (tree-map (left-branch tree))
                (tree-map (right-branch tree)))))
+
+;;; 7;
+;;; 7a:
+(define (stream-merge s1 s2)
+  (cond ((stream-null? s1) s2)
+        ((stream-null? s2) s1)
+        ((>= (stream-car s1) (stream-car s2)) ;; doesnt specify what to do when equal, so-
+         (cons-stream (stream-car s1)         ;; assume s1 takes priority over s2 with >=
+                      (stream-merge (stream-cdr s1) s2)))
+        (else
+          (cons-stream (stream-car s2)
+                       (stream-merge s1 (stream-cdr s2))))))
+
+;;; 7b:
+;;; Å implementere sorteringsalgoritmer som jobber på strømmer er mulig, så lenge strømmen
+;;; er endelig. For uendelige strømmer går det ikke an å sortere dem siden vi ikke kan vite
+;;; om det finnes et lavere element senere i strømmen (eller hvor mange av de samme elementene
+;;; vi har). Selv om det er mulig å sortere strømmer er dette en ganske meningsløs operasjon,
+;;; siden det krever at vi må evaluere hele strømmen for å kunne sammenligne verdiene, og på
+;;; det punktet kunne vi like godt bare hatt en liste siden vi ikke lenger får noenting ut av
+;;; å lagre datastrukturen som en strøm. I tillegg er det verdt å nevne at generelt sett vil
+;;; sortering av både strømmer og lister i språk som scheme være relativt ueffektivt i forhold
+;;; til andre imperative språk ettersom schemes lister er lenkede lister framfor lettere
+;;; indekserbare arrays. Med det mener jeg at siden sorteringsalgoritmer ofte avhenger av å
+;;; utføre mange indekseringer, på vilkårlige steder i listen vil vi i scheme måtte traversere
+;;; unødvendig mange ganger gjennom samme listen hvis vi for eksempel vil flytte liste[5] til
+;;; liste[6]. Dette kan til en viss grad optimeres dersom man bruker destruktive operasjoner
+;;; som set-car! eller set-cdr!, men vil fortsatt være relativt tregt.
+
+;;; 8:
+(define (make-empty-stack)
+  (let ((stack '()))
+    (define (push x)
+      (set! stack (cons x stack)))
+    (define (pop)
+      (if (empty?) ;; (null? stack)
+        (display "empty stack!\n")
+        (let ((popped (car stack)))
+          (set! stack (cdr stack))
+          popped)))
+    (define (empty?) ;; not in task description
+      (null? stack))
+    (lambda (message) ;; alternatively: define as "dispatch" procedure and return it
+      (cond ((eq? message 'push) push)
+            ((eq? message 'pop) pop)
+            ((eq? message 'stack) stack)
+            ((eq? message 'empty?) empty?)))))
+
+(define (pop s)
+  ((s 'pop)))
+
+(define (push s x)
+  ((s 'push) x))
+
+(define (empty? s)
+  ((s 'empty?)))
+
+(define (stack s) ;; also not in task description
+  (s 'stack))
