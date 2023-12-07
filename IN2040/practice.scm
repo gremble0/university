@@ -481,31 +481,45 @@ b ;; -> (7 8 9)
 ;; Streams:
 (define the-empty-stream '())
 
+(define (my-force promise) (promise))
+
+(define-syntax my-delay
+  (syntax-rules ()
+    ((my-delay exp) (memoize (lambda () exp)))))
+
+(define-syntax cons-stream
+  (syntax-rules ()
+    ((cons-stream head tail) (cons head (my-delay tail)))))
+
 (define (stream-car stream)
   (car stream))
 
 (define (stream-cdr stream)
-  (force (cdr stream)))
+  (my-force (cdr stream)))
 
 (define (stream-null? stream)
   (null? stream))
 
-;; (define (memoize proc)
-;;   (let ((forced? #f)
-;;         (result #f))
-;;     (lambda ()
-;;       (if (not forced?)
-;;         (begin (set! result (proc))
-;;                (set! forced #t)))
-;;       result)))
+(define (memoize proc)
+  (let ((forced? #f)
+        (result #f))
+    (lambda ()
+      (if (not forced?)
+        (begin (set! result (proc))
+               (set! forced? #t)))
+      result)))
 
-(define (my-force promise) (promise))
 
 ;; (define-syntax (my-delay x) (lambda () x))
+;; (define (my-delay x) (lambda () x)) <- does not work because it will first evaluate x before storing delaying it?
+;; (define-syntax my-if
+;;   (syntax-rules (elseif else)
+;;     ((if condition . body elseif body2 )
 
-(define-syntax cons-stream
-  (syntax-rules ()
-    ((cons-stream head tail) (cons head (delay tail)))))
+(my-force (cdr (cons 1 (my-delay (+ 1 2)))))
+
+(stream-cdr (cons-stream 1 2))
+(cdr (cons-stream 1 2))
 
 (define (stream-filter pred stream)
   (cond ((stream-null? stream) the-empty-stream)
@@ -524,11 +538,11 @@ b ;; -> (7 8 9)
   (if (apply any? stream-null? streams)
     the-empty-stream
     (cons-stream (apply proc (map stream-car streams))
-                 (apply stream-map proc (map stream-cdr streams)))))
+                 (apply fin-stream-map proc (map stream-cdr streams)))))
 
 (define (inf-stream-map proc . streams)
   (cons-stream (apply proc (map stream-car streams))
-               (apply stream-map proc (map stream-cdr streams))))
+               (apply inf-stream-map proc (map stream-cdr streams))))
 
 (define (stream-interval low high)
   (if (> low high)
@@ -565,6 +579,30 @@ b ;; -> (7 8 9)
 
 (define power-table (inf-stream-map powers-of nats))
 (show-stream power-table)
+
+(define (stream-append s1 s2)
+  (if (stream-null? s1)
+    s2
+    (cons-stream (stream-car s1)
+                 (stream-append (stream-cdr s1) s2))))
+
+(define (stream-interleave s1 s2)
+  (if (stream-null? s1)
+    s2
+    (cons-stream (stream-car s1)
+                 (stream-interleave s2 (stream-cdr s1)))))
+
+(show-stream (stream-interleave evens odds))
+(show-stream fibs)
+
+;; More random stuff
+(define (my-reverse lst)
+  (let loop ((rest lst)
+             (acc '()))
+    (if (null? rest)
+      acc
+      (loop (cdr rest)
+            (cons (car rest) acc)))))
 
 ;; exams:
 ;; 2022:
@@ -605,6 +643,106 @@ foo ;; -> (1 17 2 3)
              elem)) lst)))
 
 (reverse-all (list 1 (list 2 3) (list 4 5)))
+
+;;; 4:
+;;; 4a:
+(define (magic n)
+  (define (magic-iter n acc)
+    (lambda (x)
+      (if (= n 1)
+        (+ acc x)
+        (magic-iter (- n 1) (+ acc x)))))
+  (magic-iter n 0))
+
+;;; 5:
+;;; 5a:
+(define (height tree)
+  (if (leaf? tree)
+    0
+    (max (+ 1 (height (left-branch tree))
+         (+ 1 (height (right-branch tree)))))))
+
+;; Returnerer lst2 om listene er like lange,
+;; men oppgaveteksten sier hva vi gjør her ikke er viktig
+(define (longest-list lst1 lst2)
+  (if (> (length lst1) (length lst2))
+    lst1
+    lst2))
+
+(define (longest-path tree)
+  (if (leaf? tree)
+    (entry tree)
+    (longest-list (cons (entry tree) (longest-path (left-branch tree)))
+                  (cons (entry tree) (longest-path (right-branch tree))))))
+
+;;; 6:
+;;; 6a:
+(define (stream-diff-1 stream)
+  (let ((stream-offset (stream-cdr stream)))
+    (stream-map - stream stream-offset)))
+
+;;; 6b:
+(define (stream-diff n stream)
+  (if (= n 0)
+    stream
+    (stream-diff (- n 1) (stream-diff-1 stream))))
+
+;;; 6c:
+(define (integers-from n)
+  (cons-stream n (integers-from (+ n 1))))
+
+(define (stream-deriv n proc)
+  (let loop ((n-iter n)
+             (mapped-s (stream-map proc (integers-from 0))))
+    (if (= n-iter 0)
+      mapped-s
+      (loop (- n-iter 1) (stream-map - (stream-cdr mapped-s) mapped-s)))))
+
+(define s0 (stream-deriv 0 (lambda (x) (* x x))))
+(define s1 (stream-deriv 1 (lambda (x) (* x x))))
+(show-stream s1 5)
+
+;;; 6d:
+(define (stream-of-list lst)
+  (define (stream-of-list-impl lst-iter)
+    (if (null? lst-iter)
+      (stream-of-list-impl lst)
+      (cons-stream (car lst-iter)
+                   (stream-of-list-impl (cdr lst-iter)))))
+  (if (null? lst)
+    the-empty-stream
+    (stream-of-list-impl lst)))
+
+;;; 7:
+(define (make-monitor proc)
+  (let ((calls 0))
+    (lambda (arg)
+      (cond ((eq? arg 'how-often) calls)
+            ((eq? arg 'reset!) (set! calls 0))
+            (else
+              (set! calls (+ calls 1))
+              (proc arg))))))
+
+(define (make-account balance password)
+  (let ((pass-fails 0)
+        (blocked #f))
+    (lambda (to-deposit in-password)     ;; We simplify the account to one lambda since we-
+      (if (or (<= 3 pass-fails) blocked) ;; dont need to implement the other functionalities
+        (begin (set! blocked #t)
+               (error "account blocked")) ;; or (display ...)
+        (if (eq? in-password password)
+          (begin (set! pass-fails 0)
+                 (set! balance (+ balance to-deposit))
+                 balance)
+          (begin (set! pass-fails (+ pass-fails 1))
+                 (error "wrong password")))))) ;; or (display ...)
+
+(define (deposit account amount password)
+  (account amount password))
+
+(define myaccount (make-account 100 'qwerty))
+(deposit myaccount 50 'qwerty)
+
 
 ;;; 3b:
 ;;; (list)
