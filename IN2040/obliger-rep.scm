@@ -216,6 +216,14 @@
 (define (stack s)
   (s 'stack))
 
+(define (cycle? lst)
+  (define (cycle?-impl slow fast)
+    (cond ((equal? slow fast) #t)
+          ((null? fast) #f)
+          (else (cycle?-impl (cdr slow) (cddr fast)))))
+  (cycle?-impl lst (cdr lst)))
+
+
 ;; 3a:
 (define mem
   (let ((procs (make-table)))
@@ -233,3 +241,6 @@
                               result))))))
                (insert! memoized-proc proc procs)
                memoized-proc))))))
+
+;; (define (list-to-stream lst)
+
