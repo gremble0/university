@@ -1,5 +1,3 @@
-// package in3030.oblig1;
-
 import java.util.Arrays;
 import java.util.Random;
 
@@ -31,7 +29,7 @@ import java.util.Random;
  *
  */
 
-public class KLargestNumbers {
+public class KLargestNumbersSequential {
     public static void main(String[] args) {
         if (args.length != 2) {
             System.out.println("usage: java KLargestNumbers <int:numsLen> <int:k>");
@@ -46,16 +44,8 @@ public class KLargestNumbers {
         for (int i = 0; i < numsLen; i++) {
             randNums[i] = r.nextInt();
         }
-        int[] randNums2 = Arrays.copyOf(randNums, randNums.length);
 
-        // findKLargest(randNums, k);
-        Arrays.sort(randNums2);
-        //
-        // for (int i = 0; i < k; i++) {
-        //     if (randNums[i] != randNums2[randNums.length - 1 - i]) {
-        //         throw new RuntimeException("Expected " + randNums2[randNums.length - 1 - i] + " but got " + randNums[i]);
-        //     }
-        // }
+        findKLargest(randNums, k);
     }
 
     /**
