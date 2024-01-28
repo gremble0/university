@@ -37,11 +37,12 @@ class KLargestNumbersParallel {
             }
 
             public void run() {
-                System.out.println(this.start);
-                for (int i = start; i < end; i++) {
-                    if (nums[i] > nums[start + k - 1]) {
-                        nums[start + k - 1] = nums[i];
-                        insertSortDesc(nums, start, start + k - 1);
+                insertSortDesc(nums, start, start + k);
+
+                for (int i = start + k; i < end; i++) {
+                    if (nums[i] > nums[start + k]) {
+                        nums[start + k] = nums[i];
+                        insertSortDesc(nums, start, start + k);
                     }
                 }
             }
@@ -51,12 +52,18 @@ class KLargestNumbersParallel {
         Thread[] threads = new Thread[cores];
         
         final int intervalSize = nums.length / cores;
-        for (int i = 0; i < cores; i++) {
-            final int start = intervalSize * i;
-            Thread t = new Thread(new KLargestInInterval(start, start + intervalSize));
-            threads[i] = t;
-            t.start();
+        int start = 0;
+        int end = intervalSize;
+        for (int i = 0; i < cores - 1; i++) {
+            threads[i] = new Thread(new KLargestInInterval(start, end));
+            threads[i].start();
+
+            start += intervalSize;
+            end += intervalSize;
         }
+        // Last thread searches to the end of the array instead of nums[start..start + intervalSize]
+        threads[cores - 1] = new Thread(new KLargestInInterval(start, nums.length));
+        threads[cores - 1].start();
 
         try {
             for (int i = 0; i < threads.length; i++) {
@@ -66,18 +73,18 @@ class KLargestNumbersParallel {
             return;
         }
 
+        start = 0;
         for (int i = 0; i < threads.length; i++) {
-            final int start = intervalSize * i;
-            // System.out.println(start);
             for (int j = start; j < start + k; j++) {
                 if (nums[j] > nums[k - 1]) {
                     nums[k - 1] = nums[j];
                     insertSortDesc(nums, 0, k - 1);
                 }
             }
+            start += intervalSize;
         }
 
-        System.out.println(Arrays.toString(Arrays.copyOf(nums, k)));
+        System.out.println(Arrays.toString(nums));
     }
 
     /**
