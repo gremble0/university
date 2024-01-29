@@ -2,13 +2,16 @@ import java.util.Arrays;
 import java.util.Random;
 
 class KLargestNumbersParallel {
+    static final int cores = Runtime.getRuntime().availableProcessors();
+    static Thread[] threads = new Thread[cores];
+
     public static void main(String[] args) {
         if (args.length != 2) {
             System.out.println("usage: java KLargestNumbersParallel <int:numsLen> <int:k>");
             return;
         }
 
-        int numsLen = Integer.parseInt(args[0]);
+        final int numsLen = Integer.parseInt(args[0]);
         int k = Integer.parseInt(args[1]);
 
         Random r = new Random(7363);
@@ -16,17 +19,36 @@ class KLargestNumbersParallel {
         for (int i = 0; i < numsLen; i++) {
             randNums[i] = r.nextInt();
         }
+        int[] randNums2 = Arrays.copyOf(randNums, randNums.length);
+
+        // Special algorithm won't do anything if k is >= numsLen so just
+        // insertion sort the whole list in descending order and call it a day
+        if (k >= numsLen) {
+            insertSortDesc(randNums, 0, numsLen - 1);
+            return;
+        }
 
         findKLargest(randNums, k);
+
+        System.out.println(Arrays.toString(randNums));
+        Arrays.sort(randNums2);
+        // for (int i = 0; i < k; i++) {
+        //     if (randNums[i] != randNums2[randNums2.length - 1 - i]) {
+        //         throw new RuntimeException("DIFFERENT: " + randNums[i] + " " + randNums2[randNums2.length - 1 - i]);
+        //     }
+        // }
     }
 
     /**
      * Move the k largest elements in an array to its front in place
      *
      * @param nums array to search through
-     * @param k number of elements to find
+     * @param effectiveK number of elements to find
      */
     private static void findKLargest(int[] nums, int k) {
+        final int intervalSize = nums.length / cores;
+        final int effectiveK = Math.min(k, intervalSize);
+
         class KLargestInInterval implements Runnable {
             private final int start;
             private final int end;
@@ -37,21 +59,17 @@ class KLargestNumbersParallel {
             }
 
             public void run() {
-                insertSortDesc(nums, start, start + k);
+                insertSortDesc(nums, start, start + effectiveK);
 
-                for (int i = start + k; i < end; i++) {
-                    if (nums[i] > nums[start + k]) {
-                        nums[start + k] = nums[i];
-                        insertSortDesc(nums, start, start + k);
+                for (int i = start + effectiveK; i < end; i++) {
+                    if (nums[i] > nums[start + effectiveK]) {
+                        nums[start + effectiveK] = nums[i];
+                        insertSortDesc(nums, start, end);
                     }
                 }
             }
         }
 
-        final int cores = Runtime.getRuntime().availableProcessors();
-        Thread[] threads = new Thread[cores];
-        
-        final int intervalSize = nums.length / cores;
         int start = 0;
         int end = intervalSize;
         for (int i = 0; i < cores - 1; i++) {
@@ -62,7 +80,7 @@ class KLargestNumbersParallel {
             end += intervalSize;
         }
         // Last thread searches to the end of the array instead of nums[start..start + intervalSize]
-        threads[cores - 1] = new Thread(new KLargestInInterval(start, nums.length));
+        threads[cores - 1] = new Thread(new KLargestInInterval(start, nums.length - 1));
         threads[cores - 1].start();
 
         try {
@@ -73,18 +91,16 @@ class KLargestNumbersParallel {
             return;
         }
 
-        start = 0;
-        for (int i = 0; i < threads.length; i++) {
-            for (int j = start; j < start + k; j++) {
-                if (nums[j] > nums[k - 1]) {
-                    nums[k - 1] = nums[j];
-                    insertSortDesc(nums, 0, k - 1);
-                }
-            }
-            start += intervalSize;
-        }
-
-        System.out.println(Arrays.toString(nums));
+        // start = 0;
+        // for (int i = 0; i < threads.length; i++) {
+        //     for (int j = start; j < start + effectiveK; j++) {
+        //         if (nums[j] > nums[k - 1]) {
+        //             nums[k - 1] = nums[j];
+        //             insertSortDesc(nums, 0, k);
+        //         }
+        //     }
+        //     start += intervalSize;
+        // }
     }
 
     /**
