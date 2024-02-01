@@ -1,4 +1,5 @@
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.Random;
 
 class KLargestNumbersParallel {
@@ -30,8 +31,22 @@ class KLargestNumbersParallel {
 
         findKLargest(randNums, k);
 
-        System.out.println(Arrays.toString(randNums));
         Arrays.sort(randNums2);
+
+        // Reverse array
+        int start = 0;
+        int end = randNums2.length - 1;
+        while (start < end) {
+            int temp = randNums2[start];
+            randNums2[start] = randNums2[end];
+            randNums2[end] = temp;
+            start++;
+            end--;
+        }
+
+        System.out.println(Arrays.toString(randNums));
+        System.out.println("-----");
+        System.out.println(Arrays.toString(randNums2));
         // for (int i = 0; i < k; i++) {
         //     if (randNums[i] != randNums2[randNums2.length - 1 - i]) {
         //         throw new RuntimeException("DIFFERENT: " + randNums[i] + " " + randNums2[randNums2.length - 1 - i]);
@@ -47,6 +62,8 @@ class KLargestNumbersParallel {
      */
     private static void findKLargest(int[] nums, int k) {
         final int intervalSize = nums.length / cores;
+        // If the intervalSize is greater than k we would index outside the array
+        // if we tried using the normal k, so in this case just use intervalSize as k
         final int effectiveK = Math.min(k, intervalSize);
 
         class KLargestInInterval implements Runnable {
@@ -64,7 +81,7 @@ class KLargestNumbersParallel {
                 for (int i = start + effectiveK; i < end; i++) {
                     if (nums[i] > nums[start + effectiveK]) {
                         nums[start + effectiveK] = nums[i];
-                        insertSortDesc(nums, start, end);
+                        insertSortDesc(nums, start, start + effectiveK);
                     }
                 }
             }
@@ -79,7 +96,7 @@ class KLargestNumbersParallel {
             start += intervalSize;
             end += intervalSize;
         }
-        // Last thread searches to the end of the array instead of nums[start..start + intervalSize]
+        // Last thread searches to the end of the array in case nums.length % cores > 0
         threads[cores - 1] = new Thread(new KLargestInInterval(start, nums.length - 1));
         threads[cores - 1].start();
 
@@ -88,19 +105,20 @@ class KLargestNumbersParallel {
                 threads[i].join();
             }
         } catch(Exception e) {
-            return;
+            System.out.println(e);
+            System.exit(1);
         }
 
-        // start = 0;
-        // for (int i = 0; i < threads.length; i++) {
-        //     for (int j = start; j < start + effectiveK; j++) {
-        //         if (nums[j] > nums[k - 1]) {
-        //             nums[k - 1] = nums[j];
-        //             insertSortDesc(nums, 0, k);
-        //         }
-        //     }
-        //     start += intervalSize;
-        // }
+        start = 0;
+        for (int i = 0; i < threads.length; i++) {
+            for (int j = 0; j < effectiveK; j++) {
+                if (nums[j + start] > nums[k - 1]) {
+                    nums[k] = nums[j + start];
+                    insertSortDesc(nums, 0, k);
+                }
+            }
+            start += intervalSize;
+        }
     }
 
     /**
