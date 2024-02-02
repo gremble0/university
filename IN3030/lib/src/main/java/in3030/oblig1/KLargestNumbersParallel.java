@@ -1,6 +1,35 @@
 import java.util.Arrays;
 import java.util.Random;
 
+/**
+ * A2 parallelized:
+ * (benchmarks ran on computer with 6 cores, 12 threads - availableProcessors() returns 12)
+ * n = 1000:
+ * k = 20:  0.02s user 0.01s system 0.026 total 
+ * k = 100: 0.02s user 0.01s system 0.027 total
+ *
+ * n = 10 000:
+ * k = 20:  0.03s user 0.01s system 0.028 total
+ * k = 100: 0.20s user 0.03s system 0.044 total
+ *
+ * n = 100 000:
+ * k = 20:  0.04s user 0.02s system 0.032 total
+ * k = 100: 0.27s user 0.04s system 0.052 total
+ *
+ * n = 1 000 000:
+ * k = 20:  0.50s user 0.02s system 0.076 total
+ * k = 100: 0.75s user 0.02s system 0.100 total
+ *
+ * n = 10 000 000:
+ * k = 20:  0.59s user 0.03s system 0.123 total
+ * k = 100: 0.75s user 0.03s system 0.138 total
+ *
+ * n = 100 000 000:
+ * k = 20:  1.11s user 0.05s system 0.570 total
+ * k = 100: 1.28s user 0.04s system 0.586 total
+ *
+ */
+
 class KLargestNumbersParallel {
     static final int cores = Runtime.getRuntime().availableProcessors();
     static Thread[] threads = new Thread[cores];
@@ -23,8 +52,7 @@ class KLargestNumbersParallel {
         // Special algorithm won't do anything if k is >= numsLen so just
         // insertion sort the whole list in descending order and call it a day
         if (k >= numsLen) {
-            insertSortDesc(randNums, 0, numsLen - 1);
-            return;
+            k = numsLen - 1;
         }
 
         findKLargest(randNums, k);
@@ -64,16 +92,15 @@ class KLargestNumbersParallel {
         }
 
         int start = 0;
-        int end = intervalSize;
         for (int i = 0; i < cores - 1; i++) {
-            threads[i] = new Thread(new KLargestInInterval(start, end));
+            threads[i] = new Thread(new KLargestInInterval(start, start + intervalSize));
             threads[i].start();
 
             start += intervalSize;
-            end += intervalSize;
         }
         // Last thread searches to the end of the array in case nums.length % cores > 0
         // TODO: make the first core have more to do than the last to optimize
+        // (Better if the first thread we start has to iterate over more numbers)
         threads[cores - 1] = new Thread(new KLargestInInterval(start, nums.length - 1));
         threads[cores - 1].start();
 
