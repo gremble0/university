@@ -1,5 +1,4 @@
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.Random;
 
 class KLargestNumbersParallel {
@@ -20,7 +19,6 @@ class KLargestNumbersParallel {
         for (int i = 0; i < numsLen; i++) {
             randNums[i] = r.nextInt();
         }
-        int[] randNums2 = Arrays.copyOf(randNums, randNums.length);
 
         // Special algorithm won't do anything if k is >= numsLen so just
         // insertion sort the whole list in descending order and call it a day
@@ -30,28 +28,6 @@ class KLargestNumbersParallel {
         }
 
         findKLargest(randNums, k);
-
-        Arrays.sort(randNums2);
-
-        // Reverse array
-        int start = 0;
-        int end = randNums2.length - 1;
-        while (start < end) {
-            int temp = randNums2[start];
-            randNums2[start] = randNums2[end];
-            randNums2[end] = temp;
-            start++;
-            end--;
-        }
-
-        System.out.println(Arrays.toString(randNums));
-        System.out.println("-----");
-        System.out.println(Arrays.toString(randNums2));
-        // for (int i = 0; i < k; i++) {
-        //     if (randNums[i] != randNums2[randNums2.length - 1 - i]) {
-        //         throw new RuntimeException("DIFFERENT: " + randNums[i] + " " + randNums2[randNums2.length - 1 - i]);
-        //     }
-        // }
     }
 
     /**
@@ -97,6 +73,7 @@ class KLargestNumbersParallel {
             end += intervalSize;
         }
         // Last thread searches to the end of the array in case nums.length % cores > 0
+        // TODO: make the first core have more to do than the last to optimize
         threads[cores - 1] = new Thread(new KLargestInInterval(start, nums.length - 1));
         threads[cores - 1].start();
 
@@ -109,15 +86,21 @@ class KLargestNumbersParallel {
             System.exit(1);
         }
 
+        int[] biggest = new int[k];
+
         start = 0;
         for (int i = 0; i < threads.length; i++) {
             for (int j = 0; j < effectiveK; j++) {
-                if (nums[j + start] > nums[k - 1]) {
-                    nums[k] = nums[j + start];
-                    insertSortDesc(nums, 0, k);
+                if (nums[j + start] > biggest[biggest.length - 1]) {
+                    biggest[biggest.length - 1] = nums[j + start];
+                    insertSortDesc(biggest, 0, biggest.length - 1);
                 }
             }
             start += intervalSize;
+        }
+
+        for (int i = 0; i < biggest.length; i++) {
+            nums[i] = biggest[i];
         }
     }
 
