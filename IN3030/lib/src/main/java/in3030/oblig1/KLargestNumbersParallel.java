@@ -2,8 +2,13 @@ import java.util.Arrays;
 import java.util.Random;
 
 /**
- * A2 parallelized:
- * (benchmarks ran on computer with 6 cores, 12 threads - availableProcessors() returns 12)
+ * benchmarks ran on AMD Ryzen 5 3600X, 3.8GHz base clock, 6 cores/12 threads,
+ * using the linux 'time' command. Example of full output: 
+ *      
+ *    ❯ time java KLargestNumbersParallel 100000000 100
+ *    java KLargestNumbersParallel 100000000 100  1.28s user 0.04s system 225% cpu 0.586 total
+ *
+ *              A2 parallelized:
  * n = 1000:
  * k = 20:  0.02s user 0.01s system 0.026 total 
  * k = 100: 0.02s user 0.01s system 0.027 total
@@ -113,6 +118,7 @@ class KLargestNumbersParallel {
             System.exit(1);
         }
 
+        // TODO: move biggest to start of nums in-place
         int[] biggest = new int[k];
 
         start = 0;

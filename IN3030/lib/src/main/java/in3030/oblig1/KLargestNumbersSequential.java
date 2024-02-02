@@ -2,7 +2,13 @@ import java.util.Arrays;
 import java.util.Random;
 
 /**
- *                         A1:                                A2:                
+ * benchmarks ran on AMD Ryzen 5 3600X, 3.8GHz base clock, 6 cores/12 threads,
+ * using the linux 'time' command. Example of full output: 
+ *      
+ *    ❯ time java KLargestNumbersSequential 100000000 100
+ *    java KLargestNumbersSequential 100000000 100  1.28s user 0.04s system 225% cpu 0.586 total
+ *
+ *                         A1:                                A2 sequential:
  * n = 1000:
  * k = 20:  0.01s user 0.02s system 0.028 total | 0.01s user 0.02s system 0.026 total
  * k = 100:            ----||----               | 0.01s user 0.02s system 0.028 total
