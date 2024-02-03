@@ -6,7 +6,7 @@ import java.util.Random;
  * using the linux 'time' command. Example of full output: 
  *      
  *    ❯ time java KLargestNumbersSequential 100000000 100
- *    java KLargestNumbersSequential 100000000 100  1.28s user 0.04s system 225% cpu 0.586 total
+ *    java KLargestNumbersSequential 100000000 100  0.65s user 0.07s system 103% cpu 0.695 total
  *
  *                         A1:                                A2 sequential:
  * n = 1000:
