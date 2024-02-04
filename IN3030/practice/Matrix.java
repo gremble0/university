@@ -8,13 +8,26 @@ public class Matrix {
     }
 
     public void transpose() {
-        for (int i = 0; i < matrix.length; i++) {
-            for (int j = 0; j < matrix[i].length; j++) {
-                int at_ij = matrix[i][j];
-                matrix[i][j] = matrix[j][i];
-                matrix[j][i] = at_ij;
+        for (int row = 0; row < matrix.length; row++) {
+            for (int col = row; col < matrix[row].length; col++) {
+                int at_ij = matrix[row][col];
+                matrix[row][col] = matrix[col][row];
+                matrix[col][row] = at_ij;
             }
         }
+    }
+
+    public Matrix multiply(Matrix other) {
+        Matrix out = new Matrix(matrix);
+
+        for (int row = 0; row < matrix.length; row++) {
+            for (int col = 0; col < matrix[row].length; col++) {
+                for (int otherRow = 0; otherRow < other.matrix.length; otherRow++) {
+                }
+            }
+        }
+
+        return out;
     }
 
     public void print() {
