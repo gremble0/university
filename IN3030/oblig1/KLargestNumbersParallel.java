@@ -53,16 +53,8 @@ class KLargestNumbersParallel {
         for (int i = 0; i < numsLen; i++) {
             randNums[i] = r.nextInt();
         }
-        int[] randNums2 = Arrays.copyOf(randNums, randNums.length);
-        Arrays.sort(randNums2);
 
         findKLargest(randNums, k);
-
-        for (int i = 0; i < k; i++) {
-            if (randNums[i] != randNums2[randNums2.length - i - 1]) {
-                System.out.println(randNums[i] + " " + randNums2[randNums2.length - i - 1]);
-            }
-        }
     }
 
     /**
@@ -76,7 +68,7 @@ class KLargestNumbersParallel {
         // Algorithm doesnt make sense if k is too close to the size of the array.
         // In this case just sort the whole array instead
         if (k >= intervalSize) {
-            insertSortDesc(nums, 0, nums.length - 1);
+            insertSortDescending(nums, 0, nums.length - 1);
             return;
         }
 
@@ -90,12 +82,12 @@ class KLargestNumbersParallel {
             }
 
             public void run() {
-                insertSortDesc(nums, start, start + k);
+                insertSortDescending(nums, start, start + k);
 
                 for (int i = start + k; i < end; i++) {
                     if (nums[i] > nums[start + k]) {
                         nums[start + k] = nums[i];
-                        insertSortDesc(nums, start, start + k);
+                        insertSortDescending(nums, start, start + k);
                     }
                 }
             }
@@ -123,23 +115,21 @@ class KLargestNumbersParallel {
             System.exit(1);
         }
 
-        // TODO: move biggest to start of nums in-place
         int[] biggest = new int[k];
+        Arrays.fill(biggest, Integer.MIN_VALUE);
 
         start = 0;
         for (int i = 0; i < threads.length; i++) {
             for (int j = 0; j < k; j++) {
                 if (nums[j + start] > biggest[biggest.length - 1]) {
                     biggest[biggest.length - 1] = nums[j + start];
-                    insertSortDesc(biggest, 0, biggest.length - 1);
+                    insertSortDescending(biggest, 0, biggest.length - 1);
                 }
             }
             start += intervalSize;
         }
 
-        for (int i = 0; i < biggest.length; i++) {
-            nums[i] = biggest[i];
-        }
+        System.arraycopy(biggest, 0, nums, 0, k);
     }
 
     /**
@@ -149,7 +139,7 @@ class KLargestNumbersParallel {
      * @param start lower range
      * @param end upper range
      */
-    private static void insertSortDesc(int[] nums, int start, int end) {
+    private static void insertSortDescending(int[] nums, int start, int end) {
         int j, t;
         for (int i = start; i < end; i++) {
             t = nums[i + 1];
