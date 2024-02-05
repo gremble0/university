@@ -53,14 +53,16 @@ class KLargestNumbersParallel {
         for (int i = 0; i < numsLen; i++) {
             randNums[i] = r.nextInt();
         }
-
-        // Special algorithm won't do anything if k is >= numsLen so just
-        // insertion sort the whole list in descending order and call it a day
-        if (k >= numsLen) {
-            k = numsLen - 1;
-        }
+        int[] randNums2 = Arrays.copyOf(randNums, randNums.length);
+        Arrays.sort(randNums2);
 
         findKLargest(randNums, k);
+
+        for (int i = 0; i < k; i++) {
+            if (randNums[i] != randNums2[randNums2.length - i - 1]) {
+                System.out.println(randNums[i] + " " + randNums2[randNums2.length - i - 1]);
+            }
+        }
     }
 
     /**
@@ -71,9 +73,12 @@ class KLargestNumbersParallel {
      */
     private static void findKLargest(int[] nums, int k) {
         final int intervalSize = nums.length / cores;
-        // If the intervalSize is greater than k we would index outside the array
-        // if we tried using the normal k, so in this case just use intervalSize as k
-        final int effectiveK = Math.min(k, intervalSize);
+        // Algorithm doesnt make sense if k is too close to the size of the array.
+        // In this case just sort the whole array instead
+        if (k >= intervalSize) {
+            insertSortDesc(nums, 0, nums.length - 1);
+            return;
+        }
 
         class KLargestInInterval implements Runnable {
             private final int start;
@@ -85,12 +90,12 @@ class KLargestNumbersParallel {
             }
 
             public void run() {
-                insertSortDesc(nums, start, start + effectiveK);
+                insertSortDesc(nums, start, start + k);
 
-                for (int i = start + effectiveK; i < end; i++) {
-                    if (nums[i] > nums[start + effectiveK]) {
-                        nums[start + effectiveK] = nums[i];
-                        insertSortDesc(nums, start, start + effectiveK);
+                for (int i = start + k; i < end; i++) {
+                    if (nums[i] > nums[start + k]) {
+                        nums[start + k] = nums[i];
+                        insertSortDesc(nums, start, start + k);
                     }
                 }
             }
@@ -123,7 +128,7 @@ class KLargestNumbersParallel {
 
         start = 0;
         for (int i = 0; i < threads.length; i++) {
-            for (int j = 0; j < effectiveK; j++) {
+            for (int j = 0; j < k; j++) {
                 if (nums[j + start] > biggest[biggest.length - 1]) {
                     biggest[biggest.length - 1] = nums[j + start];
                     insertSortDesc(biggest, 0, biggest.length - 1);
