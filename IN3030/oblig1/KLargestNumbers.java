@@ -1,70 +1,35 @@
 import java.util.Arrays;
-import java.util.Random;
 
-/**
- * benchmarks ran on AMD Ryzen 5 3600X, 3.8GHz base clock, 6 cores/12 threads,
- * using the linux 'time' command. Example of full output: 
- *      
- *    ❯ time java KLargestNumbersParallel 100000000 100
- *    java KLargestNumbersParallel 100000000 100  1.28s user 0.04s system 225% cpu 0.586 total
- *
- *              A2 parallelized:
- * n = 1000:
- * k = 20:  0.02s user 0.01s system 0.026 total 
- * k = 100: 0.02s user 0.01s system 0.027 total
- *
- * n = 10 000:
- * k = 20:  0.03s user 0.01s system 0.028 total
- * k = 100: 0.20s user 0.03s system 0.044 total
- *
- * n = 100 000:
- * k = 20:  0.04s user 0.02s system 0.032 total
- * k = 100: 0.27s user 0.04s system 0.052 total
- *
- * n = 1 000 000:
- * k = 20:  0.50s user 0.02s system 0.076 total
- * k = 100: 0.75s user 0.02s system 0.100 total
- *
- * n = 10 000 000:
- * k = 20:  0.59s user 0.03s system 0.123 total
- * k = 100: 0.75s user 0.03s system 0.138 total
- *
- * n = 100 000 000:
- * k = 20:  1.11s user 0.05s system 0.570 total
- * k = 100: 1.28s user 0.04s system 0.586 total
- *
- */
+public class KLargestNumbers {
+    private int[] nums;
+    private int k;
 
-class KLargestNumbersParallel {
-    static final int cores = Runtime.getRuntime().availableProcessors();
-    static Thread[] threads = new Thread[cores];
-
-    public static void main(String[] args) {
-        if (args.length != 2) {
-            System.out.println("usage: java KLargestNumbersParallel <int:numsLen> <int:k>");
-            return;
-        }
-
-        final int numsLen = Integer.parseInt(args[0]);
-        int k = Integer.parseInt(args[1]);
-
-        Random r = new Random(7363);
-        int[] randNums = new int[numsLen];
-        for (int i = 0; i < numsLen; i++) {
-            randNums[i] = r.nextInt();
-        }
-
-        findKLargest(randNums, k);
+    public KLargestNumbers(int[] nums, int k) {
+        this.nums = nums;
+        this.k = k;
     }
 
     /**
      * Move the k largest elements in an array to its front in place
-     *
-     * @param nums array to search through
-     * @param effectiveK number of elements to find
      */
-    private static void findKLargest(int[] nums, int k) {
+    public void findKLargestSequential() {
+        insertSortDescending(nums, 0, k - 1);
+        for (int i = k - 1; i < nums.length - 1; ++i) {
+            if (nums[i] > nums[k - 1]) {
+                nums[k - 1] = nums[i];
+                insertSortDescending(nums, 0, k - 1);
+            }
+        }
+    }
+
+    /**
+     * Move the k largest elements in an array to its front in place
+     */
+    public void findKLargestParallel() {
+        final int cores = Runtime.getRuntime().availableProcessors();
         final int intervalSize = nums.length / cores;
+        final Thread[] threads = new Thread[cores];
+
         // Algorithm doesnt make sense if k is too close to the size of the array.
         // In this case just sort the whole array instead
         if (k >= intervalSize) {
@@ -115,11 +80,15 @@ class KLargestNumbersParallel {
             System.exit(1);
         }
 
+        pushLargestToFront(threads.length, intervalSize);
+    }
+
+    private void pushLargestToFront(int intervals, int intervalSize) {
         int[] biggest = new int[k];
         Arrays.fill(biggest, Integer.MIN_VALUE);
 
-        start = 0;
-        for (int i = 0; i < threads.length; i++) {
+        int start = 0;
+        for (int i = 0; i < intervals; i++) {
             for (int j = 0; j < k; j++) {
                 if (nums[j + start] > biggest[biggest.length - 1]) {
                     biggest[biggest.length - 1] = nums[j + start];
@@ -139,7 +108,7 @@ class KLargestNumbersParallel {
      * @param start lower range
      * @param end upper range
      */
-    private static void insertSortDescending(int[] nums, int start, int end) {
+    private void insertSortDescending(int[] nums, int start, int end) {
         int j, t;
         for (int i = start; i < end; i++) {
             t = nums[i + 1];
