@@ -3,6 +3,26 @@ import java.util.Arrays;
 public class KLargestNumbers {
     public int[] nums;
     public int k;
+    private class KLargestInInterval implements Runnable {
+        private final int start;
+        private final int end;
+
+        public KLargestInInterval(int start, int end) {
+            this.start = start;
+            this.end = end;
+        }
+
+        public void run() {
+            insertSortDescending(nums, start, start + k);
+
+            for (int i = start + k; i < end; i++) {
+                if (nums[i] > nums[start + k]) {
+                    nums[start + k] = nums[i];
+                    insertSortDescending(nums, start, start + k);
+                }
+            }
+        }
+    }
 
     public KLargestNumbers(int[] nums, int k) {
         this.nums = nums;
@@ -14,14 +34,7 @@ public class KLargestNumbers {
      * using a sequential algorithm
      */
     public void findKLargestSequential() {
-        insertSortDescending(nums, 0, k - 1);
-
-        for (int i = k - 1; i < nums.length - 1; ++i) {
-            if (nums[i] > nums[k - 1]) {
-                nums[k - 1] = nums[i];
-                insertSortDescending(nums, 0, k - 1);
-            }
-        }
+        new KLargestInInterval(0, nums.length).run();
     }
 
     /**
@@ -31,7 +44,6 @@ public class KLargestNumbers {
     public void findKLargestParallel() {
         final int cores = Runtime.getRuntime().availableProcessors();
         final int intervalSize = nums.length / cores;
-        final Thread[] threads = new Thread[cores];
 
         // Algorithm doesnt make sense if k is too close to the size of the array.
         // In this case just sort the whole array instead
@@ -40,26 +52,7 @@ public class KLargestNumbers {
             return;
         }
 
-        class KLargestInInterval implements Runnable {
-            private final int start;
-            private final int end;
-
-            public KLargestInInterval(int start, int end) {
-                this.start = start;
-                this.end = end;
-            }
-
-            public void run() {
-                insertSortDescending(nums, start, start + k);
-
-                for (int i = start + k; i < end; i++) {
-                    if (nums[i] > nums[start + k]) {
-                        nums[start + k] = nums[i];
-                        insertSortDescending(nums, start, start + k);
-                    }
-                }
-            }
-        }
+        final Thread[] threads = new Thread[cores];
 
         int start = 0;
         for (int i = 0; i < cores - 1; i++) {
