@@ -1,8 +1,8 @@
 import java.util.Arrays;
 
 public class KLargestNumbers {
-    private int[] nums;
-    private int k;
+    public int[] nums;
+    public int k;
 
     public KLargestNumbers(int[] nums, int k) {
         this.nums = nums;
@@ -10,10 +10,12 @@ public class KLargestNumbers {
     }
 
     /**
-     * Move the k largest elements in an array to its front in place
+     * Move this.k largest elements of this.nums to its front in place
+     * using a sequential algorithm
      */
     public void findKLargestSequential() {
         insertSortDescending(nums, 0, k - 1);
+
         for (int i = k - 1; i < nums.length - 1; ++i) {
             if (nums[i] > nums[k - 1]) {
                 nums[k - 1] = nums[i];
@@ -23,7 +25,8 @@ public class KLargestNumbers {
     }
 
     /**
-     * Move the k largest elements in an array to its front in place
+     * Move this.k largest elements of this.nums to its front in place
+     * using a parallel algorithm
      */
     public void findKLargestParallel() {
         final int cores = Runtime.getRuntime().availableProcessors();
@@ -83,6 +86,13 @@ public class KLargestNumbers {
         pushLargestToFront(threads.length, intervalSize);
     }
 
+    /**
+     * Find this.k largest numbers in each of the given intervals and keep
+     * the biggest ones in this.nums[0..k]
+     *
+     * @param intervals how many intervals there are in this.nums
+     * @param intervalSize the distance between each interval in this.nums
+     */
     private void pushLargestToFront(int intervals, int intervalSize) {
         int[] biggest = new int[k];
         Arrays.fill(biggest, Integer.MIN_VALUE);
@@ -108,7 +118,7 @@ public class KLargestNumbers {
      * @param start lower range
      * @param end upper range
      */
-    private void insertSortDescending(int[] nums, int start, int end) {
+    private static void insertSortDescending(int[] nums, int start, int end) {
         int j, t;
         for (int i = start; i < end; i++) {
             t = nums[i + 1];
