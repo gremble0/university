@@ -16,10 +16,20 @@ public class KLargestNumbers {
             insertSortDescending(nums, start, start + k);
 
             for (int i = start + k; i < end; i++) {
-                if (nums[i] > nums[start + k]) {
-                    nums[start + k] = nums[i];
-                    insertSortDescending(nums, start, start + k);
+                if (nums[i] > nums[start + k - 1]) {
+                    insertLargeNumber(nums[i]);
                 }
+            }
+        }
+
+        private void insertLargeNumber(int value) {
+            nums[start + k - 1] = value;
+            int i = start + k - 2;
+            while (i >= start && nums[i] < value) {
+                int at_i = nums[i];
+                nums[i] = nums[i + 1];
+                nums[i + 1] = at_i;
+                --i;
             }
         }
     }
@@ -53,7 +63,6 @@ public class KLargestNumbers {
         }
 
         final Thread[] threads = new Thread[cores];
-
         int start = 0;
         for (int i = 0; i < cores - 1; i++) {
             threads[i] = new Thread(new KLargestInInterval(start, start + intervalSize));
@@ -62,8 +71,6 @@ public class KLargestNumbers {
             start += intervalSize;
         }
         // Last thread searches to the end of the array in case nums.length % cores > 0
-        // TODO: make the first core have more to do than the last to optimize
-        // (Better if the first thread we start has to iterate over more numbers)
         threads[cores - 1] = new Thread(new KLargestInInterval(start, nums.length - 1));
         threads[cores - 1].start();
 

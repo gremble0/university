@@ -36,11 +36,9 @@ public class TestKLargestNumbers {
         for (int i = 0; i < k; i++) {
             if (kln1.nums[i] != kln2.nums[i] || kln2.nums[i] != nums[nums.length - i - 1]) {
                 System.out.println("Found diffs at index " + i + ": ");
-                System.out.println("Sequential:  " + kln1.nums[i]);
                 System.out.println("Parallel:    " + kln2.nums[i]);
+                System.out.println("Sequential:  " + kln1.nums[i]);
                 System.out.println("Arrays.sort: " + nums[nums.length - i - 1]);
-
-                return;
             }
         }
 
