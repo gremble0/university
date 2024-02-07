@@ -1,0 +1,7 @@
+Benchmarks were run on an AMD Ryzen 5 3600x 6 cores 12 threads @3.8GHz.
+
+My implementation of the parallelized requires very large values for n to beat the sequential algorithm so I'm sure there is some sort of optimization I'm missing. After some debugging I found that every individual thread in the parallel version takes the same time or longer than the sequential going through the same function (KLargestInInterval.run) even though they they are looping through a smaller ranges of the array.
+
+In terms of differences between values for k, larger values of k (100) generally take slightly longer than smaller (20). This makes sense because the bigger k is the more values do we have to look through in the insertLargeNumber function The differences for these values of k become smaller when n grows very big.
+
+I've included the python script used to generate the graphs which also include all the exact values for execution times gotten from running `java TestKLargestNumbers.java <n> <k>`

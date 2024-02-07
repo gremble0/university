@@ -22,6 +22,11 @@ public class KLargestNumbers {
             }
         }
 
+        /**
+         * Insertion sort type of algorithm for inserting one value into this.nums[start..start + k]
+         *
+         * @param value what to insert
+         */
         private void insertLargeNumber(int value) {
             nums[start + k - 1] = value;
             int i = start + k - 2;
@@ -41,7 +46,7 @@ public class KLargestNumbers {
 
     /**
      * Move this.k largest elements of this.nums to its front in place
-     * using a sequential algorithm
+     * using a sequential algorithm (KLargestInInterval.run on the entire array)
      */
     public void findKLargestSequential() {
         new KLargestInInterval(0, nums.length).run();
