@@ -10,3 +10,4 @@ IN2000/IN2000_team35/
 # Java/python
 *.class
 *$py.class
+__pycache__/

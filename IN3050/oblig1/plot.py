@@ -1,4 +1,7 @@
+from pathlib import Path
 import matplotlib.pyplot as plt
+from exhaustive import exhaustive_search
+
 
 CITY_COORDINATES = {
     "Barcelona": [2.154007, 41.390205], "Belgrade": [20.46, 44.79], "Berlin": [13.40, 52.52], 
@@ -11,10 +14,10 @@ CITY_COORDINATES = {
     "Stockholm": [18.06, 60.33], "Vienna": [16.36, 48.21], "Warsaw": [21.02, 52.24]
 }
 MAP_BOUNDS = [-14.56, 38.43, 37.697 + 0.3, 64.344 + 2.0]
-EUROPE_MAP = plt.imread("map.png")
+EUROPE_MAP = plt.imread("assets/map.png")
 
 
-def plot_plan(city_order: list[str]) -> None:
+def plot_plan(city_order: list[str], file_name: str | Path) -> None:
     _, ax = plt.subplots(figsize=(10, 10))
     ax.imshow(EUROPE_MAP, extent=MAP_BOUNDS, aspect="auto")
 
@@ -36,8 +39,23 @@ def plot_plan(city_order: list[str]) -> None:
 
     plt.plot(next_x, next_y, 'ok', markersize=5)
     plt.text(next_x, next_y, str(index + 1), fontsize=12)
-    plt.savefig("assets/path.png")
+    plt.savefig(file_name)
 
 
-plan = list(CITY_COORDINATES.keys())
-plot_plan(plan)
+# Running the assignment tasks here
+FIRST_SIX_CITIES = {
+    "Barcelona": [2.154007, 41.390205], "Belgrade": [20.46, 44.79], "Berlin": [13.40, 52.52], 
+    "Brussels": [4.35, 50.85], "Bucharest": [26.10, 44.44], "Budapest": [19.04, 47.50],
+}
+
+FIRST_TEN_CITIES = {
+    "Barcelona": [2.154007, 41.390205], "Belgrade": [20.46, 44.79],
+    "Berlin": [13.40, 52.52], "Brussels": [4.35, 50.85],
+    "Bucharest": [26.10, 44.44], "Budapest": [19.04, 47.50],
+    "Copenhagen": [12.57, 55.68], "Dublin": [-6.27, 53.35],
+    "Hamburg": [9.99, 53.55], "Istanbul": [28.98, 41.02],
+}
+
+# Uncomment to run exhaustive search on the dictionaries above
+plot_plan(exhaustive_search(FIRST_SIX_CITIES), "assets/exhaustive_6_cities.png")
+plot_plan(exhaustive_search(FIRST_TEN_CITIES), "assets/exhaustive_10_cities.png")
