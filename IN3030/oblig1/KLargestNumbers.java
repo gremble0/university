@@ -1,5 +1,3 @@
-import java.util.Arrays;
-
 public class KLargestNumbers {
     public int[] nums;
     public int k;
@@ -13,28 +11,12 @@ public class KLargestNumbers {
         }
 
         public void run() {
-            insertSortDescending(nums, start, start + k);
+            insertSortDescending(start, start + k);
 
             for (int i = start + k; i < end; i++) {
                 if (nums[i] > nums[start + k - 1]) {
-                    insertLargeNumber(nums[i]);
+                    insertLargeNumber(start, k, nums[i]);
                 }
-            }
-        }
-
-        /**
-         * Insertion sort type of algorithm for inserting one value into this.nums[start..start + k]
-         *
-         * @param value what to insert
-         */
-        private void insertLargeNumber(int value) {
-            nums[start + k - 1] = value;
-            int i = start + k - 2;
-            while (i >= start && nums[i] < value) {
-                int at_i = nums[i];
-                nums[i] = nums[i + 1];
-                nums[i + 1] = at_i;
-                --i;
             }
         }
     }
@@ -63,7 +45,7 @@ public class KLargestNumbers {
         // Algorithm doesnt make sense if k is too close to the size of the array.
         // In this case just sort the whole array instead
         if (k >= intervalSize) {
-            insertSortDescending(nums, 0, nums.length - 1);
+            insertSortDescending(0, nums.length - 1);
             return;
         }
 
@@ -99,21 +81,24 @@ public class KLargestNumbers {
      * @param intervalSize the distance between each interval in this.nums
      */
     private void pushLargestToFront(int intervals, int intervalSize) {
-        int[] biggest = new int[k];
-        Arrays.fill(biggest, Integer.MIN_VALUE);
+        for (int i = 1; i < intervals; i++) {
+            int start = i * intervalSize;
 
-        int start = 0;
-        for (int i = 0; i < intervals; i++) {
-            for (int j = 0; j < k; j++) {
-                if (nums[j + start] > biggest[biggest.length - 1]) {
-                    biggest[biggest.length - 1] = nums[j + start];
-                    insertSortDescending(biggest, 0, biggest.length - 1);
+            for (int j = 0; j < k && start + j < nums.length; j++) {
+                int pos = start + j;
+
+                if (nums[pos] > nums[k - 1]) {
+                    int temp = nums[pos];
+                    int insertPos = k - 1;
+
+                    while (insertPos > 0 && nums[insertPos - 1] < temp) {
+                        nums[insertPos] = nums[insertPos - 1];
+                        insertPos--;
+                    }
+                    nums[insertPos] = temp;
                 }
             }
-            start += intervalSize;
         }
-
-        System.arraycopy(biggest, 0, nums, 0, k);
     }
 
     /**
@@ -123,7 +108,7 @@ public class KLargestNumbers {
      * @param start lower range
      * @param end upper range
      */
-    private static void insertSortDescending(int[] nums, int start, int end) {
+    private void insertSortDescending(int start, int end) {
         int j, t;
         for (int i = start; i < end; i++) {
             t = nums[i + 1];
@@ -133,6 +118,22 @@ public class KLargestNumbers {
                 j--;
             }
             nums[j + 1] = t;
+        }
+    }
+
+    /**
+     * Insertion sort type of algorithm for inserting one value into this.nums[start..start + k]
+     *
+     * @param value what to insert
+     */
+    private void insertLargeNumber(int start, int k, int value) {
+        nums[start + k - 1] = value;
+        int i = start + k - 2;
+        while (i >= start && nums[i] < value) {
+            int at_i = nums[i];
+            nums[i] = nums[i + 1];
+            nums[i + 1] = at_i;
+            --i;
         }
     }
 }
