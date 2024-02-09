@@ -1,11 +1,6 @@
-# Vim temp files
-*.swp
-*.swo
-
 # Project specific
-Fagstoff/
-Eksamen/
-IN2000/IN2000_team35/
+IN2030/
+IN3110/
 
 # Java/python
 *.class
