@@ -6,3 +6,4 @@ IN3110/
 *.class
 *$py.class
 __pycache__/
+*.ipynb
