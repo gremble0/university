@@ -4,7 +4,6 @@ import csv
 with open("assets/european_cities.csv", "r") as f:
     CSV_DATA = list(csv.reader(f, delimiter=";"))
 
-
 CITY_COORDINATES = {
     "Barcelona": [2.154007, 41.390205], "Belgrade": [20.46, 44.79], "Berlin": [13.40, 52.52], 
     "Brussels": [4.35, 50.85], "Bucharest": [26.10, 44.44], "Budapest": [19.04, 47.50],
@@ -17,3 +16,19 @@ CITY_COORDINATES = {
 }
 MAP_BOUNDS = [-14.56, 38.43, 37.697 + 0.3, 64.344 + 2.0]
 EUROPE_MAP = plt.imread("assets/map.png")
+
+cities = list(CITY_COORDINATES.keys())
+
+indexes: dict[str, int] = {}
+for i in range(len(cities)):
+    indexes[cities[i]] = i
+
+def fitness(solution: tuple[str, ...]) -> float:
+    solution_fitness = 0
+
+    for i in range(len(solution) - 1):
+        distances_from_i = CSV_DATA[indexes[solution[i]] + 1]
+        distance_to_next = distances_from_i[indexes[solution[i + 1]]]
+        solution_fitness += float(distance_to_next)
+
+    return solution_fitness

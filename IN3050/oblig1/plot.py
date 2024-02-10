@@ -1,6 +1,6 @@
 from pathlib import Path
 import matplotlib.pyplot as plt
-from constants import EUROPE_MAP, MAP_BOUNDS, CITY_COORDINATES
+from common import EUROPE_MAP, MAP_BOUNDS, CITY_COORDINATES
 
 
 def plot_plan(city_order: list[str], file_name: str | Path) -> None:
