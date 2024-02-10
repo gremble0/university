@@ -17,18 +17,23 @@ CITY_COORDINATES = {
 MAP_BOUNDS = [-14.56, 38.43, 37.697 + 0.3, 64.344 + 2.0]
 EUROPE_MAP = plt.imread("assets/map.png")
 
-cities = list(CITY_COORDINATES.keys())
 
-indexes: dict[str, int] = {}
-for i in range(len(cities)):
-    indexes[cities[i]] = i
+def _index_of(city: str) -> int:
+    cities = CSV_DATA[0]
+
+    for i in range(len(cities)):
+        if cities[i] == city:
+            return i
+
+    raise KeyError(city + " is not a registered city")
+
 
 def fitness(solution: tuple[str, ...]) -> float:
     solution_fitness = 0
 
     for i in range(len(solution) - 1):
-        distances_from_i = CSV_DATA[indexes[solution[i]] + 1]
-        distance_to_next = distances_from_i[indexes[solution[i + 1]]]
-        solution_fitness += float(distance_to_next)
+        distances_from_i = CSV_DATA[_index_of(solution[i]) + 1]
+
+        solution_fitness += float(distances_from_i[_index_of(solution[i + 1])])
 
     return solution_fitness
