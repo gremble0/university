@@ -5,10 +5,10 @@ from common import fitness
 def exhaustive_search(city_coordinates: dict[str, list[float]]) -> list[str]:
     all_permutations = list(permutations(city_coordinates.keys()))
 
-    best_solution = all_permutations[0]
-    best_solution_fitness: float = fitness(best_solution) # TODO: FIX
+    best_solution = []
+    best_solution_fitness = float("inf")
 
-    for permutation in all_permutations[1:]:
+    for permutation in all_permutations:
         permutation_fitness = fitness(permutation)
 
         if permutation_fitness < best_solution_fitness:

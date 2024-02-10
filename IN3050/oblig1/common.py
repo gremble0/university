@@ -1,9 +1,9 @@
 import matplotlib.pyplot as plt
 import csv
 
+
 with open("assets/european_cities.csv", "r") as f:
     CSV_DATA = list(csv.reader(f, delimiter=";"))
-
 CITY_COORDINATES = {
     "Barcelona": [2.154007, 41.390205], "Belgrade": [20.46, 44.79], "Berlin": [13.40, 52.52], 
     "Brussels": [4.35, 50.85], "Bucharest": [26.10, 44.44], "Budapest": [19.04, 47.50],
@@ -14,26 +14,30 @@ CITY_COORDINATES = {
     "Rome": [12.50, 41.90], "Saint Petersburg": [30.31, 59.94], "Sofia": [23.32, 42.70],
     "Stockholm": [18.06, 60.33], "Vienna": [16.36, 48.21], "Warsaw": [21.02, 52.24]
 }
+CITIES = list(CITY_COORDINATES.keys())
 MAP_BOUNDS = [-14.56, 38.43, 37.697 + 0.3, 64.344 + 2.0]
 EUROPE_MAP = plt.imread("assets/map.png")
 
 
 def _index_of(city: str) -> int:
-    cities = CSV_DATA[0]
-
-    for i in range(len(cities)):
-        if cities[i] == city:
+    for i in range(len(CITIES)):
+        if CITIES[i] == city:
             return i
 
     raise KeyError(city + " is not a registered city")
+
+
+def distance_between(city1: str, city2: str) -> float:
+    index_of_city1 = _index_of(city1)
+    index_of_city2 = _index_of(city2)
+
+    return float(CSV_DATA[index_of_city1 + 1][index_of_city2])
 
 
 def fitness(solution: tuple[str, ...]) -> float:
     solution_fitness = 0
 
     for i in range(len(solution) - 1):
-        distances_from_i = CSV_DATA[_index_of(solution[i]) + 1]
-
-        solution_fitness += float(distances_from_i[_index_of(solution[i + 1])])
+        solution_fitness += distance_between(solution[i], solution[i + 1])
 
     return solution_fitness
