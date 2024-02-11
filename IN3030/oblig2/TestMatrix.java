@@ -18,8 +18,8 @@ public class TestMatrix {
 	Matrix e = a.multiply(b, Oblig2Precode.Mode.SEQ_B_TRANSPOSED);
 
 	// Parallel
-	Matrix f = a.multiply(b, Oblig2Precode.Mode.PARA_NOT_TRANSPOSED);
-	Matrix g = a.multiply(b, Oblig2Precode.Mode.PARA_A_TRANSPOSED);
-	Matrix h = a.multiply(b, Oblig2Precode.Mode.PARA_B_TRANSPOSED);
+	// Matrix f = a.multiply(b, Oblig2Precode.Mode.PARA_NOT_TRANSPOSED);
+	// Matrix g = a.multiply(b, Oblig2Precode.Mode.PARA_A_TRANSPOSED);
+	// Matrix h = a.multiply(b, Oblig2Precode.Mode.PARA_B_TRANSPOSED);
     }
 }

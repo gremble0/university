@@ -8,51 +8,51 @@ public class Matrix {
     }
 
     public Matrix transpose() {
-	Matrix transposed = new Matrix(this.matrix);
+        Matrix transposed = new Matrix(this.matrix);
 
         for (int row = 0; row < matrix.length; row++) {
             for (int col = row; col < matrix[row].length; col++) {
-		transposed.matrix[row][col] = matrix[col][row];
-		transposed.matrix[col][row] = matrix[row][col];
+                transposed.matrix[row][col] = matrix[col][row];
+                transposed.matrix[col][row] = matrix[row][col];
                 // double at_ij = matrix[row][col];
                 // matrix[row][col] = matrix[col][row];
                 // matrix[col][row] = at_ij;
             }
         }
 
-	return transposed;
+        return transposed;
     }
 
     public Matrix multiply(Matrix other, Oblig2Precode.Mode mode) {
-	switch (mode) {
-	    case SEQ_NOT_TRANSPOSED:
-		return multiplySequential(other);
+        switch (mode) {
+            case SEQ_NOT_TRANSPOSED:
+            return multiplySequential(other);
 
-	    case SEQ_A_TRANSPOSED:
-		Matrix this_transposed = transpose();
-		return this_transposed.multiplySequential(other);
+            case SEQ_A_TRANSPOSED:
+            Matrix seq_this_transposed = transpose();
+            return seq_this_transposed.multiplySequential(other);
 
-	    case SEQ_B_TRANSPOSED:
-		Matrix other_transposed = other.transpose();
-		return multiplySequential(other_transposed);
+            case SEQ_B_TRANSPOSED:
+            Matrix seq_other_transposed = other.transpose();
+            return multiplySequential(seq_other_transposed);
 
-	    case PARA_NOT_TRANSPOSED:
-		return multiplyParallel(other);
+            case PARA_NOT_TRANSPOSED:
+            return multiplyParallel(other);
 
-	    case PARA_A_TRANSPOSED:
-		Matrix this_transposed = transpose();
-		return this_transposed.multiplyParallel(other);
+            case PARA_A_TRANSPOSED:
+            Matrix para_this_transposed = transpose();
+            return para_this_transposed.multiplyParallel(other);
 
-	    case PARA_B_TRANSPOSED:
-		Matrix other_transposed = other.transpose();
-		return multiplyParallel(other_transposed);
+            case PARA_B_TRANSPOSED:
+            Matrix para_other_transposed = other.transpose();
+            return multiplyParallel(para_other_transposed);
 
-	    default:
-		throw new EnumConstantNotPresentException(mode.getClass(), mode.getClass().getName());
-	}
+            default:
+            throw new EnumConstantNotPresentException(mode.getClass(), mode.getClass().getName());
+        }
     }
 
-	private Matrix multiplySequential(Matrix other) {
+    private Matrix multiplySequential(Matrix other) {
         Matrix out = new Matrix(Arrays.copyOf(matrix, matrix.length));
 
         for (int row = 0; row < matrix.length; row++) {
@@ -64,11 +64,11 @@ public class Matrix {
         }
 
         return out;
-	}
+    }
 
-	private Matrix multiplyParallel(Matrix other) {
-		return other;
-	}
+    private Matrix multiplyParallel(Matrix other) {
+        return other;
+    }
 
     public void print() {
         for (int i = 0; i < matrix.length; i++) {
