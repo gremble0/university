@@ -51,17 +51,17 @@ public class Matrix {
     }
 
     private Matrix multiplySeq(Matrix other) {
-        Matrix out = new Matrix(Arrays.copyOf(matrix, matrix.length));
+        double[][] multiplied = new double[matrix.length][matrix[0].length];
 
-        for (int row = 0; row < matrix.length; row++) {
-            for (int col = 0; col < matrix[row].length; col++) {
-                for (int otherRow = 0; otherRow < other.matrix.length; otherRow++) {
-                    out.matrix[row][col] += matrix[row][col] * other.matrix[otherRow][col];
+        for (int i = 0; i < matrix.length; i++) {
+            for (int j = 0; j < matrix[i].length; j++) {
+                for (int k = 0; k < other.matrix.length; k++) {
+                    multiplied[i][j] += matrix[i][k] * other.matrix[k][j];
                 }
             }
         }
 
-        return out;
+        return new Matrix(multiplied);
     }
 
     private Matrix multiplySeqTransposed(Matrix transposed) {

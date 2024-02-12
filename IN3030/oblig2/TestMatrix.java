@@ -1,14 +1,11 @@
 public class TestMatrix {
     public static void main(String[] args) {
-	Matrix a = new Matrix(Oblig2Precode.generateMatrixA(42, 5));
+	Matrix a = new Matrix(Oblig2Precode.generateMatrixA(42, 4));
+
 	a.print();
 	System.out.println();
-
-	Matrix b = a.transpose();
-	b.print();
-	System.out.println();
-	a.print();
-
+	Matrix c = a.multiply(a, Oblig2Precode.Mode.SEQ_NOT_TRANSPOSED);
+	c.print();
 	// testForN(100);
 	// testForN(200);
 	// testForN(500);
