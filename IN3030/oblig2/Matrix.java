@@ -1,3 +1,4 @@
+import java.lang.reflect.Constructor;
 import java.util.Arrays;
 
 public class Matrix {
@@ -38,15 +39,16 @@ public class Matrix {
                 break;
 
             case PARA_NOT_TRANSPOSED:
-                return multiplyPara(b);
+                multiplyParallel(b, multiplied, MatrixMultiplyInIntervalNotTransposed.class);
+                break;
 
             case PARA_A_TRANSPOSED:
-                Matrix pat = transpose();
-                return pat.multiplyParaATransposed(b);
+                multiplyParallel(b, multiplied, MatrixMultiplyInIntervalATransposed.class);
+                break;
 
             case PARA_B_TRANSPOSED:
-                Matrix pbt = b.transpose();
-                return multiplyParaBTransposed(pbt);
+                multiplyParallel(b, multiplied, MatrixMultiplyInIntervalBTransposed.class);
+                break;
 
             default:
                 throw new EnumConstantNotPresentException(mode.getClass(), mode.getClass().getName());
@@ -55,41 +57,42 @@ public class Matrix {
         return new Matrix(multiplied);
     }
 
-    private Matrix multiplyPara(Matrix b) {
+    private void multiplyParallel(Matrix b, double[][] dest, Class<? extends MatrixMultiplyInInterval> multiplier) {
         final int cores = Runtime.getRuntime().availableProcessors();
         final int intervalSize = matrix.length / cores;
         final Thread[] threads = new Thread[cores];
+        Constructor<? extends MatrixMultiplyInInterval> matrixConstructor;
 
-        double[][] multiplied = new double[matrix.length][matrix[0].length];
-
-        int start = 0;
-        for (int i = 0; i < cores - 1; i++) {
-            threads[i] = new Thread(new MatrixMultiplyInIntervalNotTransposed(start, start + intervalSize, this, b, multiplied));
-            threads[i].start();
-            
-            start += intervalSize;
+        try {
+             matrixConstructor = multiplier
+                 .getDeclaredConstructor(int.class, int.class, Matrix.class, Matrix.class, double[][].class);
+        } catch (NoSuchMethodException e) {
+            e.printStackTrace();
+            return;
         }
-        threads[cores - 1] = new Thread(new MatrixMultiplyInIntervalNotTransposed(start, matrix.length, this, b, multiplied));
-        threads[cores - 1].start();
+
+        try {
+            int start = 0;
+            for (int i = 0; i < cores - 1; i++) {
+                threads[i] = new Thread(matrixConstructor.newInstance(start, start + intervalSize, this, b, dest));
+                threads[i].start();
+
+                start += intervalSize;
+            }
+            threads[cores - 1] = new Thread(matrixConstructor.newInstance(start, matrix.length, this, b, dest));
+            threads[cores - 1].start();
+        } catch (Exception e) {
+            e.printStackTrace();
+            return;
+        }
 
         try {
             for (int i = 0; i < threads.length; i++) {
                 threads[i].join();
             }
-        } catch(Exception e) {
-            System.out.println(e);
-            System.exit(1);
+        } catch (Exception e) {
+            e.printStackTrace();
         }
-
-        return new Matrix(multiplied);
-    }
-
-    private Matrix multiplyParaATransposed(Matrix transposed) {
-        return null;
-    }
-
-    private Matrix multiplyParaBTransposed(Matrix transposed) {
-        return null;
     }
 
     private double[][] deepCopy() {
@@ -100,11 +103,5 @@ public class Matrix {
         }
 
         return copied;
-    }
-
-    public void print() {
-        for (int i = 0; i < matrix.length; i++) {
-            System.out.println(Arrays.toString(matrix[i]));
-        }
     }
 }
