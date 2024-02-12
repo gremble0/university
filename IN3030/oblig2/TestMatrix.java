@@ -27,24 +27,28 @@ public class TestMatrix {
         Matrix sbt = a.multiply(b, Oblig2Precode.Mode.SEQ_B_TRANSPOSED);
         long afterSbt = System.nanoTime();
 
+
+        System.out.println("SEQ_NOT_TRANSPOSED:  " + (afterSnt - beforeSnt));
+        System.out.println("SEQ_A_TRANSPOSED:    " + (afterSat - beforeSat));
+        System.out.println("SEQ_B_TRANSPOSED:    " + (afterSbt - beforeSbt));
+
+        // Parallel
+        long beforePnt = System.nanoTime();
+        Matrix pnt = a.multiply(b, Oblig2Precode.Mode.PARA_NOT_TRANSPOSED);
+        long afterPnt = System.nanoTime();
+        // Matrix g = a.multiply(b, Oblig2Precode.Mode.PARA_A_TRANSPOSED);
+        // Matrix h = a.multiply(b, Oblig2Precode.Mode.PARA_B_TRANSPOSED);
+
+        System.out.println("PARA_NOT_TRANSPOSED: " + (afterPnt - beforePnt));
+
         for (int i = 0; i < a.matrix.length; i++) {
             for (int j = 0; j < a.matrix[i].length; j++) {
-                if (snt.matrix[i][j] != sat.matrix[i][j]) {
+                if (snt.matrix[i][j] != pnt.matrix[i][j]) {
                     System.out.println("Found diffs at matrix[" + i + "][" + j + "]: ");
-                    System.out.println("SEQ_NOT_TRANSPOSED: " + snt.matrix[i][j]);
-                    System.out.println("SEQ_A_TRANSPOSED:   " + sat.matrix[i][j]);
-                    System.out.println("SEQ_B_TRANSPOSED:   " + sbt.matrix[i][j]);
+                    System.out.println("SEQ_NOT_TRANSPOSED:  " + snt.matrix[i][j]);
+                    System.out.println("PARA_NOT_TRANSPOSED: " + pnt.matrix[i][j]);
                 }
             }
         }
-
-        System.out.println("SEQ_NOT_TRANSPOSED: " + (afterSnt - beforeSnt));
-        System.out.println("SEQ_A_TRANSPOSED:   " + (afterSat - beforeSat));
-        System.out.println("SEQ_B_TRANSPOSED:   " + (afterSbt - beforeSbt));
-
-        // Parallel
-        // Matrix f = a.multiply(b, Oblig2Precode.Mode.PARA_NOT_TRANSPOSED);
-        // Matrix g = a.multiply(b, Oblig2Precode.Mode.PARA_A_TRANSPOSED);
-        // Matrix h = a.multiply(b, Oblig2Precode.Mode.PARA_B_TRANSPOSED);
     }
 }

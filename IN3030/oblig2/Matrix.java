@@ -8,14 +8,21 @@ public class Matrix {
         private double[][] b;
         private double[][] multiplied;
 
-        public MatrixMultiplyInInterval(int startRow, int endRow, double[][] b, double[][] output) {
+        public MatrixMultiplyInInterval(int startRow, int endRow, double[][] b, double[][] multiplied) {
             this.startRow = startRow;
             this.endRow = endRow;
             this.b = b;
-            this.multiplied = output;
+            this.multiplied = multiplied;
         }
 
         public void run() {
+            for (int i = startRow; i < endRow; i++) {
+                for (int j = 0; j < matrix[i].length; j++) {
+                    for (int k = 0; k < b.length; k++) {
+                        multiplied[i][j] += matrix[i][k] * b[k][j];
+                    }
+                }
+            }
         }
     }
 
@@ -67,6 +74,7 @@ public class Matrix {
     }
 
     private Matrix multiplySeq(Matrix b) {
+        // TODO: use private class ?
         double[][] multiplied = new double[matrix.length][matrix[0].length];
 
         for (int i = 0; i < matrix.length; i++) {
@@ -122,7 +130,7 @@ public class Matrix {
             
             start += intervalSize;
         }
-        threads[cores - 1] = new Thread(new MatrixMultiplyInInterval(start, matrix.length - 1, b.matrix, multiplied));
+        threads[cores - 1] = new Thread(new MatrixMultiplyInInterval(start, matrix.length, b.matrix, multiplied));
         threads[cores - 1].start();
 
         try {
