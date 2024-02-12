@@ -24,33 +24,33 @@ public class Matrix {
     public Matrix multiply(Matrix other, Oblig2Precode.Mode mode) {
         switch (mode) {
             case SEQ_NOT_TRANSPOSED:
-                return multiplySequential(other);
+                return multiplySeq(other);
 
             case SEQ_A_TRANSPOSED:
                 Matrix seq_this_transposed = transpose();
-                return seq_this_transposed.multiplySequential(other);
+                return other.multiplySeqTransposed(seq_this_transposed);
 
             case SEQ_B_TRANSPOSED:
                 Matrix seq_other_transposed = other.transpose();
-                return multiplySequential(seq_other_transposed);
+                return multiplySeqTransposed(seq_other_transposed);
 
             case PARA_NOT_TRANSPOSED:
-                return multiplyParallel(other);
+                return multiplyPara(other);
 
             case PARA_A_TRANSPOSED:
                 Matrix para_this_transposed = transpose();
-                return para_this_transposed.multiplyParallel(other);
+                return other.multiplyParaTransposed(para_this_transposed);
 
             case PARA_B_TRANSPOSED:
                 Matrix para_other_transposed = other.transpose();
-                return multiplyParallel(para_other_transposed);
+                return multiplyParaTransposed(para_other_transposed);
 
             default:
                 throw new EnumConstantNotPresentException(mode.getClass(), mode.getClass().getName());
         }
     }
 
-    private Matrix multiplySequential(Matrix other) {
+    private Matrix multiplySeq(Matrix other) {
         Matrix out = new Matrix(Arrays.copyOf(matrix, matrix.length));
 
         for (int row = 0; row < matrix.length; row++) {
@@ -64,8 +64,16 @@ public class Matrix {
         return out;
     }
 
-    private Matrix multiplyParallel(Matrix other) {
-        return other;
+    private Matrix multiplySeqTransposed(Matrix transposed) {
+        return null;
+    }
+
+    private Matrix multiplyPara(Matrix other) {
+        return null;
+    }
+
+    private Matrix multiplyParaTransposed(Matrix transposed) {
+        return null;
     }
 
     private double[][] deepCopy() {

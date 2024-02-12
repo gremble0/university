@@ -14,13 +14,12 @@ public class TestMatrix {
         });
 
         matrix.print();
-
         matrix.transpose();
+        System.out.println();
+        matrix.print();
 
         System.out.println();
-
-        matrix.multiply(matrix2);
-
-        matrix.print();
+        Matrix matrix3 = matrix.multiply(matrix2);
+        matrix3.print();
     }
 }

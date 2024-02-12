@@ -18,11 +18,12 @@ public class Matrix {
     }
 
     public Matrix multiply(Matrix other) {
-        Matrix out = new Matrix(matrix);
+        Matrix out = new Matrix(Arrays.copyOf(matrix, matrix.length));
 
         for (int row = 0; row < matrix.length; row++) {
             for (int col = 0; col < matrix[row].length; col++) {
                 for (int otherRow = 0; otherRow < other.matrix.length; otherRow++) {
+                    out.matrix[row][col] += matrix[row][col] * other.matrix[otherRow][col];
                 }
             }
         }

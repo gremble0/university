@@ -38,6 +38,22 @@
                 }
             }
         }
+
+        public Matrix multiply(Matrix other)
+        {
+            int[][] resultValues = new int[values.Length][];
+
+            for (int row = 0; row < values.Length; ++row)
+            {
+                for (int col = 0; col < values[col].Length; ++col)
+                {
+                    for
+                }
+            }
+
+            Matrix result = new Matrix(resultValues);
+            return result;
+        }
     }
 
     class TestMatrix
