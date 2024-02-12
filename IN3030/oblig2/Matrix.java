@@ -2,6 +2,22 @@ import java.util.Arrays;
 
 public class Matrix {
     public double[][] matrix;
+    private class MatrixMultiplyInInterval implements Runnable {
+        private final int startRow;
+        private final int endRow;
+        private double[][] b;
+        private double[][] multiplied;
+
+        public MatrixMultiplyInInterval(int startRow, int endRow, double[][] b, double[][] output) {
+            this.startRow = startRow;
+            this.endRow = endRow;
+            this.b = b;
+            this.multiplied = output;
+        }
+
+        public void run() {
+        }
+    }
 
     public Matrix(double[][] matrix) {
         this.matrix = matrix;
@@ -39,11 +55,11 @@ public class Matrix {
 
             case PARA_A_TRANSPOSED:
                 Matrix pat = transpose();
-                return b.multiplyParaTransposed(pat);
+                return pat.multiplyParaATransposed(b);
 
             case PARA_B_TRANSPOSED:
                 Matrix pbt = b.transpose();
-                return multiplyParaTransposed(pbt);
+                return multiplyParaBTransposed(pbt);
 
             default:
                 throw new EnumConstantNotPresentException(mode.getClass(), mode.getClass().getName());
@@ -57,20 +73,6 @@ public class Matrix {
             for (int j = 0; j < matrix[i].length; j++) {
                 for (int k = 0; k < b.matrix.length; k++) {
                     multiplied[i][j] += matrix[i][k] * b.matrix[k][j];
-                }
-            }
-        }
-
-        return new Matrix(multiplied);
-    }
-
-    private Matrix multiplySeqBTransposed(Matrix b) {
-        double[][] multiplied = new double[matrix.length][matrix[0].length];
-
-        for (int i = 0; i < matrix.length; i++) {
-            for (int j = 0; j < matrix[i].length; j++) {
-                for (int k = 0; k < b.matrix.length; k++) {
-                    multiplied[i][j] += matrix[i][k] * b.matrix[j][k];
                 }
             }
         }
@@ -92,11 +94,54 @@ public class Matrix {
         return new Matrix(multiplied);
     }
 
+    private Matrix multiplySeqBTransposed(Matrix b) {
+        double[][] multiplied = new double[matrix.length][matrix[0].length];
+
+        for (int i = 0; i < matrix.length; i++) {
+            for (int j = 0; j < matrix[i].length; j++) {
+                for (int k = 0; k < b.matrix.length; k++) {
+                    multiplied[i][j] += matrix[i][k] * b.matrix[j][k];
+                }
+            }
+        }
+
+        return new Matrix(multiplied);
+    }
+
     private Matrix multiplyPara(Matrix b) {
+        final int cores = Runtime.getRuntime().availableProcessors();
+        final int intervalSize = matrix.length / cores;
+        final Thread[] threads = new Thread[cores];
+
+        double[][] multiplied = new double[matrix.length][matrix[0].length];
+
+        int start = 0;
+        for (int i = 0; i < cores - 1; i++) {
+            threads[i] = new Thread(new MatrixMultiplyInInterval(start, start + intervalSize, b.matrix, multiplied));
+            threads[i].start();
+            
+            start += intervalSize;
+        }
+        threads[cores - 1] = new Thread(new MatrixMultiplyInInterval(start, matrix.length - 1, b.matrix, multiplied));
+        threads[cores - 1].start();
+
+        try {
+            for (int i = 0; i < threads.length; i++) {
+                threads[i].join();
+            }
+        } catch(Exception e) {
+            System.out.println(e);
+            System.exit(1);
+        }
+
+        return new Matrix(multiplied);
+    }
+
+    private Matrix multiplyParaATransposed(Matrix transposed) {
         return null;
     }
 
-    private Matrix multiplyParaTransposed(Matrix transposed) {
+    private Matrix multiplyParaBTransposed(Matrix transposed) {
         return null;
     }
 
