@@ -1,9 +1,9 @@
 public class TestMatrix {
     public static void main(String[] args) {
         testForN(100);
-        // testForN(200);
-        // testForN(500);
-        // testForN(1000);
+        testForN(200);
+        testForN(500);
+        testForN(1000);
     }
 
     private static void testForN(final int n) {
@@ -12,6 +12,8 @@ public class TestMatrix {
         Matrix a = new Matrix(Oblig2Precode.generateMatrixA(seed, n));
         Matrix b = new Matrix(Oblig2Precode.generateMatrixB(seed, n));
 
+        System.out.println("-------TESTING FOR n=" + n + "-------");
+        
         // Sequential
         long beforeSnt = System.nanoTime();
         Matrix snt = a.multiply(b, Oblig2Precode.Mode.SEQ_NOT_TRANSPOSED);
