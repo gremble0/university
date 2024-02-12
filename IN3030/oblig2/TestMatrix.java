@@ -46,10 +46,18 @@ public class TestMatrix {
 
         for (int i = 0; i < a.matrix.length; i++) {
             for (int j = 0; j < a.matrix[i].length; j++) {
-                if (snt.matrix[i][j] != pnt.matrix[i][j]) {
+                if (snt.matrix[i][j] != sat.matrix[i][j] ||
+                    snt.matrix[i][j] != sbt.matrix[i][j] ||
+                    snt.matrix[i][j] != pnt.matrix[i][j] ||
+                    snt.matrix[i][j] != pat.matrix[i][j] ||
+                    snt.matrix[i][j] != pbt.matrix[i][j]) {
                     System.out.println("Found diffs at matrix[" + i + "][" + j + "]: ");
                     System.out.println("SEQ_NOT_TRANSPOSED:  " + snt.matrix[i][j]);
+                    System.out.println("SEQ_A_TRANSPOSED:    " + sat.matrix[i][j]);
+                    System.out.println("SEQ_B_TRANSPOSED:    " + sbt.matrix[i][j]);
                     System.out.println("PARA_NOT_TRANSPOSED: " + pnt.matrix[i][j]);
+                    System.out.println("PARA_A_TRANSPOSED:   " + pat.matrix[i][j]);
+                    System.out.println("PARA_B_TRANSPOSED:   " + pbt.matrix[i][j]);
                 }
             }
         }
@@ -57,5 +65,9 @@ public class TestMatrix {
         System.out.println("PARA_NOT_TRANSPOSED: " + (afterPnt - beforePnt));
         System.out.println("PARA_A_TRANSPOSED:   " + (afterPat - beforePat));
         System.out.println("PARA_B_TRANSPOSED:   " + (afterPbt - beforePbt));
+    }
+
+    public static boolean a(int[]... asd) {
+        return false;
     }
 }

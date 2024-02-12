@@ -1,5 +1,4 @@
 import java.lang.reflect.Constructor;
-import java.util.Arrays;
 
 public class Matrix {
     public double[][] matrix;
@@ -9,8 +8,7 @@ public class Matrix {
     }
 
     public Matrix transpose() {
-        // TODO: Check if its faster to not copy and loop over more of the matrix instead
-        double[][] transposed = deepCopy();
+        double[][] transposed = new double[matrix.length][matrix[0].length];
 
         for (int row = 0; row < matrix.length; row++) {
             for (int col = row; col < matrix[row].length; col++) {
@@ -61,17 +59,11 @@ public class Matrix {
         final int cores = Runtime.getRuntime().availableProcessors();
         final int intervalSize = matrix.length / cores;
         final Thread[] threads = new Thread[cores];
-        Constructor<? extends MatrixMultiplyInInterval> matrixConstructor;
 
         try {
-             matrixConstructor = multiplier
+             Constructor<? extends MatrixMultiplyInInterval> matrixConstructor = multiplier
                  .getDeclaredConstructor(int.class, int.class, Matrix.class, Matrix.class, double[][].class);
-        } catch (NoSuchMethodException e) {
-            e.printStackTrace();
-            return;
-        }
 
-        try {
             int start = 0;
             for (int i = 0; i < cores - 1; i++) {
                 threads[i] = new Thread(matrixConstructor.newInstance(start, start + intervalSize, this, b, dest));
@@ -81,27 +73,12 @@ public class Matrix {
             }
             threads[cores - 1] = new Thread(matrixConstructor.newInstance(start, matrix.length, this, b, dest));
             threads[cores - 1].start();
-        } catch (Exception e) {
-            e.printStackTrace();
-            return;
-        }
 
-        try {
             for (int i = 0; i < threads.length; i++) {
                 threads[i].join();
             }
         } catch (Exception e) {
             e.printStackTrace();
         }
-    }
-
-    private double[][] deepCopy() {
-        double[][] copied = new double[matrix.length][matrix[0].length];
-
-        for (int i = 0; i < matrix.length; i++) {
-            copied[i] = Arrays.copyOf(matrix[i], matrix[i].length);
-        }
-
-        return copied;
     }
 }
