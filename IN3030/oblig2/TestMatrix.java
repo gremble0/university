@@ -1,9 +1,18 @@
 public class TestMatrix {
     public static void main(String[] args) {
-	testForN(100);
-	testForN(200);
-	testForN(500);
-	testForN(1000);
+	Matrix a = new Matrix(Oblig2Precode.generateMatrixA(42, 5));
+	a.print();
+	System.out.println();
+
+	Matrix b = a.transpose();
+	b.print();
+	System.out.println();
+	a.print();
+
+	// testForN(100);
+	// testForN(200);
+	// testForN(500);
+	// testForN(1000);
     }
 
     private static void testForN(final int n) {
