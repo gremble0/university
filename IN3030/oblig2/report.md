@@ -33,6 +33,8 @@ I have included the file TestMatrix.java for getting benchmarks and verifying th
 final int seed = 42;
 ```
 
+<div style="page-break-after: always;"></div>
+
 It then multiplies them with each of the algorithms, verifying the results and printing the benchmarks to stdout. Example usage:
 
 ```sh

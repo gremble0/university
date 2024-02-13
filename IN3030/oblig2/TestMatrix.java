@@ -1,9 +1,8 @@
 public class TestMatrix {
     public static void main(String[] args) {
-        testForN(100);
-        testForN(200);
-        testForN(500);
-        testForN(1000);
+        for (String arg : args) {
+            testForN(Integer.parseInt(arg));
+        }
     }
 
     private static void testForN(final int n) {
