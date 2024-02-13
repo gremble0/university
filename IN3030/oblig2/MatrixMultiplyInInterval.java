@@ -13,6 +13,10 @@ public abstract class MatrixMultiplyInInterval implements Runnable {
         this.dest = dest;
     }
 
+    /**
+     * Runnable for multiplying two matrices where neither have been transposed
+     *
+     */
     public static class NotTransposed extends MatrixMultiplyInInterval {
         public NotTransposed(int startRow, int endRow, Matrix a, Matrix b, double[][] dest) {
             super(startRow, endRow, a, b, dest);
@@ -29,6 +33,10 @@ public abstract class MatrixMultiplyInInterval implements Runnable {
         }
     }
 
+    /**
+     * Runnable for multiplying two matrices where a has already been transposed
+     *
+     */
     public static class ATransposed extends MatrixMultiplyInInterval {
         public ATransposed(int startRow, int endRow, Matrix a, Matrix b, double[][] dest) {
             super(startRow, endRow, a, b, dest);
@@ -45,6 +53,10 @@ public abstract class MatrixMultiplyInInterval implements Runnable {
         }
     }
 
+    /**
+     * Runnable for multiplying two matrices where b has already been transposed
+     *
+     */
     public static class BTransposed extends MatrixMultiplyInInterval {
         public BTransposed(int startRow, int endRow, Matrix a, Matrix b, double[][] dest) {
             super(startRow, endRow, a, b, dest);
