@@ -12,4 +12,52 @@ public abstract class MatrixMultiplyInInterval implements Runnable {
         this.b = b;
         this.dest = dest;
     }
+
+    public static class NotTransposed extends MatrixMultiplyInInterval {
+        public NotTransposed(int startRow, int endRow, Matrix a, Matrix b, double[][] dest) {
+            super(startRow, endRow, a, b, dest);
+        }
+
+        public void run() {
+            for (int i = startRow; i < endRow; i++) {
+                for (int j = 0; j < a.matrix[i].length; j++) {
+                    for (int k = 0; k < b.matrix.length; k++) {
+                        dest[i][j] += a.matrix[i][k] * b.matrix[k][j];
+                    }
+                }
+            }
+        }
+    }
+
+    public static class ATransposed extends MatrixMultiplyInInterval {
+        public ATransposed(int startRow, int endRow, Matrix a, Matrix b, double[][] dest) {
+            super(startRow, endRow, a, b, dest);
+        }
+
+        public void run() {
+            for (int i = startRow; i < endRow; i++) {
+                for (int j = 0; j < a.matrix[i].length; j++) {
+                    for (int k = 0; k < b.matrix.length; k++) {
+                        dest[i][j] += a.matrix[k][i] * b.matrix[k][j];
+                    }
+                }
+            }
+        }
+    }
+
+    public static class BTransposed extends MatrixMultiplyInInterval {
+        public BTransposed(int startRow, int endRow, Matrix a, Matrix b, double[][] dest) {
+            super(startRow, endRow, a, b, dest);
+        }
+
+        public void run() {
+            for (int i = startRow; i < endRow; i++) {
+                for (int j = 0; j < a.matrix[i].length; j++) {
+                    for (int k = 0; k < b.matrix.length; k++) {
+                        dest[i][j] += a.matrix[i][k] * b.matrix[j][k];
+                    }
+                }
+            }
+        }
+    }
 }

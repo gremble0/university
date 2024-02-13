@@ -1,4 +1,5 @@
 import java.lang.reflect.Constructor;
+import java.util.Arrays;
 
 public class Matrix {
     public double[][] matrix;
@@ -25,27 +26,27 @@ public class Matrix {
 
         switch (mode) {
             case SEQ_NOT_TRANSPOSED:
-                new MatrixMultiplyInIntervalNotTransposed(0, matrix.length, this, b, multiplied).run();
+                new MatrixMultiplyInInterval.NotTransposed(0, matrix.length, this, b, multiplied).run();
                 break;
 
             case SEQ_A_TRANSPOSED:
-                new MatrixMultiplyInIntervalATransposed(0, matrix.length, this, b, multiplied).run();
+                new MatrixMultiplyInInterval.ATransposed(0, matrix.length, transpose(), b, multiplied).run();
                 break;
 
             case SEQ_B_TRANSPOSED:
-                new MatrixMultiplyInIntervalBTransposed(0, matrix.length, this, b, multiplied).run();
+                new MatrixMultiplyInInterval.BTransposed(0, matrix.length, this, b.transpose(), multiplied).run();
                 break;
 
             case PARA_NOT_TRANSPOSED:
-                multiplyParallel(b, multiplied, MatrixMultiplyInIntervalNotTransposed.class);
+                multiplyParallel(b, multiplied, MatrixMultiplyInInterval.NotTransposed.class);
                 break;
 
             case PARA_A_TRANSPOSED:
-                multiplyParallel(b, multiplied, MatrixMultiplyInIntervalATransposed.class);
+                transpose().multiplyParallel(b, multiplied, MatrixMultiplyInInterval.ATransposed.class);
                 break;
 
             case PARA_B_TRANSPOSED:
-                multiplyParallel(b, multiplied, MatrixMultiplyInIntervalBTransposed.class);
+                multiplyParallel(b.transpose(), multiplied, MatrixMultiplyInInterval.BTransposed.class);
                 break;
 
             default:
