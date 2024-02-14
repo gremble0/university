@@ -19,19 +19,8 @@ MAP_BOUNDS = [-14.56, 38.43, 37.697 + 0.3, 64.344 + 2.0]
 EUROPE_MAP = plt.imread("assets/map.png")
 
 
-def _index_of(city: str) -> int:
-    for i in range(len(CITIES)):
-        if CITIES[i] == city:
-            return i
-
-    raise KeyError(city + " is not a registered city")
-
-
 def distance_between(city1: str, city2: str) -> float:
-    index_of_city1 = _index_of(city1)
-    index_of_city2 = _index_of(city2)
-
-    return float(CSV_DATA[index_of_city1 + 1][index_of_city2])
+    return float(CSV_DATA[CITIES.index(city1) + 1][CITIES.index(city2)])
 
 
 def fitness(solution: tuple[str, ...]) -> float:
