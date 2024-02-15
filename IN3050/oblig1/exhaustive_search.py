@@ -3,7 +3,7 @@ from common import fitness
 
 
 def exhaustive_search(city_coordinates: dict[str, list[float]]) -> list[str]:
-    all_permutations = list(permutations(city_coordinates.keys()))
+    all_permutations = [list(p) for p in permutations(city_coordinates.keys())]
 
     best_solution = []
     best_solution_fitness = float("inf")

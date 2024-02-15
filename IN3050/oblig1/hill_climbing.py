@@ -1,21 +1,33 @@
 import random
-
-from itertools import permutations
 from common import fitness
 
 
 def hill_climbing(city_coordinates: dict[str, list[float]]) -> list[str]:
-    all_permutations = list(permutations(city_coordinates.keys()))
-
-    best_solution = random.choice(all_permutations)
-    prev_best_solution: tuple[str, ...] | None = None
+    cities = list(city_coordinates.keys())
+    best_solution = random.sample(cities, len(cities))
+    prev_best_solution: list[str] | None = None
 
     while best_solution != prev_best_solution:
         prev_best_solution = best_solution
-        best_solution = better_neighbor(best_solution)
+        best_solution = best_neighbor(best_solution)
 
     return list(best_solution)
 
 
-def better_neighbor(solution: tuple[str, ...]) -> tuple[str, ...]:
-    pass
+def best_neighbor(solution: list[str]) -> list[str]:
+    best = solution
+    best_fitness = fitness(solution)
+
+    for i in range(len(solution) - 1):
+        for j in range(i + 1, len(solution)):
+            sol = solution
+            at_i = sol[i]
+            sol[i] = sol[j]
+            sol[j] = at_i
+
+            sol_fitness = fitness(sol)
+            if sol_fitness > best_fitness:
+                best = sol
+                best_fitness = sol_fitness
+
+    return best

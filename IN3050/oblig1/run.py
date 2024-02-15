@@ -13,22 +13,22 @@ ALL_CITIES = CITY_COORDINATES
 
 
 # ---------- EXHAUSTIVE SEARCH ---------- 
-plot_plan(exhaustive_search(SIX_CITIES), "assets/exhaustive_6_cities.png")
-plot_plan(exhaustive_search(TEN_CITIES), "assets/exhaustive_10_cities.png")
-
-# The shortest way to travel between the first 10 cities is the following sequence and is 5272.68km:
+# plot_plan(exhaustive_search(SIX_CITIES), "assets/exhaustive_6_cities.png")
+# plot_plan(exhaustive_search(TEN_CITIES), "assets/exhaustive_10_cities.png")
 #
-#       ('Barcelona', 'Dublin', 'Brussels', 'Hamburg', 'Copenhagen',
-#        'Berlin', 'Budapest', 'Belgrade', 'Bucharest', 'Istanbul')
+# # The shortest way to travel between the first 10 cities is the following sequence and is 5272.68km:
+# #
+# #       ('Barcelona', 'Dublin', 'Brussels', 'Hamburg', 'Copenhagen',
+# #        'Berlin', 'Budapest', 'Belgrade', 'Bucharest', 'Istanbul')
+# #
+# # On my computer this sequence consistently takes ~10 seconds to find with exhaustive search.
+# # Knowing the time complexity of this algorithm to be O(n!) we can then approximate how long it
+# # would take to run exhaustive search on all 24 cities.
+# time_10_cities = 10.0
+# factorial_ratio = factorial(24) / factorial(10)
+# time_24_cities = time_10_cities * factorial_ratio
 #
-# On my computer this sequence consistently takes ~10 seconds to find with exhaustive search.
-# Knowing the time complexity of this algorithm to be O(n!) we can then approximate how long it
-# would take to run exhaustive search on all 24 cities.
-time_10_cities = 10.0
-factorial_ratio = factorial(24) / factorial(10)
-time_24_cities = time_10_cities * factorial_ratio
-
-print("Time to run exhaustive search on all 24 cities:", time_24_cities) # -> 1.78 * 10^18 (~54.2 million years)
+# print("Time to run exhaustive search on all 24 cities:", time_24_cities) # -> 1.78 * 10^18 (~54.2 million years)
 
 
 # ---------- HILL CLIMBING ---------- 
