@@ -35,18 +35,18 @@ ALL_CITIES = CITY_COORDINATES
 plot_plan(hill_climbing(TEN_CITIES), "assets/hill_climbing_10_cities.png")
 plot_plan(hill_climbing(ALL_CITIES), "assets/hill_climbing_24_cities.png")
 
-ten_cities_times = []
-twentyfour_cities_times = []
-
-for i in range(20):
-    before_ten_cities = time.time()
-    hill_climbing(TEN_CITIES)
-    ten_cities_times.append(time.time() - before_ten_cities)
-    
-    before_twentyfour_cities = time.time()
-    hill_climbing(ALL_CITIES)
-    twentyfour_cities_times.append(time.time() - before_twentyfour_cities)
-
-ten_cities_avg = sum(ten_cities_times) / len(ten_cities_times)
-twentyfour_cities_avg = sum(twentyfour_cities_times) / len(twentyfour_cities_times)
-print(f"{ten_cities_avg=:.5f}\n{twentyfour_cities_avg=:.5f}")
+# ten_cities_times = []
+# twentyfour_cities_times = []
+#
+# for i in range(20):
+#     before_ten_cities = time.time()
+#     hill_climbing(TEN_CITIES)
+#     ten_cities_times.append(time.time() - before_ten_cities)
+#     
+#     before_twentyfour_cities = time.time()
+#     hill_climbing(ALL_CITIES)
+#     twentyfour_cities_times.append(time.time() - before_twentyfour_cities)
+#
+# ten_cities_avg = sum(ten_cities_times) / len(ten_cities_times)
+# twentyfour_cities_avg = sum(twentyfour_cities_times) / len(twentyfour_cities_times)
+# print(f"{ten_cities_avg=:.5f}\n{twentyfour_cities_avg=:.5f}")

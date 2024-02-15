@@ -15,19 +15,20 @@ def hill_climbing(city_coordinates: dict[str, list[float]]) -> list[str]:
 
 
 def best_neighbor(solution: list[str]) -> list[str]:
-    best = solution
-    best_fitness = fitness(solution)
+    best_solution = solution
+    best_distance = fitness(solution)
 
-    for i in range(len(solution) - 1):
+    for i in range(1, len(solution) - 1):
         for j in range(i + 1, len(solution)):
-            sol = solution
-            at_i = sol[i]
-            sol[i] = sol[j]
-            sol[j] = at_i
+            if j - i == 1:
+                continue
 
-            sol_fitness = fitness(sol)
-            if sol_fitness > best_fitness:
-                best = sol
-                best_fitness = sol_fitness
+            new_solution = solution[:] # [:] just copies the list
+            new_solution[i:j] = reversed(solution[i:j])
+            new_distance = fitness(new_solution)
 
-    return best
+            if new_distance < best_distance:
+                best_distance = new_distance
+                best_solution = new_solution
+
+    return best_solution
