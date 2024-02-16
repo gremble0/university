@@ -1,3 +1,4 @@
+from pathlib import Path
 import matplotlib.pyplot as plt
 import csv
 
@@ -30,3 +31,28 @@ def fitness(solution: list[str]) -> float:
         solution_fitness += distance_between(solution[i], solution[i + 1])
 
     return solution_fitness
+
+
+def plot(solution: list[str], file_name: str | Path) -> None:
+    _, ax = plt.subplots(figsize=(10, 10))
+    ax.imshow(EUROPE_MAP, extent=MAP_BOUNDS, aspect="auto")
+
+    next_x, next_y, index = 0, 0, 0
+    for index in range(len(solution) - 1):
+        current_city_coords = CITY_COORDINATES[solution[index]]
+        next_city_coords = CITY_COORDINATES[solution[index+1]]
+        x, y = current_city_coords[0], current_city_coords[1]
+
+        next_x, next_y = next_city_coords[0], next_city_coords[1]
+        plt.plot([x, next_x], [y, next_y])
+
+        plt.plot(x, y, "ok", markersize=5)
+        plt.text(x, y, str(index), fontsize=12)
+
+    first_city_coords = CITY_COORDINATES[solution[0]]
+    first_x, first_y = first_city_coords[0], first_city_coords[1]
+    plt.plot([next_x, first_x], [next_y, first_y])
+
+    plt.plot(next_x, next_y, "ok", markersize=5)
+    plt.text(next_x, next_y, str(index + 1), fontsize=12)
+    plt.savefig(file_name)
