@@ -28,26 +28,28 @@ def run_and_plot(
 def test_exhaustive_search() -> None:
     run_and_plot(exhaustive_search, SIX_CITIES)
 
-    # timeit.default_timer() accounts for garbage collection and OS operations which 
-    # time.time() does not
     before_10_cities = default_timer()
     run_and_plot(exhaustive_search, TEN_CITIES)
     after_10_cities = default_timer()
 
-    # The shortest way to travel between the first 10 cities is the following sequence and is 5272.68km:
+    # The shortest way to travel between the first 10 cities is the following
+    # sequence and is 5272.68km:
     #
     #       ('Barcelona', 'Dublin', 'Brussels', 'Hamburg', 'Copenhagen',
     #        'Berlin', 'Budapest', 'Belgrade', 'Bucharest', 'Istanbul')
     #
-    # On my computer this sequence consistently takes ~10 seconds to find with exhaustive search.
-    # Knowing the time complexity of this algorithm to be O(n!) we can then approximate how long it
-    # would take to run exhaustive search on all 24 cities programatically:
+    # Knowing the time complexity of exhaustive search to be O(n!) we can then 
+    # approximate how long it would take to run exhaustive search on all 24
+    # cities programatically:
 
     time_10_cities = after_10_cities - before_10_cities
     factorial_ratio = factorial(24) / factorial(10)
     time_24_cities = time_10_cities * factorial_ratio
 
-    print("\nTime to run exhaustive search on all 24 cities:", time_24_cities) # -> 1.78 * 10^18 (~54.2 million years)
+    # On my computer time_10_cities is usually ~10 seconds making time_24_cities
+    # this number: 1.78 * 10^18 (~54.2 million years)
+
+    print("\nTime to run exhaustive search on all 24 cities:", time_24_cities)
 
 
 # ---------- HILL CLIMBING ---------- 
@@ -69,7 +71,7 @@ def test_hill_climbing() -> None:
 
     ten_cities_avg = sum(ten_cities_times) / len(ten_cities_times)
     twentyfour_cities_avg = sum(twentyfour_cities_times) / len(twentyfour_cities_times)
-    print(f"{ten_cities_avg=:.5f}\n{twentyfour_cities_avg=:.5f}")
+    print(f"\n{ten_cities_avg=:.5f}\n{twentyfour_cities_avg=:.5f}")
 
 
 def main() -> None:
