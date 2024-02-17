@@ -1,5 +1,6 @@
 from typing import Callable
 from math import factorial
+from genetic_algorithm import genetic_algorithm
 from common import CITY_COORDINATES, plot
 from timeit import default_timer
 
@@ -74,9 +75,14 @@ def test_hill_climbing() -> None:
     print(f"\n{ten_cities_avg=:.5f}\n{twentyfour_cities_avg=:.5f}")
 
 
+def test_genetic_algorithm() -> None:
+    genetic_algorithm(SIX_CITIES, 10, 2)
+
+
 def main() -> None:
-    test_exhaustive_search()
-    test_hill_climbing()
+    # test_exhaustive_search()
+    # test_hill_climbing()
+    test_genetic_algorithm()
 
 
 if __name__ == "__main__":
