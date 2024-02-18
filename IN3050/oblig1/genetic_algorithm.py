@@ -11,20 +11,20 @@ def genetic_algorithm(
     # generate population_size random solutions
     cities = city_coordinates.keys()
     solutions = [random.sample(list(cities), len(cities)) for _ in range(population_size)]
-    population = {solutions[i]: fitness(solutions[i]) for i in range(population_size)}
+    population = {tuple(solutions[i]): fitness(solutions[i]) for i in range(population_size)}
 
     # keep track of best seen solutions (this just makes a dict from the first
     # num_elites values in the dict)
-    elites = dict(list(population.keys())[:num_elites])
-
+    elites = dict(list(population.items())[:num_elites])
+    
     print(population)
-    # while True:
-    #     new_population = population[:]
-    #     for solution in new_population:
-    #         solution = mutate(solution)
-    #
+    while True:
+        new_population = population.keys()
+        for solution in new_population:
+            solution = mutate(solution)
 
-    return list(elites.keys())
+    # first list() casts from type dict_keys, second list() casts from type tuple
+    return list(list(elites.keys())[0])
 
 
 def mutate(solution: list[str]) -> list[str]:

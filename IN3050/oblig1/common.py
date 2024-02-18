@@ -24,7 +24,7 @@ def distance_between(city1: str, city2: str) -> float:
     return float(CSV_DATA[CITIES.index(city1) + 1][CITIES.index(city2)])
 
 
-def fitness(solution: list[str]) -> float:
+def fitness(solution: tuple[str, ...]) -> float:
     solution_fitness = 0
 
     for i in range(len(solution) - 1):
@@ -33,7 +33,7 @@ def fitness(solution: list[str]) -> float:
     return solution_fitness
 
 
-def plot(solution: list[str], file_name: str | Path) -> None:
+def plot(solution: tuple[str, ...], file_name: str | Path) -> None:
     _, ax = plt.subplots(figsize=(10, 10))
     ax.imshow(EUROPE_MAP, extent=MAP_BOUNDS, aspect="auto")
 

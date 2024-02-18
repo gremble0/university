@@ -12,7 +12,7 @@ TEN_CITIES = dict(list(CITY_COORDINATES.items())[:10])
 ALL_CITIES = CITY_COORDINATES
 
 def run_and_plot(
-    algorithm: Callable[[dict[str, list[float]]], list[str]],
+    algorithm: Callable[[dict[str, list[float]]], tuple[str, ...]],
     city_coordinates: dict[str, list[float]]
 ) -> None:
     print("---------------------------------------")
@@ -80,9 +80,9 @@ def test_genetic_algorithm() -> None:
 
 
 def main() -> None:
-    # test_exhaustive_search()
-    # test_hill_climbing()
-    test_genetic_algorithm()
+    test_exhaustive_search()
+    test_hill_climbing()
+    # test_genetic_algorithm()
 
 
 if __name__ == "__main__":
