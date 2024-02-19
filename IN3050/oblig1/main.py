@@ -1,4 +1,5 @@
 from typing import Callable
+from functools import partial
 from math import factorial
 from genetic_algorithm import genetic_algorithm
 from common import CITY_COORDINATES, plot
@@ -10,6 +11,12 @@ from hill_climbing import hill_climbing
 SIX_CITIES = dict(list(CITY_COORDINATES.items())[:6])
 TEN_CITIES = dict(list(CITY_COORDINATES.items())[:10])
 ALL_CITIES = CITY_COORDINATES
+
+def set_function_name(func: Callable, name: str) -> Callable:
+    func.__name__ = name
+    return func
+
+
 
 def run_and_plot(
     algorithm: Callable[[dict[str, list[float]]], tuple[str, ...]],
@@ -76,13 +83,16 @@ def test_hill_climbing() -> None:
 
 
 def test_genetic_algorithm() -> None:
-    genetic_algorithm(SIX_CITIES, 10, 2)
+    algo = partial(genetic_algorithm, population_size=10, num_elites=2, num_generations=10000)
+    algo.__name__ = genetic_algorithm.__name__
+
+    run_and_plot(algo, SIX_CITIES)
 
 
 def main() -> None:
-    test_exhaustive_search()
-    test_hill_climbing()
-    # test_genetic_algorithm()
+    # test_exhaustive_search()
+    # test_hill_climbing()
+    test_genetic_algorithm()
 
 
 if __name__ == "__main__":

@@ -7,33 +7,36 @@ def genetic_algorithm(
     city_coordinates: dict[str, list[float]],
     population_size: int,
     num_elites: int,
-) -> list[str]:
+    num_generations: int,
+) -> tuple[str, ...]:
     # generate population_size random solutions
-    cities = city_coordinates.keys()
-    solutions = [random.sample(list(cities), len(cities)) for _ in range(population_size)]
-    population = {tuple(solutions[i]): fitness(solutions[i]) for i in range(population_size)}
+    cities = list(city_coordinates.keys())
+    solutions = [tuple(random.sample(cities, len(cities))) for _ in range(population_size)]
+    population = {solutions[i]: fitness(solutions[i]) for i in range(population_size)}
 
     # keep track of best seen solutions (this just makes a dict from the first
     # num_elites values in the dict)
     elites = dict(list(population.items())[:num_elites])
     
-    print(population)
-    while True:
-        new_population = population.keys()
-        for solution in new_population:
-            solution = mutate(solution)
+    i = 0
+    while i < num_generations:
+        new_population = list(population.keys())
+        for j, solution in enumerate(new_population):
+            new_population[j] = mutate(solution)
+
+        i += 1
 
     # first list() casts from type dict_keys, second list() casts from type tuple
-    return list(list(elites.keys())[0])
+    return tuple(list(elites.keys())[0])
 
 
-def mutate(solution: list[str]) -> list[str]:
+def mutate(solution: tuple[str, ...]) -> tuple[str, ...]:
     city1_i, city2_i = random.sample(range(len(solution)), 2)
 
-    new_solution = solution[:] # copy to not mutate input
+    new_solution = list(solution)
     new_solution[city1_i], new_solution[city2_i] = solution[city2_i], solution[city1_i]
 
-    return new_solution
+    return tuple(new_solution)
 
 
 def crossover(solution1: list[str], solution2: list[str]) -> list[str]:
