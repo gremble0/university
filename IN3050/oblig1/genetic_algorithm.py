@@ -20,14 +20,42 @@ def genetic_algorithm(
     
     i = 0
     while i < num_generations:
-        new_population = list(population.keys())
-        for j, solution in enumerate(new_population):
-            new_population[j] = mutate(solution)
-
+        population = get_next_generation(population, elites)
+        # print(elites)
         i += 1
 
     # first list() casts from type dict_keys, second list() casts from type tuple
     return tuple(list(elites.keys())[0])
+
+
+def get_next_generation(
+    prev_gen: dict[tuple[str, ...], float],
+    elites: dict[tuple[str, ...], float],
+) -> dict[tuple[str, ...], float]:
+    """Decides what the next generation should look like and updates
+       elites in place if a better solution was found
+    """
+    new_gen = dict(prev_gen) # copy the dict
+    for solution in prev_gen:
+        mutated = mutate(solution)
+
+        # Dont calculate fitness if we already have the solution
+        if mutated in new_gen:
+            continue
+
+        mutated_fitness = fitness(mutated)
+        worst_elite = min(elites, key=elites.get)
+        if mutated_fitness > elites[worst_elite]:
+            print(mutated_fitness, worst_elite, elites[worst_elite])
+            elites.pop(worst_elite)
+            elites[mutated] = mutated_fitness
+
+        new_gen[mutated] = mutated_fitness
+
+
+    # Sort by fitness, and return a dict of the first len(prev_gen) values
+    # to keep the population size constant
+    return dict(sorted(new_gen.items(), key=lambda x: x[1])[:len(prev_gen)])
 
 
 def mutate(solution: tuple[str, ...]) -> tuple[str, ...]:
@@ -40,6 +68,6 @@ def mutate(solution: tuple[str, ...]) -> tuple[str, ...]:
 
 
 def crossover(solution1: list[str], solution2: list[str]) -> list[str]:
-    split_index = random.choice(range(len(solution1)))
+    split_index = random.randint(0, len(solution1) - 1)
 
     return [solution1[i] if i < split_index else solution2[i] for i in range(len(solution1))]

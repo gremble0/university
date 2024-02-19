@@ -83,7 +83,7 @@ def test_hill_climbing() -> None:
 
 
 def test_genetic_algorithm() -> None:
-    algo = partial(genetic_algorithm, population_size=10, num_elites=2, num_generations=10000)
+    algo = partial(genetic_algorithm, population_size=10, num_elites=2, num_generations=100000)
     algo.__name__ = genetic_algorithm.__name__
 
     run_and_plot(algo, SIX_CITIES)
