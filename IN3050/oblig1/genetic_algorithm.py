@@ -44,8 +44,8 @@ def get_next_generation(
             continue
 
         mutated_fitness = fitness(mutated)
-        worst_elite = min(elites, key=elites.get)
-        if mutated_fitness > elites[worst_elite]:
+        worst_elite = max(elites, key=elites.get)
+        if mutated_fitness < elites[worst_elite]:
             print(mutated_fitness, worst_elite, elites[worst_elite])
             elites.pop(worst_elite)
             elites[mutated] = mutated_fitness
@@ -59,6 +59,7 @@ def get_next_generation(
 
 
 def mutate(solution: tuple[str, ...]) -> tuple[str, ...]:
+    """Swap two random cities in the solution"""
     city1_i, city2_i = random.sample(range(len(solution)), 2)
 
     new_solution = list(solution)

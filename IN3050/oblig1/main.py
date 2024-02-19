@@ -2,7 +2,7 @@ from typing import Callable
 from functools import partial
 from math import factorial
 from genetic_algorithm import genetic_algorithm
-from common import CITY_COORDINATES, plot
+from common import CITY_COORDINATES, fitness, plot
 from timeit import default_timer
 
 from exhaustive_search import exhaustive_search
@@ -25,7 +25,7 @@ def run_and_plot(
     print("---------------------------------------")
     print(f"Running {algorithm.__name__} on {list(city_coordinates.keys())}")
     solution = algorithm(city_coordinates)
-    print(f"Found this solution: {solution}")
+    print(f"Found this solution: {solution}, with a total distance of {fitness(solution)}")
 
     filename = f"assets/{algorithm.__name__}_{len(solution)}_cities.png"
     print(f"Plotting solution and saving it as '{filename}'")
@@ -83,7 +83,7 @@ def test_hill_climbing() -> None:
 
 
 def test_genetic_algorithm() -> None:
-    algo = partial(genetic_algorithm, population_size=10, num_elites=2, num_generations=100000)
+    algo = partial(genetic_algorithm, population_size=10, num_elites=2, num_generations=100)
     algo.__name__ = genetic_algorithm.__name__
 
     run_and_plot(algo, SIX_CITIES)
