@@ -11,17 +11,15 @@ def genetic_algorithm(
 ) -> tuple[str, ...]:
     # generate population_size random solutions
     cities = list(city_coordinates.keys())
-    solutions = [tuple(random.sample(cities, len(cities))) for _ in range(population_size)]
-    population = {solutions[i]: fitness(solutions[i]) for i in range(population_size)}
+    population = dict(map(lambda solution: (solution, fitness(solution)),
+                 [tuple(random.sample(cities, len(cities))) for _ in range(population_size)]))
 
     # keep track of best seen solutions (this just makes a dict from the first
     # num_elites values in the dict)
     elites = dict(list(population.items())[:num_elites])
     
-    i = 0
-    while i < num_generations:
+    for _ in range(num_generations):
         population = get_next_generation(population, elites)
-        i += 1
 
     return tuple(elites.keys())[0]
 
@@ -31,8 +29,8 @@ def get_next_generation(
     elites: dict[tuple[str, ...], float],
 ) -> dict[tuple[str, ...], float]:
     """Decides what the next generation should look like and updates
-       elites in place if a better solution was found
-    """
+       elites in place if a better solution was found"""
+
     new_gen = dict(prev_gen) # copy the dict
     for solution in prev_gen:
         mutated = mutate(solution)

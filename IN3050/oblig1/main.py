@@ -85,8 +85,8 @@ def test_genetic_algorithm() -> None:
 
 
 def main() -> None:
-    test_exhaustive_search()
-    test_hill_climbing()
+    # test_exhaustive_search()
+    # test_hill_climbing()
     test_genetic_algorithm()
 
 
