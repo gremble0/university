@@ -1,5 +1,4 @@
 from typing import Callable
-from functools import partial
 from math import factorial
 from genetic_algorithm import genetic_algorithm
 from common import CITY_COORDINATES, fitness, plot
@@ -32,7 +31,6 @@ def run_and_plot(
     plot(solution, filename)
 
 
-# ---------- EXHAUSTIVE SEARCH ---------- 
 def test_exhaustive_search() -> None:
     run_and_plot(exhaustive_search, SIX_CITIES)
 
@@ -60,7 +58,6 @@ def test_exhaustive_search() -> None:
     print("\nTime to run exhaustive search on all 24 cities:", time_24_cities)
 
 
-# ---------- HILL CLIMBING ---------- 
 def test_hill_climbing() -> None:
     run_and_plot(hill_climbing, TEN_CITIES)
     run_and_plot(hill_climbing, ALL_CITIES)
@@ -83,11 +80,8 @@ def test_hill_climbing() -> None:
 
 
 def test_genetic_algorithm() -> None:
-    algo = partial(genetic_algorithm, population_size=10, num_elites=2, num_generations=10000)
-    algo.__name__ = genetic_algorithm.__name__
-
-    run_and_plot(algo, TEN_CITIES)
-    run_and_plot(algo, ALL_CITIES)
+    run_and_plot(genetic_algorithm, TEN_CITIES)
+    run_and_plot(genetic_algorithm, ALL_CITIES)
 
 
 def main() -> None:

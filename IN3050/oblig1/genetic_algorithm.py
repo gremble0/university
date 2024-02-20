@@ -5,12 +5,10 @@ from common import fitness
 
 def genetic_algorithm(
     city_coordinates: dict[str, list[float]],
-    **kwargs: int,
+    population_size: int = 100,
+    num_elites: int = 2,
+    num_generations: int = 5000,
 ) -> tuple[str, ...]:
-    population_size = kwargs["population_size"] or 100
-    num_elites = kwargs["num_elites"] or 2
-    num_generations = kwargs["num_generations"] or 5000
-        
     # generate population_size random solutions
     cities = list(city_coordinates.keys())
     solutions = [tuple(random.sample(cities, len(cities))) for _ in range(population_size)]
