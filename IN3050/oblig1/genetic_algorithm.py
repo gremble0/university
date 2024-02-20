@@ -5,10 +5,12 @@ from common import fitness
 
 def genetic_algorithm(
     city_coordinates: dict[str, list[float]],
-    population_size: int,
-    num_elites: int,
-    num_generations: int,
+    **kwargs: int,
 ) -> tuple[str, ...]:
+    population_size = kwargs["population_size"] or 100
+    num_elites = kwargs["num_elites"] or 2
+    num_generations = kwargs["num_generations"] or 5000
+        
     # generate population_size random solutions
     cities = list(city_coordinates.keys())
     solutions = [tuple(random.sample(cities, len(cities))) for _ in range(population_size)]
@@ -21,11 +23,9 @@ def genetic_algorithm(
     i = 0
     while i < num_generations:
         population = get_next_generation(population, elites)
-        # print(elites)
         i += 1
 
-    # first list() casts from type dict_keys, second list() casts from type tuple
-    return tuple(list(elites.keys())[0])
+    return tuple(elites.keys())[0]
 
 
 def get_next_generation(
@@ -44,9 +44,8 @@ def get_next_generation(
             continue
 
         mutated_fitness = fitness(mutated)
-        worst_elite = max(elites, key=elites.get)
+        worst_elite = max(elites, key=lambda k: elites.get(k, float("inf")))
         if mutated_fitness < elites[worst_elite]:
-            print(mutated_fitness, worst_elite, elites[worst_elite])
             elites.pop(worst_elite)
             elites[mutated] = mutated_fitness
 

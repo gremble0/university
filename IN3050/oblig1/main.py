@@ -23,9 +23,9 @@ def run_and_plot(
     city_coordinates: dict[str, list[float]]
 ) -> None:
     print("---------------------------------------")
-    print(f"Running {algorithm.__name__} on {list(city_coordinates.keys())}")
+    print(f"Running {algorithm.__name__} on {tuple(city_coordinates.keys())}\n")
     solution = algorithm(city_coordinates)
-    print(f"Found this solution: {solution}, with a total distance of {fitness(solution)}")
+    print(f"Found this solution: {solution}, with a total distance of {fitness(solution)}km\n")
 
     filename = f"assets/{algorithm.__name__}_{len(solution)}_cities.png"
     print(f"Plotting solution and saving it as '{filename}'")
@@ -83,15 +83,16 @@ def test_hill_climbing() -> None:
 
 
 def test_genetic_algorithm() -> None:
-    algo = partial(genetic_algorithm, population_size=10, num_elites=2, num_generations=100)
+    algo = partial(genetic_algorithm, population_size=10, num_elites=2, num_generations=10000)
     algo.__name__ = genetic_algorithm.__name__
 
-    run_and_plot(algo, SIX_CITIES)
+    run_and_plot(algo, TEN_CITIES)
+    run_and_plot(algo, ALL_CITIES)
 
 
 def main() -> None:
-    # test_exhaustive_search()
-    # test_hill_climbing()
+    test_exhaustive_search()
+    test_hill_climbing()
     test_genetic_algorithm()
 
 
