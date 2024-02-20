@@ -33,19 +33,20 @@ def get_next_generation(
 
     new_gen = dict(prev_gen) # copy the dict
     for solution in prev_gen:
-        mutated = mutate(solution)
+        new_solution = mutate(solution)
+        new_solution = crossover(new_solution, random.choice(tuple(prev_gen.keys())))
 
         # Dont calculate fitness if we already have the solution
-        if mutated in new_gen:
+        if new_solution in new_gen:
             continue
 
-        mutated_fitness = fitness(mutated)
+        mutated_fitness = fitness(new_solution)
         worst_elite = max(elites, key=lambda k: elites.get(k, float("inf")))
         if mutated_fitness < elites[worst_elite]:
             elites.pop(worst_elite)
-            elites[mutated] = mutated_fitness
+            elites[new_solution] = mutated_fitness
 
-        new_gen[mutated] = mutated_fitness
+        new_gen[new_solution] = mutated_fitness
 
 
     # Sort by fitness, and return a dict of the first len(prev_gen) values
@@ -63,7 +64,14 @@ def mutate(solution: tuple[str, ...]) -> tuple[str, ...]:
     return tuple(new_solution)
 
 
-def crossover(solution1: list[str], solution2: list[str]) -> list[str]:
+def crossover(
+    solution1: tuple[str, ...],
+    solution2: tuple[str, ...]
+) -> tuple[str, ...]:
     split_index = random.randint(0, len(solution1) - 1)
+    solution_builder = list(solution1[:split_index])
+    for city in solution2:
+        if city not in solution_builder:
+            solution_builder.append(city)
 
-    return [solution1[i] if i < split_index else solution2[i] for i in range(len(solution1))]
+    return tuple(solution_builder)
