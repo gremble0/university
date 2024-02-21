@@ -19,39 +19,30 @@ def genetic_algorithm(
     elites = dict(list(population.items())[:num_elites])
     
     for _ in range(num_generations):
-        population = get_next_generation(population, elites)
+        new_gen = dict(population) # copy the dict for temporary changes
+        for solution in population:
+            new_solution = mutate(solution)
+            # this could be optimized by adding weights on who to crossover with
+            new_solution = crossover(new_solution, random.choice(tuple(population.keys())))
+
+            # no reason to handle this solution if we already have it
+            if new_solution in new_gen:
+                continue
+
+            mutated_fitness = fitness(new_solution)
+            worst_elite = max(elites, key=lambda k: elites.get(k, float("inf")))
+            if mutated_fitness < elites[worst_elite]:
+                elites.pop(worst_elite)
+                elites[new_solution] = mutated_fitness
+
+            new_gen[new_solution] = mutated_fitness
+
+
+        # sort by fitness, and set the population to the fittest solutions
+        # this is not particularly smart - pretty much just pure exploitation.
+        population = dict(sorted(new_gen.items(), key=lambda x: x[1])[:len(population)])
 
     return tuple(elites.keys())[0]
-
-
-def get_next_generation(
-    prev_gen: dict[tuple[str, ...], float],
-    elites: dict[tuple[str, ...], float],
-) -> dict[tuple[str, ...], float]:
-    """Decides what the next generation should look like and updates
-       elites in place if a better solution was found"""
-
-    new_gen = dict(prev_gen) # copy the dict
-    for solution in prev_gen:
-        new_solution = mutate(solution)
-        new_solution = crossover(new_solution, random.choice(tuple(prev_gen.keys())))
-
-        # Dont calculate fitness if we already have the solution
-        if new_solution in new_gen:
-            continue
-
-        mutated_fitness = fitness(new_solution)
-        worst_elite = max(elites, key=lambda k: elites.get(k, float("inf")))
-        if mutated_fitness < elites[worst_elite]:
-            elites.pop(worst_elite)
-            elites[new_solution] = mutated_fitness
-
-        new_gen[new_solution] = mutated_fitness
-
-
-    # Sort by fitness, and return a dict of the first len(prev_gen) values
-    # to keep the population size constant
-    return dict(sorted(new_gen.items(), key=lambda x: x[1])[:len(prev_gen)])
 
 
 def mutate(solution: tuple[str, ...]) -> tuple[str, ...]:
