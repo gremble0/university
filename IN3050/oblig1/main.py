@@ -1,20 +1,17 @@
 from typing import Callable
-from math import factorial
-from genetic_algorithm import genetic_algorithm
+from dataclasses import dataclass
+from math import factorial, sqrt
 from common import CITY_COORDINATES, fitness, plot
 from timeit import default_timer
+import matplotlib.pyplot as plt
 
 from exhaustive_search import exhaustive_search
 from hill_climbing import hill_climbing
+from genetic_algorithm import genetic_algorithm, genetic_algorithm_with_debug
 
 SIX_CITIES = dict(list(CITY_COORDINATES.items())[:6])
 TEN_CITIES = dict(list(CITY_COORDINATES.items())[:10])
 ALL_CITIES = CITY_COORDINATES
-
-def set_function_name(func: Callable, name: str) -> Callable:
-    func.__name__ = name
-    return func
-
 
 
 def run_and_plot(
@@ -29,6 +26,35 @@ def run_and_plot(
     filename = f"assets/{algorithm.__name__}_{len(solution)}_cities.png"
     print(f"Plotting solution and saving it as '{filename}'")
     plot(solution, filename)
+
+
+@dataclass
+class Report:
+    fitnesses: list[float]
+    
+    @property
+    def best(self) -> float:
+        return min(self.fitnesses)
+
+    @property
+    def worst(self) -> float:
+        return max(self.fitnesses)
+
+    @property
+    def mean(self) -> float:
+        return sum(self.fitnesses) / len(self.fitnesses)
+
+    @property
+    def standard_deviation(self) -> float:
+        mean = self.mean # calculate once
+        return sqrt(sum([(x - mean) ** 2 for x in self.fitnesses]) / len(self.fitnesses))
+
+    def print(self, algo_name: str, **parameters):
+        print(f"Report for {algo_name} with {parameters=}")
+        print("Best:", self.best)
+        print("Worst:", self.worst)
+        print("Mean:", self.mean)
+        print("Standard deviation:", self.standard_deviation)
 
 
 def test_exhaustive_search() -> None:
@@ -62,26 +88,52 @@ def test_hill_climbing() -> None:
     run_and_plot(hill_climbing, TEN_CITIES)
     run_and_plot(hill_climbing, ALL_CITIES)
 
-    ten_cities_times = []
-    twentyfour_cities_times = []
+    hc_10_results: list[float] = []
+    hc_24_results: list[float] = []
 
     for _ in range(20):
-        before_ten_cities = default_timer()
-        hill_climbing(TEN_CITIES)
-        ten_cities_times.append(default_timer() - before_ten_cities)
-        
-        before_twentyfour_cities = default_timer()
-        hill_climbing(ALL_CITIES)
-        twentyfour_cities_times.append(default_timer() - before_twentyfour_cities)
+        hc_10_results.append(fitness(hill_climbing(TEN_CITIES)))
+        hc_24_results.append(fitness(hill_climbing(ALL_CITIES)))
 
-    ten_cities_avg = sum(ten_cities_times) / len(ten_cities_times)
-    twentyfour_cities_avg = sum(twentyfour_cities_times) / len(twentyfour_cities_times)
-    print(f"\n{ten_cities_avg=:.5f}\n{twentyfour_cities_avg=:.5f}")
+    print()
+    Report(hc_10_results).print("Hill climbing", tour_length=len(TEN_CITIES))
+    print()
+    Report(hc_24_results).print("Hill climbing", tour_length=len(ALL_CITIES))
 
 
 def test_genetic_algorithm() -> None:
-    run_and_plot(genetic_algorithm, TEN_CITIES)
     run_and_plot(genetic_algorithm, ALL_CITIES)
+
+    # For a population size of 100 it seems it takes ~500 generations before it
+    # stops regularly improving each generation. It is also not guaranteed to
+    # always find the best solution. For bigger populations we could also 
+    # decrease the number of generations and see similar results which makes
+    # sense, however that would complicate the benchmarking below so I've left
+    # the number of generations constant at 500.
+
+    plt.figure(figsize=(10,6))
+    population_sizes = [50, 100, 200]
+    for population_size in population_sizes:
+        fitnesses: list[float] = []
+        results: list[float] = []
+        for _ in range(10):
+            result, fits = genetic_algorithm_with_debug(
+                ALL_CITIES,
+                population_size=population_size,
+            )
+            results.append(fitness(result))
+            fitnesses += fits
+
+        plt.plot(range(5000), fitnesses, label=f"Population Size {population_size}")
+
+        Report(results).print("Genetic algorithm", population_size=population_size)
+        print()
+
+    plt.xlabel("Generation")
+    plt.ylabel("Average fitness over 20 iterations")
+    plt.title("Average Fitness Over Generations for Different Population Sizes")
+    plt.legend()
+    plt.savefig("assets/genetic_algorithm_report.png")
 
 
 def main() -> None:
