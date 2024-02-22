@@ -1,3 +1,37 @@
+"""
+Herman Gard Stornes - hermagst@uio.no
+
+This file serves as the report and runnable file for this assignment.
+the main() function contains three function calls, one for each algorithm
+specified in the assignment.
+
+The only dependency required is matplotlib. To run the code simply run:
+
+$ python main.py
+
+(You can alternatively use the the python executable from a virtual
+environment if you prefer)
+
+in the terminal and it will run the test_exhaustive_search
+function. I have commented out the two other function calls inside main()
+to make the output simpler and runtime shorter, but all three functions
+are meant to be called at some point, ultimately by running the python
+python command mentioned above.
+
+Running one of these functions will print info about that part of the
+assignment as well as generating plots under `assets/` for the algorithm
+you're testing.
+
+Answers to questions in the assignment will be in comments inside
+this main.py file under the appropriate `test_...` command. Questions
+that need to be solved programatically as well as detailed reports
+will be printed to stdout after running the appropriate test command
+while also having relevant comments.
+
+Plots (and files included in precode) are saved under the `assets/` directory
+"""
+
+
 from typing import Callable
 from dataclasses import dataclass
 from math import factorial, sqrt
@@ -18,6 +52,10 @@ def run_and_plot(
     algorithm: Callable[[dict[str, list[float]]], tuple[str, ...]],
     city_coordinates: dict[str, list[float]]
 ) -> None:
+    """
+    Runs given algorithm on the city_coordinates and saves the plot generated
+    by plot_plan as a png image under the `assets/` folder with a unique name
+    """
     print("---------------------------------------")
     print(f"Running {algorithm.__name__} on {tuple(city_coordinates.keys())}\n")
     solution = algorithm(city_coordinates)
@@ -31,6 +69,15 @@ def run_and_plot(
 @dataclass
 class Report:
     fitnesses: list[float]
+    runtimes: list[float] | None
+
+    def __init__(
+        self,
+        fitnesses: list[float],
+        runtimes: list[float] | None = None,
+    ) -> None:
+        self.fitnesses = fitnesses
+        self.runtimes = runtimes
     
     @property
     def best(self) -> float:
@@ -49,12 +96,21 @@ class Report:
         mean = self.mean # calculate once
         return sqrt(sum([(x - mean) ** 2 for x in self.fitnesses]) / len(self.fitnesses))
 
+    @property
+    def avg_runtime(self) -> float | None:
+        if not self.runtimes:
+            return None
+
+        return sum(self.runtimes) / len(self.runtimes)
+
     def print(self, algo_name: str, **parameters):
         print(f"Report for {algo_name} with {parameters=}")
         print("Best:", self.best)
         print("Worst:", self.worst)
         print("Mean:", self.mean)
         print("Standard deviation:", self.standard_deviation)
+        if self.runtimes:
+            print("Average runtime:", self.avg_runtime)
 
 
 def test_exhaustive_search() -> None:
@@ -88,20 +144,33 @@ def test_exhaustive_search() -> None:
 
 
 def test_hill_climbing() -> None:
+    # The runtime of the hill climbing algorithm is significantly better than
+    # that of exhastive search. However it will rarely find the best solution
+    # when the number of cities is large.
+
     run_and_plot(hill_climbing, TEN_CITIES)
     run_and_plot(hill_climbing, ALL_CITIES)
 
     hc_10_results: list[float] = []
+    hc_10_runtimes: list[float] = []
     hc_24_results: list[float] = []
+    hc_24_runtimes: list[float] = []
 
     for _ in range(20):
-        hc_10_results.append(fitness(hill_climbing(TEN_CITIES)))
-        hc_24_results.append(fitness(hill_climbing(ALL_CITIES)))
+        before_10_cities = default_timer()
+        hc_10_result = hill_climbing(TEN_CITIES)
+        hc_10_runtimes.append(default_timer() - before_10_cities)
+        hc_10_results.append(fitness(hc_10_result))
+
+        before_24_cities = default_timer()
+        hc_24_result = hill_climbing(ALL_CITIES)
+        hc_24_runtimes.append(default_timer() - before_24_cities)
+        hc_24_results.append(fitness(hc_24_result))
 
     print()
-    Report(hc_10_results).print("Hill climbing", tour_length=len(TEN_CITIES))
+    Report(hc_10_results, hc_10_runtimes).print("Hill climbing", tour_length=len(TEN_CITIES))
     print()
-    Report(hc_24_results).print("Hill climbing", tour_length=len(ALL_CITIES))
+    Report(hc_24_results, hc_10_runtimes).print("Hill climbing", tour_length=len(ALL_CITIES))
 
 
 def test_genetic_algorithm() -> None:
@@ -180,9 +249,9 @@ def main() -> None:
     # Running all these functions at once could take a while (~1 minute
     # on my machine), so its probably better to only do one per run
 
-    test_exhaustive_search()
+    # test_exhaustive_search()
     test_hill_climbing()
-    test_genetic_algorithm()
+    # test_genetic_algorithm()
 
 
 if __name__ == "__main__":
