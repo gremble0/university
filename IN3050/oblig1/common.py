@@ -33,7 +33,7 @@ def fitness(solution: tuple[str, ...]) -> float:
     return solution_fitness
 
 
-def plot(solution: tuple[str, ...], file_name: str | Path) -> None:
+def plot_plan(solution: tuple[str, ...], file_name: str | Path) -> None:
     _, ax = plt.subplots(figsize=(10, 10))
     ax.imshow(EUROPE_MAP, extent=MAP_BOUNDS, aspect="auto")
 

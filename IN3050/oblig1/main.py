@@ -1,7 +1,7 @@
 from typing import Callable
 from dataclasses import dataclass
 from math import factorial, sqrt
-from common import CITY_COORDINATES, fitness, plot
+from common import CITY_COORDINATES, fitness, plot_plan
 from timeit import default_timer
 import matplotlib.pyplot as plt
 
@@ -25,7 +25,7 @@ def run_and_plot(
 
     filename = f"assets/{algorithm.__name__}_{len(solution)}_cities.png"
     print(f"Plotting solution and saving it as '{filename}'")
-    plot(solution, filename)
+    plot_plan(solution, filename)
 
 
 @dataclass
@@ -81,6 +81,9 @@ def test_exhaustive_search() -> None:
     # On my computer time_10_cities is usually ~10 seconds making time_24_cities
     # this number: 1.78 * 10^18 (~54.2 million years)
 
+    # Since we know exhaustive search will always find the best solution there is
+    # no point in making reports for different runs
+
     print("\nTime to run exhaustive search on all 24 cities:", time_24_cities)
 
 
@@ -102,6 +105,36 @@ def test_hill_climbing() -> None:
 
 
 def test_genetic_algorithm() -> None:
+    # My genetic algorithm does consistently find the shortest tour for
+    # the first ten cities. (After running this function you can check this
+    # by checking the plot generated under assets/genetic_algorithm_10_cities.png)
+
+    # For the genetic algorithm the runtimes depend on the parameters we give it.
+    # For my default parameters of population_size=100 and num_generations=500
+    # these are the runtimes:
+    #
+    # SIX_CITIES: ~0.5s
+    # TEN_CITIES: ~0.8s
+    # ALL_CITIES: ~1.3s
+    #
+    # This is a significant improvement over exhaustive search, even on smaller
+    # tours, where exhaustive search takes ~10 seconds for TEN_CITIES, and would
+    # take several million years for ALL_CITIES.
+    
+    # In terms of tours inspected for exhaustive search it would have to visit every
+    # possible tour. This would give the following values:
+    #
+    # SIX_CITIES: 6!  = 720
+    # TEN_CITIES: 10! = 3628800
+    # ALL_CITIES: 24! = 6.204484e+23
+    #
+    # for my genetic algorithm the number of tours would be equal to:
+    # population_size * num_generations = 100 * 500 = 50000. This is independent
+    # of the amount of cities in question, therefore its probably a good idea to
+    # increase the parameter values for bigger tours.
+
+    run_and_plot(genetic_algorithm, SIX_CITIES)
+    run_and_plot(genetic_algorithm, TEN_CITIES)
     run_and_plot(genetic_algorithm, ALL_CITIES)
 
     # For a population size of 100 it seems it takes ~500 generations before it
@@ -144,8 +177,11 @@ def test_genetic_algorithm() -> None:
 
 
 def main() -> None:
-    # test_exhaustive_search()
-    # test_hill_climbing()
+    # Running all these functions at once could take a while (~1 minute
+    # on my machine), so its probably better to only do one per run
+
+    test_exhaustive_search()
+    test_hill_climbing()
     test_genetic_algorithm()
 
 
