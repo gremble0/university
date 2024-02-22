@@ -5,17 +5,12 @@ from common import fitness
 def genetic_algorithm(
     city_coordinates: dict[str, list[float]],
     population_size: int = 100,
-    num_elites: int = 2,
     num_generations: int = 500,
 ) -> tuple[str, ...]:
     # generate population_size random solutions
     cities = list(city_coordinates.keys())
     population = dict(map(lambda solution: (solution, fitness(solution)),
                  [tuple(random.sample(cities, len(cities))) for _ in range(population_size)]))
-
-    # keep track of best seen solutions (this just makes a dict from the first
-    # num_elites values in the dict)
-    elites = dict(list(population.items())[:num_elites])
     
     for _ in range(num_generations):
         new_gen = dict(population) # copy the dict for temporary changes
@@ -29,19 +24,13 @@ def genetic_algorithm(
             if new_solution in new_gen:
                 continue
 
-            mutated_fitness = fitness(new_solution)
-            worst_elite = max(elites, key=lambda k: elites.get(k, float("inf")))
-            if mutated_fitness < elites[worst_elite]:
-                elites.pop(worst_elite)
-                elites[new_solution] = mutated_fitness
-
-            new_gen[new_solution] = mutated_fitness
+            new_gen[new_solution] = fitness(new_solution)
 
         # sort by fitness, and set the population to the fittest solutions
         # this is not particularly smart - pretty much just pure exploitation.
         population = dict(sorted(new_gen.items(), key=lambda x: x[1])[:len(population)])
 
-    return tuple(elites.keys())[0]
+    return tuple(population.keys())[0]
 
 
 def mutate(
@@ -72,14 +61,14 @@ def crossover(
 def genetic_algorithm_with_debug(
     city_coordinates: dict[str, list[float]],
     population_size: int = 100,
-    num_elites: int = 2,
     num_generations: int = 500,
 ) -> tuple[tuple[str, ...], list[float]]:
+    """Same as genetic_algorithm, just also keeping track of some debugging
+       information requested by the assignment"""
     cities = list(city_coordinates.keys())
     population = dict(map(lambda solution: (solution, fitness(solution)),
                  [tuple(random.sample(cities, len(cities))) for _ in range(population_size)]))
 
-    elites = dict(list(population.items())[:num_elites])
     best_fitnesses: list[float] = []
     
     for _ in range(num_generations):
@@ -92,15 +81,9 @@ def genetic_algorithm_with_debug(
             if new_solution in new_gen:
                 continue
 
-            mutated_fitness = fitness(new_solution)
-            worst_elite = max(elites, key=lambda k: elites.get(k, float("inf")))
-            if mutated_fitness < elites[worst_elite]:
-                elites.pop(worst_elite)
-                elites[new_solution] = mutated_fitness
-
-            new_gen[new_solution] = mutated_fitness
+            new_gen[new_solution] = fitness(new_solution)
 
         population = dict(sorted(new_gen.items(), key=lambda x: x[1])[:len(population)])
-        best_fitnesses.append(tuple(elites.values())[0])
+        best_fitnesses.append(tuple(population.values())[0])
 
-    return tuple(elites.keys())[0], best_fitnesses
+    return tuple(population.keys())[0], best_fitnesses

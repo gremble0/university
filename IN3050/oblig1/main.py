@@ -111,28 +111,35 @@ def test_genetic_algorithm() -> None:
     # sense, however that would complicate the benchmarking below so I've left
     # the number of generations constant at 500.
 
+    # My genetic algorithm also initially kept track of elites, but i realized
+    # that is not necessary for my solution as each generation always keeps
+    # the best solutions so i simply removed the elites from the algorithm
+
     plt.figure(figsize=(10,6))
     population_sizes = [50, 100, 200]
+    num_generations = 500
     for population_size in population_sizes:
-        fitnesses: list[float] = []
+        fitnesses: list[float] = [float("inf")] * num_generations
         results: list[float] = []
-        for _ in range(10):
+        for _ in range(20):
             result, fits = genetic_algorithm_with_debug(
                 ALL_CITIES,
                 population_size=population_size,
+                num_generations=num_generations
             )
+            for i, fit in enumerate(fits):
+                if fit < fitnesses[i]:
+                    fitnesses[i] = fit
             results.append(fitness(result))
-            fitnesses += fits
 
-        plt.plot(range(5000), fitnesses, label=f"Population Size {population_size}")
+        plt.plot(range(num_generations), fitnesses, label=f"Population Size {population_size}")
 
         Report(results).print("Genetic algorithm", population_size=population_size)
         print()
 
     plt.xlabel("Generation")
-    plt.ylabel("Average fitness over 20 iterations")
-    plt.title("Average Fitness Over Generations for Different Population Sizes")
-    plt.legend()
+    plt.ylabel("Best fitness for generation (lower is better)")
+    plt.title("Best fitness over generations for different population sizes")
     plt.savefig("assets/genetic_algorithm_report.png")
 
 
