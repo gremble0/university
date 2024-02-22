@@ -67,16 +67,8 @@ def run_and_plot(
 
 @dataclass
 class Report:
-    fitnesses: list[float]
-    runtimes: list[float] | None
-
-    def __init__(
-        self,
-        fitnesses: list[float],
-        runtimes: list[float] | None = None,
-    ) -> None:
-        self.fitnesses = fitnesses
-        self.runtimes = runtimes
+    fitnesses: list[float] # in kilometers
+    runtimes: list[float] # in seconds
     
     @property
     def best(self) -> float:
@@ -108,8 +100,7 @@ class Report:
         print("Worst:", self.worst)
         print("Mean:", self.mean)
         print("Standard deviation:", self.standard_deviation)
-        if self.runtimes:
-            print("Average runtime:", self.avg_runtime, "seconds")
+        print("Average runtime:", self.avg_runtime, "seconds")
 
 
 def test_exhaustive_search() -> None:
@@ -178,12 +169,11 @@ def test_genetic_algorithm() -> None:
     # by checking the plot generated under assets/genetic_algorithm_10_cities.png)
 
     # For the genetic algorithm the runtimes depend on the parameters we give it.
-    # For my default parameters of population_size=100 and num_generations=500
-    # these are the runtimes:
+    # For the different population sizes listed below these are the runtimes:
     #
-    # SIX_CITIES: ~0.5s
-    # TEN_CITIES: ~0.8s
-    # ALL_CITIES: ~1.3s
+    # ALL_CITIES, population_size=50:  ~0.4s
+    # ALL_CITIES, population_size=100: ~0.8s
+    # ALL_CITIES, population_size=200: ~1.5s
     #
     # This is a significant improvement over exhaustive search, even on smaller
     # tours, where exhaustive search takes ~10 seconds for TEN_CITIES, and would
@@ -207,10 +197,7 @@ def test_genetic_algorithm() -> None:
 
     # For a population size of 100 it seems it takes ~500 generations before it
     # stops regularly improving each generation. It is also not guaranteed to
-    # always find the best solution. For bigger populations we could also 
-    # decrease the number of generations and see similar results which makes
-    # sense, however that would complicate the benchmarking below so I've left
-    # the number of generations constant at 500.
+    # find the best solution.
 
     # My genetic algorithm also initially kept track of elites, but i realized
     # that is not necessary for my solution as each generation always keeps
