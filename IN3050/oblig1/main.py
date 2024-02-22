@@ -31,7 +31,6 @@ while also having relevant comments.
 Plots (and files included in precode) are saved under the `assets/` directory
 """
 
-
 from typing import Callable
 from dataclasses import dataclass
 from math import factorial, sqrt
@@ -110,7 +109,7 @@ class Report:
         print("Mean:", self.mean)
         print("Standard deviation:", self.standard_deviation)
         if self.runtimes:
-            print("Average runtime:", self.avg_runtime)
+            print("Average runtime:", self.avg_runtime, "seconds")
 
 
 def test_exhaustive_search() -> None:
@@ -145,32 +144,32 @@ def test_exhaustive_search() -> None:
 
 def test_hill_climbing() -> None:
     # The runtime of the hill climbing algorithm is significantly better than
-    # that of exhastive search. However it will rarely find the best solution
-    # when the number of cities is large.
+    # that of exhastive search. On my machine the runtime in the report below
+    # are usually around the following values:
+    #
+    # SIX_CITIES: ~35-40 microseconds
+    # TEN_CITIES: ~0.5-0.7 milliseconds
+    # ALL_CITIES: ~35-40 milliseconds
+    #
+    # However it will rarely find the best solution, even for medium-small
+    # sized tours.
 
+    run_and_plot(hill_climbing, SIX_CITIES)
     run_and_plot(hill_climbing, TEN_CITIES)
     run_and_plot(hill_climbing, ALL_CITIES)
 
-    hc_10_results: list[float] = []
-    hc_10_runtimes: list[float] = []
-    hc_24_results: list[float] = []
-    hc_24_runtimes: list[float] = []
+    coords_to_benchmark = [SIX_CITIES, TEN_CITIES, ALL_CITIES]
+    for coords in coords_to_benchmark:
+        results: list[float] = []
+        runtimes: list[float] = []
+        for _ in range(20):
+            before = default_timer()
+            result = hill_climbing(coords)
+            runtimes.append(default_timer() - before)
+            results.append(fitness(result))
 
-    for _ in range(20):
-        before_10_cities = default_timer()
-        hc_10_result = hill_climbing(TEN_CITIES)
-        hc_10_runtimes.append(default_timer() - before_10_cities)
-        hc_10_results.append(fitness(hc_10_result))
-
-        before_24_cities = default_timer()
-        hc_24_result = hill_climbing(ALL_CITIES)
-        hc_24_runtimes.append(default_timer() - before_24_cities)
-        hc_24_results.append(fitness(hc_24_result))
-
-    print()
-    Report(hc_10_results, hc_10_runtimes).print("Hill climbing", tour_length=len(TEN_CITIES))
-    print()
-    Report(hc_24_results, hc_10_runtimes).print("Hill climbing", tour_length=len(ALL_CITIES))
+        print()
+        Report(results, runtimes).print("Hill climbing", tour_length=len(coords))
 
 
 def test_genetic_algorithm() -> None:
@@ -223,7 +222,9 @@ def test_genetic_algorithm() -> None:
     for population_size in population_sizes:
         fitnesses: list[float] = [float("inf")] * num_generations
         results: list[float] = []
+        runtimes: list[float] = []
         for _ in range(20):
+            before = default_timer()
             result, fits = genetic_algorithm_with_debug(
                 ALL_CITIES,
                 population_size=population_size,
@@ -233,10 +234,11 @@ def test_genetic_algorithm() -> None:
                 if fit < fitnesses[i]:
                     fitnesses[i] = fit
             results.append(fitness(result))
+            runtimes.append(default_timer() - before)
 
         plt.plot(range(num_generations), fitnesses, label=f"Population Size {population_size}")
 
-        Report(results).print("Genetic algorithm", population_size=population_size)
+        Report(results, runtimes).print("Genetic algorithm", population_size=population_size)
         print()
 
     plt.xlabel("Generation")
@@ -250,8 +252,8 @@ def main() -> None:
     # on my machine), so its probably better to only do one per run
 
     # test_exhaustive_search()
-    test_hill_climbing()
-    # test_genetic_algorithm()
+    # test_hill_climbing()
+    test_genetic_algorithm()
 
 
 if __name__ == "__main__":
