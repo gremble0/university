@@ -1,25 +1,7 @@
-/*
- * check if number is odd: num & 1
- *
- * Algorithm:
- * Find primes of:
- * 0 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16
- *
- * - get sqrt of max n sqrt(16) = 4
- * - initialize threads for nums less than sqrt(max(n))
- *    - in this case, one thread for 0..1, 1..2, 2..3, 3..4
- * - based on each num in each thread run sieve to mark upwards
- *   - something about n *= n / n *= 2 ?? to step forwards
- *   - synchronizing? if someone is marking a number already, go next? mark same number twice?
- *
- */
-
-import java.util.concurrent.atomic.AtomicInteger;
-
 class SieveOfEratosthenesPara {
   final int cores;
   int n, root;
-  AtomicInteger numOfPrimes;
+  int[] numsOfPrimes;
   byte[] oddNumbers;
 
   /**
@@ -32,17 +14,16 @@ class SieveOfEratosthenesPara {
     this.cores = threads;
     this.root = (int) Math.sqrt(n);
     this.oddNumbers = new byte[(n / 16) + 1];
-    this.numOfPrimes = new AtomicInteger();
+    this.numsOfPrimes = new int[cores];
   }
 
   private class SieveInInterval implements Runnable {
-    final int start, end;
-    int localNumOfPrimes;
+    final int start, end, numsOfPrimesIndex;
 
-    public SieveInInterval(int start, int end) {
+    public SieveInInterval(int start, int end, int numsOfPrimesIndex) {
       this.start = start;
       this.end = end;
-      this.localNumOfPrimes = 0;
+      this.numsOfPrimesIndex = numsOfPrimesIndex;
     }
 
     public void run() {
@@ -60,10 +41,9 @@ class SieveOfEratosthenesPara {
       while (prime < end && prime != -1) {
         traverse(prime);
         prime = nextPrime(prime);
-        ++localNumOfPrimes;
-      }
 
-      numOfPrimes.addAndGet(localNumOfPrimes);
+        ++numsOfPrimes[numsOfPrimesIndex];
+      }
     }
 
     /**
@@ -95,7 +75,6 @@ class SieveOfEratosthenesPara {
     }
 
     mark(1);
-    numOfPrimes.set(1);
 
     // Start threads
     final Thread[] threads = new Thread[cores];
@@ -103,13 +82,13 @@ class SieveOfEratosthenesPara {
 
     int start = 0;
     for (int i = 0; i < cores - 1; i++) {
-      threads[i] = new Thread(new SieveInInterval(start, start + intervalSize));
+      threads[i] = new Thread(new SieveInInterval(start, start + intervalSize, i));
       threads[i].start();
 
       start += intervalSize;
     }
     // Last thread takes the numbers upto the root of n
-    threads[cores - 1] = new Thread(new SieveInInterval(start, root - 1));
+    threads[cores - 1] = new Thread(new SieveInInterval(start, root - 1, cores - 1));
     threads[cores - 1].start();
 
     // Synchronize and gather results
@@ -125,14 +104,17 @@ class SieveOfEratosthenesPara {
   }
 
   private int[] collectPrimes() {
-    int start2 = (root % 2 == 0) ? root + 1 : root + 2;
-    int numOfPrimes2 = numOfPrimes.get();
+    int start = (root % 2 == 0) ? root + 1 : root + 2;
+    int totalNumOfPrimes = 1;
+    for (int numOfPrimes : numsOfPrimes) {
+      totalNumOfPrimes += numOfPrimes;
+    }
 
-    for (int i = start2; i <= n; i += 2)
+    for (int i = start; i <= n; i += 2)
       if (isPrime(i))
-        numOfPrimes2++;
+        totalNumOfPrimes++;
 
-    int[] primes = new int[numOfPrimes2 + 1];
+    int[] primes = new int[totalNumOfPrimes + 1];
     primes[0] = 2;
 
     int j = 1;
