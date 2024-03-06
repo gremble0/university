@@ -52,7 +52,7 @@ class SieveOfEratosthenesPara {
       // prime. If start is a prime number nextPrime will skip past it so we need to
       // account for that too.
       if ((start & 1) == 0) {
-        prime = isPrime(start + 1) ? start : nextPrime(start + 1);
+        prime = isPrime(start + 1) ? start + 1 : nextPrime(start + 1);
       } else {
         prime = isPrime(start) ? start : nextPrime(start);
       }
@@ -63,7 +63,6 @@ class SieveOfEratosthenesPara {
         ++localNumOfPrimes;
       }
 
-      // TODO: get rid of atomicinteger
       numOfPrimes.addAndGet(localNumOfPrimes);
     }
 
@@ -174,7 +173,7 @@ class SieveOfEratosthenesPara {
   /**
    * Prints the primes found.
    */
-  static void printPrimes(int[] primes) {
+  private static void printPrimes(int[] primes) {
     for (int prime : primes) {
       System.out.println(prime);
     }
@@ -207,8 +206,6 @@ class SieveOfEratosthenesPara {
 
     SieveOfEratosthenesPara soe = new SieveOfEratosthenesPara(n, threads);
 
-    long before = System.nanoTime();
-    soe.getPrimes();
-    System.out.println(System.nanoTime() - before);
+    printPrimes(soe.getPrimes());
   }
 }
