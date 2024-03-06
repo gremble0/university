@@ -1,40 +1,130 @@
-class SieveOfEratosthenesPara {
-  /**
-   * Declaring all the global variables
-   *
-   */
-  final int cores;
-  int n, root, numOfPrimes;
-  byte[] oddNumbers;
-  int[] primes;
+/*
+ * check if number is odd: num & 1
+ *
+ * Algorithm:
+ * Find primes of:
+ * 0 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16
+ *
+ * - get sqrt of max n sqrt(16) = 4
+ * - initialize threads for nums less than sqrt(max(n))
+ *    - in this case, one thread for 0..1, 1..2, 2..3, 3..4
+ * - based on each num in each thread run sieve to mark upwards
+ *   - something about n *= n / n *= 2 ?? to step forwards
+ *   - synchronizing? if someone is marking a number already, go next? mark same number twice?
+ *
+ */
 
-  private static class SieveInInterval implements Runnable {
+import java.util.concurrent.atomic.AtomicInteger;
+
+class SieveOfEratosthenesPara {
+  final int cores;
+  int n, root;
+  AtomicInteger numOfPrimes;
+  byte[] oddNumbers;
+
+  private class SieveInInterval implements Runnable {
     final int start, end;
+    int localNumOfPrimes;
 
     public SieveInInterval(int start, int end) {
       this.start = start;
       this.end = end;
+      this.localNumOfPrimes = 0;
     }
 
     public void run() {
-      for (int i = start; i < end; i++) {
-        // TODO: make new thread for oddNumbers[i]
+      int prime = firstPrime();
+
+      while (prime < end && prime != -1) {
+        traverse(prime);
+        prime = nextPrime(prime);
+        ++localNumOfPrimes;
       }
+
+      numOfPrimes.addAndGet(localNumOfPrimes);
+      System.out.println("LOCALNUMOFPRIMES: " + localNumOfPrimes);
+    }
+
+    private int firstPrime() {
+      int firstOdd;
+
+      // Make start odd if its even
+      if ((start & 1) == 0) {
+        firstOdd = start + 1;
+      } else {
+        firstOdd = start;
+      }
+
+      // if the firstOdd is a prime it would be skipped over in nextPrime (int i =
+      // prev + 2) so check for this first
+      if (isPrime(firstOdd)) {
+        return firstOdd;
+      }
+
+      return nextPrime(firstOdd);
+    }
+
+    private int nextPrime(int prev) {
+      for (int i = prev + 2; i <= end; i += 2)
+        if (isPrime(i))
+          return i;
+
+      return -1;
+    }
+
+    private void traverse(int prime) {
+      for (int i = prime * prime; i <= n; i += prime * 2)
+        mark(i);
     }
   }
 
-  void calculatePrimes() {
+  int[] getPrimes() {
+    // No point using parallel version for small numbers
+    if (root <= cores) {
+      SieveOfEratosthenesSeq soe = new SieveOfEratosthenesSeq(n);
+      return soe.getPrimes();
+    }
+
+    mark(1);
+    numOfPrimes.set(1);
+
     final Thread[] threads = new Thread[cores];
-    final int intervalSize = oddNumbers.length / cores;
+    final int intervalSize = root / cores;
 
     int start = 0;
-    for (int i = 0; i < cores; i++) {
+    for (int i = 0; i < cores - 1; i++) {
       threads[i] = new Thread(new SieveInInterval(start, start + intervalSize));
       threads[i].start();
 
       start += intervalSize;
     }
+    // Last thread takes the numbers upto the root of n
+    threads[cores - 1] = new Thread(new SieveInInterval(start, root - 1));
+    threads[cores - 1].start();
 
+    // Synchronize and gather results
+    try {
+      for (int i = 0; i < threads.length; i++) {
+        threads[i].join();
+      }
+    } catch (Exception e) {
+      e.printStackTrace();
+    }
+
+    // int[] primes = new int[numOfPrimes.get()];
+    System.out.println("NUMOFPRIMES: " + numOfPrimes.get());
+    int[] primes = new int[n / 2];
+    primes[0] = 2;
+
+    int j = 1;
+
+    for (int i = 3; i <= n; i += 2) {
+      if (isPrime(i)) {
+        primes[j++] = i;
+      }
+    }
+
+    return primes;
   }
 
   /**
@@ -47,6 +137,7 @@ class SieveOfEratosthenesPara {
     this.cores = threads;
     this.root = (int) Math.sqrt(n);
     this.oddNumbers = new byte[(n / 16) + 1];
+    this.numOfPrimes = new AtomicInteger();
   }
 
   /**
@@ -77,7 +168,7 @@ class SieveOfEratosthenesPara {
   /**
    * Prints the primes found.
    */
-  void printPrimes() {
+  static void printPrimes(int[] primes) {
     for (int prime : primes) {
       System.out.println(prime);
     }
@@ -110,7 +201,6 @@ class SieveOfEratosthenesPara {
 
     SieveOfEratosthenesPara soe = new SieveOfEratosthenesPara(n, threads);
 
-    soe.calculatePrimes();
-    soe.printPrimes();
+    printPrimes(soe.getPrimes());
   }
 }
