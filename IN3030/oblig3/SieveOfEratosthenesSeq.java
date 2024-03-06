@@ -205,14 +205,8 @@ class SieveOfEratosthenesSeq {
 
     SieveOfEratosthenesSeq soe = new SieveOfEratosthenesSeq(n);
 
-    /**
-     * Getting all the primes equal to and below 'n'
-     */
-    int[] primes = soe.getPrimes();
-
-    /**
-     * Printing the primes collected
-     */
-    printPrimes(primes);
+    long before = System.nanoTime();
+    soe.getPrimes();
+    System.out.println(System.nanoTime() - before);
   }
 }

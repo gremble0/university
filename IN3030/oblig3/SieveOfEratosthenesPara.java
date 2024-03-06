@@ -22,6 +22,19 @@ class SieveOfEratosthenesPara {
   AtomicInteger numOfPrimes;
   byte[] oddNumbers;
 
+  /**
+   * Constructor that initializes the global variables
+   * 
+   * @param n Prime numbers up until (and including if prime) 'n' is found
+   */
+  SieveOfEratosthenesPara(int n, int threads) {
+    this.n = n;
+    this.cores = threads;
+    this.root = (int) Math.sqrt(n);
+    this.oddNumbers = new byte[(n / 16) + 1];
+    this.numOfPrimes = new AtomicInteger();
+  }
+
   private class SieveInInterval implements Runnable {
     final int start, end;
     int localNumOfPrimes;
@@ -50,8 +63,8 @@ class SieveOfEratosthenesPara {
         ++localNumOfPrimes;
       }
 
+      // TODO: get rid of atomicinteger
       numOfPrimes.addAndGet(localNumOfPrimes);
-      System.out.println("LOCALNUMOFPRIMES: " + localNumOfPrimes);
     }
 
     /**
@@ -75,7 +88,7 @@ class SieveOfEratosthenesPara {
     }
   }
 
-  int[] getPrimes() {
+  public int[] getPrimes() {
     // No point using parallel version for small numbers
     if (root <= cores) {
       SieveOfEratosthenesSeq soe = new SieveOfEratosthenesSeq(n);
@@ -85,6 +98,7 @@ class SieveOfEratosthenesPara {
     mark(1);
     numOfPrimes.set(1);
 
+    // Start threads
     final Thread[] threads = new Thread[cores];
     final int intervalSize = root / cores;
 
@@ -108,13 +122,21 @@ class SieveOfEratosthenesPara {
       e.printStackTrace();
     }
 
-    // int[] primes = new int[numOfPrimes.get()];
-    System.out.println("NUMOFPRIMES: " + numOfPrimes.get());
-    int[] primes = new int[n / 2];
+    return collectPrimes();
+  }
+
+  private int[] collectPrimes() {
+    int start2 = (root % 2 == 0) ? root + 1 : root + 2;
+    int numOfPrimes2 = numOfPrimes.get();
+
+    for (int i = start2; i <= n; i += 2)
+      if (isPrime(i))
+        numOfPrimes2++;
+
+    int[] primes = new int[numOfPrimes2 + 1];
     primes[0] = 2;
 
     int j = 1;
-
     for (int i = 3; i <= n; i += 2) {
       if (isPrime(i)) {
         primes[j++] = i;
@@ -122,19 +144,6 @@ class SieveOfEratosthenesPara {
     }
 
     return primes;
-  }
-
-  /**
-   * Constructor that initializes the global variables
-   * 
-   * @param n Prime numbers up until (and including if prime) 'n' is found
-   */
-  SieveOfEratosthenesPara(int n, int threads) {
-    this.n = n;
-    this.cores = threads;
-    this.root = (int) Math.sqrt(n);
-    this.oddNumbers = new byte[(n / 16) + 1];
-    this.numOfPrimes = new AtomicInteger();
   }
 
   /**
@@ -198,6 +207,8 @@ class SieveOfEratosthenesPara {
 
     SieveOfEratosthenesPara soe = new SieveOfEratosthenesPara(n, threads);
 
-    printPrimes(soe.getPrimes());
+    long before = System.nanoTime();
+    soe.getPrimes();
+    System.out.println(System.nanoTime() - before);
   }
 }
