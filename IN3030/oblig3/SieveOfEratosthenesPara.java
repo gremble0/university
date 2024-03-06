@@ -33,7 +33,16 @@ class SieveOfEratosthenesPara {
     }
 
     public void run() {
-      int prime = firstPrime();
+      int prime;
+
+      // If start is even we need to add 1 to it before nextPrime will ever find a
+      // prime. If start is a prime number nextPrime will skip past it so we need to
+      // account for that too.
+      if ((start & 1) == 0) {
+        prime = isPrime(start + 1) ? start : nextPrime(start + 1);
+      } else {
+        prime = isPrime(start) ? start : nextPrime(start);
+      }
 
       while (prime < end && prime != -1) {
         traverse(prime);
@@ -45,25 +54,13 @@ class SieveOfEratosthenesPara {
       System.out.println("LOCALNUMOFPRIMES: " + localNumOfPrimes);
     }
 
-    private int firstPrime() {
-      int firstOdd;
-
-      // Make start odd if its even
-      if ((start & 1) == 0) {
-        firstOdd = start + 1;
-      } else {
-        firstOdd = start;
-      }
-
-      // if the firstOdd is a prime it would be skipped over in nextPrime (int i =
-      // prev + 2) so check for this first
-      if (isPrime(firstOdd)) {
-        return firstOdd;
-      }
-
-      return nextPrime(firstOdd);
-    }
-
+    /**
+     * Finds the next prime after some odd number.
+     *
+     * @param prev the number to start looking for prime numbers after. This must be
+     *             an odd number
+     * @return the first prime after prev
+     */
     private int nextPrime(int prev) {
       for (int i = prev + 2; i <= end; i += 2)
         if (isPrime(i))
