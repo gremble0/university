@@ -186,13 +186,14 @@ class SieveOfEratosthenesPara {
       return;
     }
 
-    // SieveOfEratosthenesPara soe = new SieveOfEratosthenesPara(n, threads);
-    //
-    // long before = System.nanoTime();
-    // soe.getPrimes();
-    // System.out.println(System.nanoTime() - before);
+    SieveOfEratosthenesPara soe = new SieveOfEratosthenesPara(n, threads);
 
-    FactorizeNumbers fn = new FactorizeNumbers(n * n, n, threads, new Oblig3Precode(n));
+    long before = System.nanoTime();
+    soe.getPrimes();
+    System.out.println(System.nanoTime() - before);
+
+    FactorizeNumbers fn = new FactorizeNumbers((long) n * (long) n, 100, threads, new Oblig3Precode(n));
     fn.factorize();
+    fn.writeFactors();
   }
 }

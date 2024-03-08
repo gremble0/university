@@ -19,32 +19,34 @@ class FactorizeNumbers {
     public void run() {
       numFactors.add(Long.valueOf(2));
 
+      // TODO: is this thread safe?
       factors.add(numFactors);
     }
   }
 
   private class FactorizeNumbersInInterval implements Runnable {
     private final Thread[] threads;
-    private final int start;
+    private final int start, end;
 
     /**
      * @param precode to log all added factors
      * @param start   the lower number in the range max..max-n
      * @param end     the upper number in the range max..max-n, is higher than start
      */
-    FactorizeNumbersInInterval(int start) {
+    FactorizeNumbersInInterval(int start, int end) {
       this.start = start;
-      this.threads = new Thread[intervalSize];
+      this.end = end;
+      this.threads = new Thread[end - start];
     }
 
     public void run() {
-      for (int i = 0; i < intervalSize; i++) {
-        threads[i] = new Thread(new FactorizeNumber(n - start + i));
+      for (int i = 0; i < threads.length; i++) {
+        threads[i] = new Thread(new FactorizeNumber(n - start - i));
         threads[i].start();
       }
 
       try {
-        for (int i = 0; i < intervalSize; i++) {
+        for (int i = 0; i < threads.length; i++) {
           threads[i].join();
         }
       } catch (Exception e) {
@@ -67,15 +69,18 @@ class FactorizeNumbers {
     this.precode = precode;
   }
 
-  public void factorize() {
+  public List<List<Long>> factorize() {
     Thread[] threads = new Thread[cores];
 
     int start = 0;
-    for (int i = 0; i < cores; i++) {
-      threads[i] = new Thread(new FactorizeNumbersInInterval(start));
+    for (int i = 0; i < cores - 1; i++) {
+      threads[i] = new Thread(new FactorizeNumbersInInterval(start, start + intervalSize));
       threads[i].start();
       start += intervalSize;
     }
+    // Last thread takes the rest of the numbers
+    threads[cores - 1] = new Thread(new FactorizeNumbersInInterval(start, k));
+    threads[cores - 1].start();
 
     try {
       for (int i = 0; i < cores; i++) {
@@ -85,10 +90,14 @@ class FactorizeNumbers {
       e.printStackTrace();
     }
 
+    return factors;
+  }
+
+  public void writeFactors() {
     for (int i = 0; i < factors.size(); i++) {
       List<Long> factorsForI = factors.get(i);
       for (int j = 0; j < factorsForI.size(); j++) {
-        precode.addFactor(i, factorsForI.get(j));
+        precode.addFactor(n - i, factorsForI.get(j));
       }
     }
 
