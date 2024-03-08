@@ -155,7 +155,7 @@ class SieveOfEratosthenesPara {
   /**
    * Prints the primes found.
    */
-  private static void printPrimes(int[] primes) {
+  static void printPrimes(int[] primes) {
     for (int prime : primes) {
       System.out.println(prime);
     }
@@ -188,6 +188,8 @@ class SieveOfEratosthenesPara {
 
     SieveOfEratosthenesPara soe = new SieveOfEratosthenesPara(n, threads);
 
-    printPrimes(soe.getPrimes());
+    long before = System.nanoTime();
+    soe.getPrimes();
+    System.out.println(System.nanoTime() - before);
   }
 }
