@@ -132,4 +132,48 @@ class FactorizeNumbers {
 
     precode.writeFactors();
   }
+
+  public static void main(String[] args) {
+    int n, k, threads;
+
+    try {
+      n = Integer.parseInt(args[0]);
+      if (n <= 0) {
+        throw new Exception();
+      }
+
+      // If argument is omitted set k to 100 as in oblig text
+      k = args.length > 1
+          ? Integer.parseInt(args[1])
+          : 100;
+      if (k <= 1) {
+        throw new Exception();
+      }
+
+      // If argument is omitted take all available processors
+      threads = args.length > 2
+          ? Integer.parseInt(args[2])
+          : Runtime.getRuntime().availableProcessors();
+      if (threads <= 0) {
+        throw new Exception();
+      }
+    } catch (Exception e) {
+      System.out.println("Correct use of program is: java FactorizeNumbers " +
+          "<n:unsigned int> <k?:unsigned int> <threads?: unsigned int>");
+      return;
+    }
+
+    int[] primes = new SieveOfEratosthenesPara(n, threads).getPrimes();
+
+    // TODO: Comment about how we can't factorize n * n without calculating the
+    // primes up to (n * n) / 2
+    FactorizeNumbers fn = new FactorizeNumbers(n - 1, k, primes, threads, new Oblig3Precode(n));
+
+    long beforeFactorization = System.nanoTime();
+    fn.factorize();
+    long afterFactorization = System.nanoTime();
+
+    fn.writeFactors();
+    System.out.println("Time to calculate factors: " + (afterFactorization - beforeFactorization));
+  }
 }

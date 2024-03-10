@@ -40,7 +40,7 @@ class SieveOfEratosthenesPara {
         prime = isPrime(start) ? start : nextPrime(start);
       }
 
-      while (prime < end && prime != -1) {
+      while (prime <= end && prime != -1) {
         traverse(prime);
         prime = nextPrime(prime);
       }
@@ -50,21 +50,21 @@ class SieveOfEratosthenesPara {
       for (int i = prime * prime; i <= n; i += prime * 2)
         mark(i);
     }
-  }
 
-  /**
-   * Finds the next prime after some odd number.
-   *
-   * @param prev the number to start looking for prime numbers after. This must be
-   *             an odd number
-   * @return the first prime after prev
-   */
-  public int nextPrime(int prev) {
-    for (int i = prev + 2; i <= root; i += 2)
-      if (isPrime(i))
-        return i;
+    /**
+     * Finds the next prime after some odd number.
+     *
+     * @param prev the number to start looking for prime numbers after. This must be
+     *             an odd number
+     * @return the first prime after prev
+     */
+    private int nextPrime(int prev) {
+      for (int i = prev + 2; i <= root; i += 2)
+        if (isPrime(i))
+          return i;
 
-    return -1;
+      return -1;
+    }
   }
 
   public int[] getPrimes() {
@@ -88,7 +88,7 @@ class SieveOfEratosthenesPara {
       start += intervalSize;
     }
     // Last thread takes the numbers upto the root of n
-    threads[cores - 1] = new Thread(new SieveInInterval(start, root - 1));
+    threads[cores - 1] = new Thread(new SieveInInterval(start, root));
     threads[cores - 1].start();
 
     // Synchronize and gather results
@@ -105,6 +105,7 @@ class SieveOfEratosthenesPara {
 
   private int[] collectPrimes() {
     List<Integer> primes = new ArrayList<>();
+    primes.add(2);
 
     for (int i = 3; i <= n; i += 2) {
       if (isPrime(i)) {
@@ -177,20 +178,9 @@ class SieveOfEratosthenesPara {
     SieveOfEratosthenesPara soe = new SieveOfEratosthenesPara(n, threads);
 
     long beforePrimes = System.nanoTime();
-    int[] primes = soe.getPrimes();
+    soe.getPrimes();
     long afterPrimes = System.nanoTime();
 
-    // TODO: Comment about how we can't factorize n * n without calculating the
-    // primes up to (n * n) / 2
-    FactorizeNumbers fn = new FactorizeNumbers((n * 2) - 1, 100, primes, threads, new Oblig3Precode(n));
-
-    long beforeFactorization = System.nanoTime();
-    fn.factorize();
-    long afterFactorization = System.nanoTime();
-
-    fn.writeFactors();
-
     System.out.println("Time to calculate primes:  " + (afterPrimes - beforePrimes));
-    System.out.println("Time to calculate factors: " + (afterFactorization - beforeFactorization));
   }
 }
