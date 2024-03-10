@@ -205,8 +205,10 @@ class SieveOfEratosthenesSeq {
 
     SieveOfEratosthenesSeq soe = new SieveOfEratosthenesSeq(n);
 
-    long before = System.nanoTime();
+    long beforePrimes = System.nanoTime();
     soe.getPrimes();
-    System.out.println(System.nanoTime() - before);
+    long afterPrimes = System.nanoTime();
+
+    System.out.println("Time to calculate primes:  " + (afterPrimes - beforePrimes));
   }
 }

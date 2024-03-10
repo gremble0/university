@@ -1,10 +1,10 @@
-import java.util.Arrays;
+import java.util.ArrayList;
+import java.util.List;
 
 class SieveOfEratosthenesPara {
   // TODO: final?
   private final int cores;
   private int n, root;
-  private int[] numsOfPrimes;
   private byte[] oddNumbers;
 
   /**
@@ -18,16 +18,14 @@ class SieveOfEratosthenesPara {
     this.cores = threads;
     this.root = (int) Math.sqrt(n);
     this.oddNumbers = new byte[(n / 16) + 1];
-    this.numsOfPrimes = new int[cores];
   }
 
   private class SieveInInterval implements Runnable {
-    final int start, end, numsOfPrimesIndex;
+    final int start, end;
 
-    public SieveInInterval(int start, int end, int numsOfPrimesIndex) {
+    public SieveInInterval(int start, int end) {
       this.start = start;
       this.end = end;
-      this.numsOfPrimesIndex = numsOfPrimesIndex;
     }
 
     public void run() {
@@ -45,8 +43,6 @@ class SieveOfEratosthenesPara {
       while (prime < end && prime != -1) {
         traverse(prime);
         prime = nextPrime(prime);
-
-        ++numsOfPrimes[numsOfPrimesIndex];
       }
     }
 
@@ -86,13 +82,13 @@ class SieveOfEratosthenesPara {
 
     int start = 0;
     for (int i = 0; i < cores - 1; i++) {
-      threads[i] = new Thread(new SieveInInterval(start, start + intervalSize, i));
+      threads[i] = new Thread(new SieveInInterval(start, start + intervalSize));
       threads[i].start();
 
       start += intervalSize;
     }
     // Last thread takes the numbers upto the root of n
-    threads[cores - 1] = new Thread(new SieveInInterval(start, root - 1, cores - 1));
+    threads[cores - 1] = new Thread(new SieveInInterval(start, root - 1));
     threads[cores - 1].start();
 
     // Synchronize and gather results
@@ -108,30 +104,15 @@ class SieveOfEratosthenesPara {
   }
 
   private int[] collectPrimes() {
-    int start = (root % 2 == 0) ? root + 1 : root + 2;
-    int totalNumOfPrimes = 1;
-    // Sum up all the primes found in each thread
-    for (int numOfPrimes : numsOfPrimes) {
-      System.out.println(numOfPrimes);
-      totalNumOfPrimes += numOfPrimes;
-    }
+    List<Integer> primes = new ArrayList<>();
 
-    for (int i = start; i <= n; i += 2)
-      if (isPrime(i))
-        totalNumOfPrimes++;
-
-    int[] primes = new int[totalNumOfPrimes];
-    primes[0] = 2;
-
-    int j = 1;
     for (int i = 3; i <= n; i += 2) {
       if (isPrime(i)) {
-        primes[j++] = i;
+        primes.add(i);
       }
     }
-    System.out.println(Arrays.toString(primes));
 
-    return primes;
+    return primes.stream().mapToInt(i -> i).toArray();
   }
 
   /**
@@ -195,15 +176,21 @@ class SieveOfEratosthenesPara {
 
     SieveOfEratosthenesPara soe = new SieveOfEratosthenesPara(n, threads);
 
-    long before = System.nanoTime();
+    long beforePrimes = System.nanoTime();
     int[] primes = soe.getPrimes();
-    System.out.println(System.nanoTime() - before);
+    long afterPrimes = System.nanoTime();
 
     // TODO: Comment about how we can't factorize n * n without calculating the
     // primes up to (n * n) / 2
-    // System.out.println(Arrays.toString(primes));
     FactorizeNumbers fn = new FactorizeNumbers((n * 2) - 1, 100, primes, threads, new Oblig3Precode(n));
+
+    long beforeFactorization = System.nanoTime();
     fn.factorize();
+    long afterFactorization = System.nanoTime();
+
     fn.writeFactors();
+
+    System.out.println("Time to calculate primes:  " + (afterPrimes - beforePrimes));
+    System.out.println("Time to calculate factors: " + (afterFactorization - beforeFactorization));
   }
 }
