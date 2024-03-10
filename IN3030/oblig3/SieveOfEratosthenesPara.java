@@ -1,103 +1,24 @@
-import java.util.ArrayList;
-import java.util.List;
+import java.util.Arrays;
 
 class SieveOfEratosthenesPara {
   // TODO: final?
   private final int cores;
-  private int n, k, root;
+  private int n, root;
   private int[] numsOfPrimes;
   private byte[] oddNumbers;
-  private final Oblig3Precode precode;
-  private final List<List<Long>> factors;
-
-  // TODO: just do this inside the InInterval class
-  private class FactorizeNumber implements Runnable {
-    private final long num;
-    private List<Long> numFactors;
-
-    FactorizeNumber(long num) {
-      this.num = num;
-      // TODO: inject index instead of inferring it
-      this.numFactors = factors.get((int) (n - num)); // TODO: linked list?
-    }
-
-    public void run() {
-      int i = 3;
-      long numIter = num;
-
-      while (i > 0 && i < numIter) { // <= ?
-        // Divide by 2 if its even
-        if ((numIter & 1) == 0) {
-          numFactors.add(Long.valueOf(2));
-          numIter /= 2;
-          continue;
-        }
-
-        if (num % i == 0) {
-          numFactors.add(Long.valueOf(i));
-          numIter /= i;
-          i = 3;
-          continue;
-        }
-
-        i = nextPrime(i);
-      }
-
-      if (numFactors.size() == 0) {
-        numFactors.add(num);
-      }
-    }
-  }
-
-  private class FactorizeNumbersInInterval implements Runnable {
-    private final Thread[] threads;
-    private final int start;
-
-    /**
-     * @param precode to log all added factors
-     * @param start   the lower number in the range max..max-n
-     * @param end     the upper number in the range max..max-n, is higher than start
-     */
-    FactorizeNumbersInInterval(int start, int end) {
-      this.start = start;
-      this.threads = new Thread[end - start];
-    }
-
-    public void run() {
-      for (int i = 0; i < threads.length; i++) {
-        threads[i] = new Thread(new FactorizeNumber(n - start - i));
-        threads[i].start();
-      }
-
-      try {
-        for (int i = 0; i < threads.length; i++) {
-          threads[i].join();
-        }
-      } catch (Exception e) {
-        e.printStackTrace();
-      }
-    }
-
-  }
 
   /**
    * Constructor that initializes the global variables
    * 
-   * @param n Prime numbers up until (and including if prime) 'n' is found
+   * @param n       Prime numbers up until (and including if prime) 'n' is found
+   * @param threads amount of threads to allocate for this class
    */
-  SieveOfEratosthenesPara(int n, int k, int threads) {
+  SieveOfEratosthenesPara(int n, int threads) {
     this.n = n;
-    this.k = k;
     this.cores = threads;
     this.root = (int) Math.sqrt(n);
     this.oddNumbers = new byte[(n / 16) + 1];
     this.numsOfPrimes = new int[cores];
-    this.precode = new Oblig3Precode(n);
-    this.factors = new ArrayList<>(k);
-
-    for (int i = 0; i < k; i++) {
-      factors.add(new ArrayList<>());
-    }
   }
 
   private class SieveInInterval implements Runnable {
@@ -133,47 +54,6 @@ class SieveOfEratosthenesPara {
       for (int i = prime * prime; i <= n; i += prime * 2)
         mark(i);
     }
-  }
-
-  /**
-   * @param k how many numbers below n to factorize
-   * @return A list of all the factors found for all of numbers in the range
-   *         n-k..n
-   */
-  public List<List<Long>> factorize() {
-    final int intervalSize = k / cores;
-    Thread[] threads = new Thread[cores];
-
-    int start = 0;
-    for (int i = 0; i < cores - 1; i++) {
-      threads[i] = new Thread(new FactorizeNumbersInInterval(start, start + intervalSize));
-      threads[i].start();
-      start += intervalSize;
-    }
-    // Last thread takes the rest of the numbers
-    threads[cores - 1] = new Thread(new FactorizeNumbersInInterval(start, k));
-    threads[cores - 1].start();
-
-    try {
-      for (int i = 0; i < cores; i++) {
-        threads[i].join();
-      }
-    } catch (Exception e) {
-      e.printStackTrace();
-    }
-
-    return factors;
-  }
-
-  public void writeFactors() {
-    for (int i = 0; i < factors.size(); i++) {
-      List<Long> factorsForI = factors.get(i);
-      for (int j = 0; j < factorsForI.size(); j++) {
-        precode.addFactor(n - i, factorsForI.get(j));
-      }
-    }
-
-    precode.writeFactors();
   }
 
   /**
@@ -310,13 +190,16 @@ class SieveOfEratosthenesPara {
       return;
     }
 
-    SieveOfEratosthenesPara soe = new SieveOfEratosthenesPara(n, 10, threads);
+    SieveOfEratosthenesPara soe = new SieveOfEratosthenesPara(n, threads);
 
     long before = System.nanoTime();
-    soe.getPrimes();
+    int[] primes = soe.getPrimes();
     System.out.println(System.nanoTime() - before);
 
-    soe.factorize();
-    soe.writeFactors();
+    System.out.println(Arrays.toString(primes));
+
+    FactorizeNumbers fn = new FactorizeNumbers(n * n, 10, primes, threads, new Oblig3Precode(n));
+    fn.factorize();
+    fn.writeFactors();
   }
 }
