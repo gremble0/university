@@ -2,48 +2,50 @@ import java.util.ArrayList;
 import java.util.List;
 
 class SieveOfEratosthenesPara {
+  // TODO: final?
   private final int cores;
-  private int n, root;
+  private int n, k, root;
   private int[] numsOfPrimes;
   private byte[] oddNumbers;
   private final Oblig3Precode precode;
-  private final List<List<Long>> factors = new ArrayList<>();
+  private final List<List<Long>> factors;
 
+  // TODO: just do this inside the InInterval class
   private class FactorizeNumber implements Runnable {
     private final long num;
     private List<Long> numFactors;
 
     FactorizeNumber(long num) {
       this.num = num;
-      this.numFactors = new ArrayList<Long>();
+      // TODO: inject index instead of inferring it
+      this.numFactors = factors.get((int) (n - num)); // TODO: linked list?
     }
 
     public void run() {
-      int i = 2;
+      int i = 3;
       long numIter = num;
 
-      while (i < numIter) {
-        if (num % i == 0) {
-          numFactors.add(Long.valueOf(i));
-          numIter /= i;
-          i = 2;
+      while (i > 0 && i < numIter) { // <= ?
+        // Divide by 2 if its even
+        if ((numIter & 1) == 0) {
+          numFactors.add(Long.valueOf(2));
+          numIter /= 2;
           continue;
         }
 
-        int nextP = nextPrime(i);
-        if (nextP == -1) {
-          break;
-        } else {
-          i = nextP;
+        if (num % i == 0) {
+          numFactors.add(Long.valueOf(i));
+          numIter /= i;
+          i = 3;
+          continue;
         }
+
+        i = nextPrime(i);
       }
 
       if (numFactors.size() == 0) {
         numFactors.add(num);
       }
-
-      // TODO: is this thread safe?
-      factors.add(numFactors);
     }
   }
 
@@ -83,13 +85,19 @@ class SieveOfEratosthenesPara {
    * 
    * @param n Prime numbers up until (and including if prime) 'n' is found
    */
-  SieveOfEratosthenesPara(int n, int threads) {
+  SieveOfEratosthenesPara(int n, int k, int threads) {
     this.n = n;
+    this.k = k;
     this.cores = threads;
     this.root = (int) Math.sqrt(n);
     this.oddNumbers = new byte[(n / 16) + 1];
     this.numsOfPrimes = new int[cores];
     this.precode = new Oblig3Precode(n);
+    this.factors = new ArrayList<>(k);
+
+    for (int i = 0; i < k; i++) {
+      factors.add(new ArrayList<>());
+    }
   }
 
   private class SieveInInterval implements Runnable {
@@ -127,7 +135,12 @@ class SieveOfEratosthenesPara {
     }
   }
 
-  public List<List<Long>> factorize(int k) {
+  /**
+   * @param k how many numbers below n to factorize
+   * @return A list of all the factors found for all of numbers in the range
+   *         n-k..n
+   */
+  public List<List<Long>> factorize() {
     final int intervalSize = k / cores;
     Thread[] threads = new Thread[cores];
 
@@ -170,7 +183,7 @@ class SieveOfEratosthenesPara {
    *             an odd number
    * @return the first prime after prev
    */
-  private int nextPrime(int prev) {
+  public int nextPrime(int prev) {
     for (int i = prev + 2; i <= root; i += 2)
       if (isPrime(i))
         return i;
@@ -297,13 +310,13 @@ class SieveOfEratosthenesPara {
       return;
     }
 
-    SieveOfEratosthenesPara soe = new SieveOfEratosthenesPara(n, threads);
+    SieveOfEratosthenesPara soe = new SieveOfEratosthenesPara(n, 10, threads);
 
     long before = System.nanoTime();
     soe.getPrimes();
     System.out.println(System.nanoTime() - before);
 
-    soe.factorize(100);
+    soe.factorize();
     soe.writeFactors();
   }
 }
