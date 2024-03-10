@@ -23,7 +23,6 @@ class FactorizeNumbers {
       int i = 0;
       long numIter = num;
 
-      System.out.println(num);
       while (i < primes.length && primes[i] <= numIter) {
         // If numIter is even we dont need to do expensive modulo operation
         if ((numIter & 1) == 0) {
@@ -33,9 +32,10 @@ class FactorizeNumbers {
           continue;
         }
 
+        // System.out.println(primes[i]);
         if (numIter % primes[i] == 0) {
           numFactors.add(Long.valueOf(primes[i]));
-          numIter /= i;
+          numIter /= primes[i];
           i = 0;
           continue;
         }

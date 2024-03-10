@@ -110,7 +110,9 @@ class SieveOfEratosthenesPara {
   private int[] collectPrimes() {
     int start = (root % 2 == 0) ? root + 1 : root + 2;
     int totalNumOfPrimes = 1;
+    // Sum up all the primes found in each thread
     for (int numOfPrimes : numsOfPrimes) {
+      System.out.println(numOfPrimes);
       totalNumOfPrimes += numOfPrimes;
     }
 
@@ -118,7 +120,7 @@ class SieveOfEratosthenesPara {
       if (isPrime(i))
         totalNumOfPrimes++;
 
-    int[] primes = new int[totalNumOfPrimes + 1];
+    int[] primes = new int[totalNumOfPrimes];
     primes[0] = 2;
 
     int j = 1;
@@ -127,6 +129,7 @@ class SieveOfEratosthenesPara {
         primes[j++] = i;
       }
     }
+    System.out.println(Arrays.toString(primes));
 
     return primes;
   }
@@ -196,9 +199,10 @@ class SieveOfEratosthenesPara {
     int[] primes = soe.getPrimes();
     System.out.println(System.nanoTime() - before);
 
-    System.out.println(Arrays.toString(primes));
-
-    FactorizeNumbers fn = new FactorizeNumbers(n * n, 10, primes, threads, new Oblig3Precode(n));
+    // TODO: Comment about how we can't factorize n * n without calculating the
+    // primes up to (n * n) / 2
+    // System.out.println(Arrays.toString(primes));
+    FactorizeNumbers fn = new FactorizeNumbers((n * 2) - 1, 100, primes, threads, new Oblig3Precode(n));
     fn.factorize();
     fn.writeFactors();
   }
