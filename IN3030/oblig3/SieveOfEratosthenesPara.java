@@ -21,10 +21,12 @@ class SieveOfEratosthenesPara {
 
   private class SieveInInterval implements Runnable {
     final int start, end;
+    final List<Integer> marked;
 
     public SieveInInterval(int start, int end) {
       this.start = start;
       this.end = end;
+      this.marked = new ArrayList<>();
     }
 
     public void run() {
@@ -47,7 +49,7 @@ class SieveOfEratosthenesPara {
 
     private void traverse(int prime) {
       for (int i = prime * prime; i <= n; i += prime * 2)
-        mark(i);
+        marked.add(i);
     }
 
     /**
@@ -77,23 +79,29 @@ class SieveOfEratosthenesPara {
 
     // Start threads
     final Thread[] threads = new Thread[cores];
+    final SieveInInterval[] tasks = new SieveInInterval[cores];
     final int intervalSize = root / cores;
 
     int start = 0;
     for (int i = 0; i < cores - 1; i++) {
-      threads[i] = new Thread(new SieveInInterval(start, start + intervalSize));
+      tasks[i] = new SieveInInterval(start, start + intervalSize);
+      threads[i] = new Thread(tasks[i]);
       threads[i].start();
 
       start += intervalSize;
     }
     // Last thread takes the numbers upto the root of n
-    threads[cores - 1] = new Thread(new SieveInInterval(start, root));
+    tasks[cores - 1] = new SieveInInterval(start, root);
+    threads[cores - 1] = new Thread(tasks[cores - 1]);
     threads[cores - 1].start();
 
     // Synchronize and gather results
     try {
       for (int i = 0; i < threads.length; i++) {
         threads[i].join();
+        for (int marked : tasks[i].marked) {
+          mark(marked);
+        }
       }
     } catch (Exception e) {
       e.printStackTrace();
