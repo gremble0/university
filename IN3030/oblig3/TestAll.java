@@ -5,8 +5,6 @@
  * below n and writes it to a file
  */
 
-import java.util.Arrays;
-
 class TestAll {
   public static void main(String[] args) {
     int n, k, threads;
@@ -64,13 +62,13 @@ class TestAll {
 
     System.out.println("Sequential sieve time: " + (afterPrimesS -
         beforePrimesS));
-    System.out.println("Parallel sieve time: " + (afterPrimesP - beforePrimesP));
+    System.out.println("Parallel sieve time:   " + (afterPrimesP - beforePrimesP));
 
     long beforeFactors = System.nanoTime();
     FactorizeNumbers fn = new FactorizeNumbers(n, k, soePPrimes, threads, new Oblig3Precode(n));
     long afterFactors = System.nanoTime();
 
-    System.out.println("Factorization time: " + (afterFactors - beforeFactors));
+    System.out.println("Factorization time:    " + (afterFactors - beforeFactors));
 
     fn.writeFactors();
   }

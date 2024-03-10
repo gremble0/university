@@ -2,10 +2,9 @@ import java.util.ArrayList;
 import java.util.List;
 
 class SieveOfEratosthenesPara {
-  // TODO: final?
   private final int cores;
-  private int n, root;
-  private byte[] oddNumbers;
+  private final int n, root;
+  private final byte[] oddNumbers;
 
   /**
    * Constructor that initializes the global variables
@@ -138,16 +137,8 @@ class SieveOfEratosthenesPara {
   private void mark(int num) {
     int bitIndex = (num % 16) / 2;
     int byteIndex = num / 16;
-    oddNumbers[byteIndex] |= (1 << bitIndex);
-  }
 
-  /**
-   * Prints the primes found.
-   */
-  static void printPrimes(int[] primes) {
-    for (int prime : primes) {
-      System.out.println(prime);
-    }
+    oddNumbers[byteIndex] |= (1 << bitIndex);
   }
 
   /**

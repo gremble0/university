@@ -118,6 +118,7 @@ class SieveOfEratosthenesSeq {
     int prime = nextPrime(1);
 
     while (prime != -1) {
+      // System.out.println("PRIME: " + prime);
       traverse(prime);
       prime = nextPrime(prime);
       numOfPrimes++;
