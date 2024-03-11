@@ -4,7 +4,7 @@ import java.util.List;
 class SieveOfEratosthenesPara {
   private final int cores;
   private final int n, root;
-  private final byte[] oddNumbers;
+  private final int[] oddNumbers;
 
   /**
    * Constructor that initializes the global variables
@@ -16,17 +16,15 @@ class SieveOfEratosthenesPara {
     this.n = n;
     this.cores = threads;
     this.root = (int) Math.sqrt(n);
-    this.oddNumbers = new byte[(n / 16) + 1];
+    this.oddNumbers = new int[(n / 2) + 1];
   }
 
   private class SieveInInterval implements Runnable {
     final int start, end;
-    final List<Integer> marked;
 
     public SieveInInterval(int start, int end) {
       this.start = start;
       this.end = end;
-      this.marked = new ArrayList<>();
     }
 
     public void run() {
@@ -49,7 +47,7 @@ class SieveOfEratosthenesPara {
 
     private void traverse(int prime) {
       for (int i = prime * prime; i <= n; i += prime * 2)
-        marked.add(i);
+        mark(i);
     }
 
     /**
@@ -79,30 +77,25 @@ class SieveOfEratosthenesPara {
 
     // Start threads
     final Thread[] threads = new Thread[cores];
-    final SieveInInterval[] tasks = new SieveInInterval[cores];
     final int intervalSize = root / cores;
 
     int start = 0;
     for (int i = 0; i < cores - 1; i++) {
-      tasks[i] = new SieveInInterval(start, start + intervalSize);
-      threads[i] = new Thread(tasks[i]);
+      threads[i] = new Thread(new SieveInInterval(start, start + intervalSize));
       threads[i].start();
 
       start += intervalSize;
     }
     // Last thread takes the numbers upto the root of n
-    tasks[cores - 1] = new SieveInInterval(start, root);
-    threads[cores - 1] = new Thread(tasks[cores - 1]);
+    threads[cores - 1] = new Thread(new SieveInInterval(start, root));
     threads[cores - 1].start();
 
     // Synchronize and gather results
     try {
       for (int i = 0; i < threads.length; i++) {
         threads[i].join();
-        for (int marked : tasks[i].marked) {
-          mark(marked);
-        }
       }
+      System.out.println(oddNumbers.length);
     } catch (Exception e) {
       e.printStackTrace();
     }
@@ -114,11 +107,9 @@ class SieveOfEratosthenesPara {
     List<Integer> primes = new ArrayList<>();
     primes.add(2);
 
-    for (int i = 3; i <= n; i += 2) {
-      if (isPrime(i)) {
+    for (int i = 3; i <= n; i += 2)
+      if (isPrime(i))
         primes.add(i);
-      }
-    }
 
     return primes.stream().mapToInt(i -> i).toArray();
   }
@@ -131,10 +122,7 @@ class SieveOfEratosthenesPara {
    * @return A boolean; true if prime, false if not.
    */
   private boolean isPrime(int num) {
-    int bitIndex = (num % 16) / 2;
-    int byteIndex = num / 16;
-
-    return (oddNumbers[byteIndex] & (1 << bitIndex)) == 0;
+    return (oddNumbers[num / 2] == 0);
   }
 
   /**
@@ -143,10 +131,7 @@ class SieveOfEratosthenesPara {
    * @param num The number to be marked non-prime.
    */
   private void mark(int num) {
-    int bitIndex = (num % 16) / 2;
-    int byteIndex = num / 16;
-
-    oddNumbers[byteIndex] |= (1 << bitIndex);
+    oddNumbers[num / 2] = 1;
   }
 
   /**
