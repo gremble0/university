@@ -1,10 +1,7 @@
-import java.util.ArrayList;
-import java.util.List;
-
 class SieveOfEratosthenesPara {
   private final int cores;
   private final int n, root;
-  private final int[] oddNumbers;
+  private final byte[] oddNumbers;
 
   /**
    * Constructor that initializes the global variables
@@ -16,7 +13,8 @@ class SieveOfEratosthenesPara {
     this.n = n;
     this.cores = threads;
     this.root = (int) Math.sqrt(n);
-    this.oddNumbers = new int[(n / 2) + 1];
+    this.oddNumbers = new byte[(n / 2)];
+    // Simultaneous access to the same byte
   }
 
   private class SieveInInterval implements Runnable {
@@ -43,11 +41,13 @@ class SieveOfEratosthenesPara {
         traverse(prime);
         prime = nextPrime(prime);
       }
+
+      System.out.println("DONE");
     }
 
     private void traverse(int prime) {
       for (int i = prime * prime; i <= n; i += prime * 2)
-        mark(i);
+        oddNumbers[i / 2] = 1;
     }
 
     /**
@@ -95,7 +95,6 @@ class SieveOfEratosthenesPara {
       for (int i = 0; i < threads.length; i++) {
         threads[i].join();
       }
-      System.out.println(oddNumbers.length);
     } catch (Exception e) {
       e.printStackTrace();
     }
@@ -104,14 +103,22 @@ class SieveOfEratosthenesPara {
   }
 
   private int[] collectPrimes() {
-    List<Integer> primes = new ArrayList<>();
-    primes.add(2);
+    long a = System.nanoTime();
 
+    int numOfPrimes = 1;
     for (int i = 3; i <= n; i += 2)
       if (isPrime(i))
-        primes.add(i);
+        numOfPrimes++;
 
-    return primes.stream().mapToInt(i -> i).toArray();
+    int[] primes = new int[numOfPrimes];
+    primes[0] = 2;
+    int index = 1;
+    for (int i = 3; i <= n; i += 2)
+      if (isPrime(i))
+        primes[index++] = i;
+
+    System.out.println("COLLECT                " + (System.nanoTime() - a));
+    return primes;
   }
 
   /**
@@ -122,7 +129,7 @@ class SieveOfEratosthenesPara {
    * @return A boolean; true if prime, false if not.
    */
   private boolean isPrime(int num) {
-    return (oddNumbers[num / 2] == 0);
+    return oddNumbers[num / 2] == 0;
   }
 
   /**
