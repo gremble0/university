@@ -14,7 +14,9 @@ class SieveOfEratosthenesPara {
     this.cores = threads;
     this.root = (int) Math.sqrt(n);
     this.oddNumbers = new byte[(n / 2)];
-    // Simultaneous access to the same byte
+    // Simultaneous updating of different bits inside the same byte is not thread
+    // safe so we have to use a whole byte for every prime number, which is not
+    // particularly memory efficient
   }
 
   private class SieveInInterval implements Runnable {
@@ -28,9 +30,8 @@ class SieveOfEratosthenesPara {
     public void run() {
       int prime;
 
-      // If start is even we need to add 1 to it before nextPrime will ever find a
-      // prime. If start is a prime number nextPrime will skip past it so we need to
-      // account for that too.
+      // If start is even we need to add 1 to it before calling nextPrime. If start is
+      // a prime number nextPrime will skip past it so we need to account for that too
       if ((start & 1) == 0) {
         prime = isPrime(start + 1) ? start + 1 : nextPrime(start + 1);
       } else {
@@ -41,8 +42,6 @@ class SieveOfEratosthenesPara {
         traverse(prime);
         prime = nextPrime(prime);
       }
-
-      System.out.println("DONE");
     }
 
     private void traverse(int prime) {
@@ -51,7 +50,7 @@ class SieveOfEratosthenesPara {
     }
 
     /**
-     * Finds the next prime after some odd number.
+     * Finds the next prime after some odd number. Always returns -1 if prev is even
      *
      * @param prev the number to start looking for prime numbers after. This must be
      *             an odd number
@@ -103,8 +102,6 @@ class SieveOfEratosthenesPara {
   }
 
   private int[] collectPrimes() {
-    long a = System.nanoTime();
-
     int numOfPrimes = 1;
     for (int i = 3; i <= n; i += 2)
       if (isPrime(i))
@@ -117,7 +114,6 @@ class SieveOfEratosthenesPara {
       if (isPrime(i))
         primes[index++] = i;
 
-    System.out.println("COLLECT                " + (System.nanoTime() - a));
     return primes;
   }
 
@@ -172,6 +168,6 @@ class SieveOfEratosthenesPara {
     soe.getPrimes();
     long afterPrimes = System.nanoTime();
 
-    System.out.println("Time to calculate primes:  " + (afterPrimes - beforePrimes));
+    System.out.println("Time to calculate primes parallel:   " + (afterPrimes - beforePrimes));
   }
 }

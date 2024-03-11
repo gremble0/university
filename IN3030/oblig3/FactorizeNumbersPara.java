@@ -1,7 +1,7 @@
 import java.util.ArrayList;
 import java.util.List;
 
-class FactorizeNumbers {
+class FactorizeNumbersPara {
   private final long n;
   private final int[] primes;
   private final int k, cores;
@@ -15,8 +15,7 @@ class FactorizeNumbers {
 
     FactorizeNumber(long num) {
       this.num = num;
-      // TODO: inject index instead of calculating it
-      this.numFactors = factors.get((int) (n - num)); // TODO: linked list?
+      this.numFactors = factors.get((int) (n - num));
     }
 
     public void run() {
@@ -32,13 +31,15 @@ class FactorizeNumbers {
           continue;
         }
 
-        // System.out.println(primes[i]);
+        // If we have found a factor add it
         if (numIter % primes[i] == 0) {
           numFactors.add(Long.valueOf(primes[i]));
           numIter /= primes[i];
           i = 0;
           continue;
         }
+
+        // If no factor was found move on to the next prime
         ++i;
       }
 
@@ -79,7 +80,7 @@ class FactorizeNumbers {
     }
   }
 
-  public FactorizeNumbers(long n, int k, int[] primes, int cores, Oblig3Precode precode) {
+  public FactorizeNumbersPara(long n, int k, int[] primes, int cores, Oblig3Precode precode) {
     this.n = n;
     this.k = k;
     this.primes = primes;
@@ -167,7 +168,7 @@ class FactorizeNumbers {
 
     // TODO: Comment about how we can't factorize n * n without calculating the
     // primes up to (n * n) / 2
-    FactorizeNumbers fn = new FactorizeNumbers(n - 1, k, primes, threads, new Oblig3Precode(n));
+    FactorizeNumbersPara fn = new FactorizeNumbersPara(n - 1, k, primes, threads, new Oblig3Precode(n));
 
     long beforeFactorization = System.nanoTime();
     fn.factorize();
