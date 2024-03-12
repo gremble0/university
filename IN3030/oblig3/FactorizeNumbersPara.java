@@ -8,10 +8,22 @@ class FactorizeNumbersPara {
   private final Oblig3Precode precode;
   private final List<List<Long>> factors;
 
-  // TODO: just do this inside the InInterval class
+  public FactorizeNumbersPara(long n, int k, int[] primes, int cores, Oblig3Precode precode) {
+    this.n = n;
+    this.k = k;
+    this.primes = primes;
+    this.cores = cores;
+    this.precode = precode;
+    this.factors = new ArrayList<>(k);
+
+    for (int i = 0; i < k; i++) {
+      factors.add(new ArrayList<>());
+    }
+  }
+
   private class FactorizeNumber implements Runnable {
     private final long num;
-    private List<Long> numFactors;
+    private final List<Long> numFactors;
 
     FactorizeNumber(long num) {
       this.num = num;
@@ -77,19 +89,6 @@ class FactorizeNumbersPara {
       } catch (Exception e) {
         e.printStackTrace();
       }
-    }
-  }
-
-  public FactorizeNumbersPara(long n, int k, int[] primes, int cores, Oblig3Precode precode) {
-    this.n = n;
-    this.k = k;
-    this.primes = primes;
-    this.cores = cores;
-    this.precode = precode;
-    this.factors = new ArrayList<>(k);
-
-    for (int i = 0; i < k; i++) {
-      factors.add(new ArrayList<>());
     }
   }
 
@@ -164,10 +163,8 @@ class FactorizeNumbersPara {
       return;
     }
 
-    int[] primes = new SieveOfEratosthenesPara(n, threads).getPrimes();
+    int[] primes = new SieveOfEratosthenesPara(n / n, threads).getPrimes();
 
-    // TODO: Comment about how we can't factorize n * n without calculating the
-    // primes up to (n * n) / 2
     FactorizeNumbersPara fn = new FactorizeNumbersPara(n - 1, k, primes, threads, new Oblig3Precode(n));
 
     long beforeFactorization = System.nanoTime();
@@ -175,6 +172,6 @@ class FactorizeNumbersPara {
     long afterFactorization = System.nanoTime();
 
     fn.writeFactors();
-    System.out.println("Time to calculate factors: " + (afterFactorization - beforeFactorization));
+    System.out.println("Time to calculate factors parallel:   " + (afterFactorization - beforeFactorization));
   }
 }

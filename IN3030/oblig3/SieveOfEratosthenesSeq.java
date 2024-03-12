@@ -210,6 +210,6 @@ class SieveOfEratosthenesSeq {
     soe.getPrimes();
     long afterPrimes = System.nanoTime();
 
-    System.out.println("Time to calculate primes sequential: " + (afterPrimes - beforePrimes));
+    System.out.println("Time to calculate primes sequential:  " + (afterPrimes - beforePrimes));
   }
 }

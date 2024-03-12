@@ -72,8 +72,13 @@ class FactorizeNumbersSeq {
     precode.writeFactors();
   }
 
+  /**
+   * Tests the sequential factorization of numbers in isolation. (also runs the
+   * sieve, but does not time this)
+   */
   public static void main(String[] args) {
-    int n, k;
+    int n;
+    int k;
 
     try {
       n = Integer.parseInt(args[0]);
@@ -95,13 +100,14 @@ class FactorizeNumbersSeq {
 
     int[] primes = new SieveOfEratosthenesSeq(n).getPrimes();
 
-    FactorizeNumbersSeq fn = new FactorizeNumbersSeq(n, k, primes, new Oblig3Precode(n));
+    FactorizeNumbersSeq fn = new FactorizeNumbersSeq((long) ((long) n * 2 - 1), k, primes, new Oblig3Precode(n));
 
     long beforeFactorization = System.nanoTime();
     fn.factorize();
     long afterFactorization = System.nanoTime();
 
     fn.writeFactors();
-    System.out.println("Time to calculate factors: " + (afterFactorization - beforeFactorization));
+    System.out.println("Time to calculate factors sequential: "
+        + (afterFactorization / 1000000 - beforeFactorization / 1000000) + "ms");
   }
 }

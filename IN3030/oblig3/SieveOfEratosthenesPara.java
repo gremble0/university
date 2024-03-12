@@ -168,6 +168,6 @@ class SieveOfEratosthenesPara {
     soe.getPrimes();
     long afterPrimes = System.nanoTime();
 
-    System.out.println("Time to calculate primes parallel:   " + (afterPrimes - beforePrimes));
+    System.out.println("Time to calculate primes parallel:    " + (afterPrimes - beforePrimes));
   }
 }
