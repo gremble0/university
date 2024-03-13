@@ -61,6 +61,9 @@ class FactorizeNumbersSeq {
     return factors;
   }
 
+  /**
+   * Collects factors and writes it to the file using the precode
+   */
   public void writeFactors() {
     for (int i = 0; i < factors.size(); i++) {
       List<Long> factorsForI = factors.get(i);

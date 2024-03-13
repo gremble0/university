@@ -109,6 +109,7 @@ class SieveOfEratosthenesPara {
 
     int[] primes = new int[numOfPrimes];
     primes[0] = 2;
+
     int index = 1;
     for (int i = 3; i <= n; i += 2)
       if (isPrime(i))

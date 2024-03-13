@@ -22,20 +22,30 @@ class TestAll {
     }
   }
 
+  /**
+   * Run all the algorithms once and add the times taken for each algorithm to the
+   * timeSums
+   *
+   * @param timeSums array of at least size 4, each index will be incremented by
+   *                 calling this method.
+   */
   private static void testOnce(long[] timeSums) {
-    SieveOfEratosthenesSeq soeSe = new SieveOfEratosthenesSeq(n);
-    SieveOfEratosthenesPara soePa = new SieveOfEratosthenesPara(n, threads);
+    // We need to create new objects to reset the state in each iteration. This will
+    // produce a bit of garbage, which could impact runtimes. Thus we will run this
+    // method multiple times and take the average
+    SieveOfEratosthenesSeq soeSeq = new SieveOfEratosthenesSeq(n);
+    SieveOfEratosthenesPara soePara = new SieveOfEratosthenesPara(n, threads);
 
-    long beforePrimesS = System.nanoTime();
-    int[] soeSPrimes = soeSe.getPrimes();
-    long afterPrimesS = System.nanoTime();
+    long beforePrimesSeq = System.nanoTime();
+    int[] soeSeqPrimes = soeSeq.getPrimes();
+    long afterPrimesSeq = System.nanoTime();
 
-    long beforePrimesP = System.nanoTime();
-    int[] soePPrimes = soePa.getPrimes();
-    long afterPrimesP = System.nanoTime();
+    long beforePrimesPara = System.nanoTime();
+    int[] soeParaPrimes = soePara.getPrimes();
+    long afterPrimesPara = System.nanoTime();
 
-    FactorizeNumbersSeq facSe = new FactorizeNumbersSeq((long) ((long) n * 2 - 1), k, soeSPrimes, null);
-    FactorizeNumbersPara facPa = new FactorizeNumbersPara((long) ((long) n * 2 - 1), k, soePPrimes, threads, null);
+    FactorizeNumbersSeq facSe = new FactorizeNumbersSeq((long) ((long) n * 2 - 1), k, soeSeqPrimes, null);
+    FactorizeNumbersPara facPa = new FactorizeNumbersPara((long) ((long) n * 2 - 1), k, soeParaPrimes, threads, null);
 
     long beforeFactorsS = System.nanoTime();
     facSe.factorize();
@@ -45,8 +55,8 @@ class TestAll {
     facPa.factorize();
     long afterFactorsP = System.nanoTime();
 
-    timeSums[0] += (afterPrimesS - beforePrimesS) / 1000000;
-    timeSums[1] += (afterPrimesP - beforePrimesP) / 1000000;
+    timeSums[0] += (afterPrimesSeq - beforePrimesSeq) / 1000000;
+    timeSums[1] += (afterPrimesPara - beforePrimesPara) / 1000000;
     timeSums[2] += (afterFactorsS - beforeFactorsS) / 1000000;
     timeSums[3] += (afterFactorsP - beforeFactorsP) / 1000000;
   }
