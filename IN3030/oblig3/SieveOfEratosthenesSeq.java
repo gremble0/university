@@ -186,12 +186,10 @@ class SieveOfEratosthenesSeq {
   }
 
   /**
-   * Expects a positive integer as an argument.
-   * 
-   * @param args Contains the number up to which we want to find prime numbers.
+   * Finds all prime numbers using the sequential algorithm up until n and reports
+   * the time it took
    */
   public static void main(String[] args) {
-
     int n;
 
     try {
@@ -210,6 +208,7 @@ class SieveOfEratosthenesSeq {
     soe.getPrimes();
     long afterPrimes = System.nanoTime();
 
-    System.out.println("Time to calculate primes sequential:  " + (afterPrimes - beforePrimes));
+    System.out
+        .println("Time to calculate primes sequential:  " + (afterPrimes / 1000000 - beforePrimes / 1000000) + "ms");
   }
 }

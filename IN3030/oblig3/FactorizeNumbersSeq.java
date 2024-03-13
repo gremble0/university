@@ -73,8 +73,8 @@ class FactorizeNumbersSeq {
   }
 
   /**
-   * Tests the sequential factorization of numbers in isolation. (also runs the
-   * sieve, but does not time this)
+   * Tests the sequential factorization of numbers up until n * 2. (also runs the
+   * sequential sieve, but does not time this)
    */
   public static void main(String[] args) {
     int n;

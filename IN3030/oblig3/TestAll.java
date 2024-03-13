@@ -1,11 +1,12 @@
 /*
- * This file tests the sequential and the parallell solution of the Sieve for
- * the given parameters. It verifies that the outputs of the parallell and
- * sequential algorithms are identical and then factorizes the k numbers
- * below n and writes it to a file
+ * This file verifies that all the algorithms work as intented and also writes the factors to the file `Factors_n.txt`. It then tests the algorithms some amount of times before reporting the average times each algorithm took over each test.
+ *
+ * NOTE: Running this could take a while for bigger values of n (2-3 minutes for n=2000000000 on my machine). You can change the amount of iterations to test by modifying the TEST_ITERATIONS variable below
  */
 
 class TestAll {
+  static int n, k, threads;
+
   private static void assertArraysEqual(int[] arr1, int[] arr2) throws Exception {
     if (arr1.length != arr2.length) {
       System.out.println("Arrays have different length");
@@ -21,9 +22,36 @@ class TestAll {
     }
   }
 
-  public static void main(String[] args) {
-    int n, k, threads;
+  private static void testOnce(long[] timeSums) {
+    SieveOfEratosthenesSeq soeSe = new SieveOfEratosthenesSeq(n);
+    SieveOfEratosthenesPara soePa = new SieveOfEratosthenesPara(n, threads);
 
+    long beforePrimesS = System.nanoTime();
+    int[] soeSPrimes = soeSe.getPrimes();
+    long afterPrimesS = System.nanoTime();
+
+    long beforePrimesP = System.nanoTime();
+    int[] soePPrimes = soePa.getPrimes();
+    long afterPrimesP = System.nanoTime();
+
+    FactorizeNumbersSeq facSe = new FactorizeNumbersSeq((long) ((long) n * 2 - 1), k, soeSPrimes, null);
+    FactorizeNumbersPara facPa = new FactorizeNumbersPara((long) ((long) n * 2 - 1), k, soePPrimes, threads, null);
+
+    long beforeFactorsS = System.nanoTime();
+    facSe.factorize();
+    long afterFactorsS = System.nanoTime();
+
+    long beforeFactorsP = System.nanoTime();
+    facPa.factorize();
+    long afterFactorsP = System.nanoTime();
+
+    timeSums[0] += (afterPrimesS - beforePrimesS) / 1000000;
+    timeSums[1] += (afterPrimesP - beforePrimesP) / 1000000;
+    timeSums[2] += (afterFactorsS - beforeFactorsS) / 1000000;
+    timeSums[3] += (afterFactorsP - beforeFactorsP) / 1000000;
+  }
+
+  public static void main(String[] args) {
     try {
       n = Integer.parseInt(args[0]);
       if (n <= 0) {
@@ -51,17 +79,13 @@ class TestAll {
       return;
     }
 
-    // Finding primes below n
-    SieveOfEratosthenesSeq soeS = new SieveOfEratosthenesSeq(n);
-    SieveOfEratosthenesPara soeP = new SieveOfEratosthenesPara(n, threads);
+    // Initialize objects and run one dry run without benchmarking to verify results
+    // and warm up JVM
+    SieveOfEratosthenesSeq soeSe = new SieveOfEratosthenesSeq(n);
+    SieveOfEratosthenesPara soePa = new SieveOfEratosthenesPara(n, threads);
 
-    long beforePrimesS = System.nanoTime();
-    int[] soeSPrimes = soeS.getPrimes();
-    long afterPrimesS = System.nanoTime();
-
-    long beforePrimesP = System.nanoTime();
-    int[] soePPrimes = soeP.getPrimes();
-    long afterPrimesP = System.nanoTime();
+    int[] soeSPrimes = soeSe.getPrimes();
+    int[] soePPrimes = soePa.getPrimes();
 
     try {
       assertArraysEqual(soeSPrimes, soePPrimes);
@@ -69,32 +93,29 @@ class TestAll {
       return;
     }
 
-    System.out.println("Sequential sieve time: " + (afterPrimesS / 1000000 - beforePrimesS / 1000000) + "ms");
-    System.out.println("Parallel sieve time:   " + (afterPrimesP / 1000000 - beforePrimesP / 1000000) + "ms");
-
-    // Factorization of k numbers below n * 2. Using the prime numbers up until n we
-    // can only factorize numbers smaller than n * 2. To factorize the squares of
-    // the big numbers specified in the oblig we would need to modify the sieve to
-    // use longs instead of ints and then calculate the primes up until (n * n) / 2,
-    // or modify the factorization to brute force the factorization instead of using
-    // the primes calculated by the sieve. Maybe there is some other way to do it,
-    // but not that i could think of.
-    FactorizeNumbersSeq fnS = new FactorizeNumbersSeq((long) ((long) n * 2 - 1), k, soePPrimes,
-        new Oblig3Precode(n));
-    FactorizeNumbersPara fnP = new FactorizeNumbersPara((long) ((long) n * 2 - 1), k, soePPrimes, threads,
+    // Using the prime numbers up until n we can only factorize numbers smaller than
+    // n * 2. To factorize the squares of the big numbers specified in the oblig we
+    // would need to modify the sieve to use longs instead of ints and then
+    // calculate the primes up until (n * n) / 2, or modify the factorization to
+    // brute force the factorization instead of using the primes calculated by the
+    // sieve. Maybe there is some other way to do it, but not that i could think of.
+    FactorizeNumbersPara facPa = new FactorizeNumbersPara((long) ((long) n * 2 - 1), k, soePPrimes, threads,
         new Oblig3Precode(n));
 
-    long beforeFactorsS = System.nanoTime();
-    fnS.factorize();
-    long afterFactorsS = System.nanoTime();
+    facPa.factorize();
+    facPa.writeFactors();
 
-    long beforeFactorsP = System.nanoTime();
-    fnP.factorize();
-    long afterFactorsP = System.nanoTime();
+    // Change to modify accuracy of test benchmarks
+    final int TEST_ITERATIONS = 5;
+    long[] timeSums = new long[4]; // sums for times for each algorithm, incremented by testOnce()
 
-    System.out.println("Sequential factorization time: " + (afterFactorsS / 1000000 - beforeFactorsS / 1000000) + "ms");
-    System.out.println("Parallel factorization time:   " + (afterFactorsP / 1000000 - beforeFactorsP / 1000000) + "ms");
+    for (int i = 0; i < TEST_ITERATIONS; i++) {
+      testOnce(timeSums);
+    }
 
-    fnP.writeFactors();
+    System.out.println("Average time to find primes sequential:       " + timeSums[0] / TEST_ITERATIONS + "ms");
+    System.out.println("Average time to find primes parallel:         " + timeSums[1] / TEST_ITERATIONS + "ms");
+    System.out.println("Average time to calculate factors sequential: " + timeSums[2] / TEST_ITERATIONS + "ms");
+    System.out.println("Average time to calculate factors parallel:   " + timeSums[3] / TEST_ITERATIONS + "ms");
   }
 }

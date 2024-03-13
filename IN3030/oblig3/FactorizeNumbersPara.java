@@ -133,6 +133,10 @@ class FactorizeNumbersPara {
     precode.writeFactors();
   }
 
+  /**
+   * Tests the parallel factorization of numbers up until n * 2. (also runs the
+   * parallel sieve, but does not time this)
+   */
   public static void main(String[] args) {
     int n, k, threads;
 
@@ -163,15 +167,17 @@ class FactorizeNumbersPara {
       return;
     }
 
-    int[] primes = new SieveOfEratosthenesPara(n / n, threads).getPrimes();
+    int[] primes = new SieveOfEratosthenesPara(n, threads).getPrimes();
 
-    FactorizeNumbersPara fn = new FactorizeNumbersPara(n - 1, k, primes, threads, new Oblig3Precode(n));
+    FactorizeNumbersPara fn = new FactorizeNumbersPara((long) ((long) n * 2 - 1), k, primes, threads,
+        new Oblig3Precode(n));
 
     long beforeFactorization = System.nanoTime();
     fn.factorize();
     long afterFactorization = System.nanoTime();
 
     fn.writeFactors();
-    System.out.println("Time to calculate factors parallel:   " + (afterFactorization - beforeFactorization));
+    System.out.println("Time to calculate factors parallel:   "
+        + (afterFactorization / 1000000 - beforeFactorization / 1000000) + "ms");
   }
 }

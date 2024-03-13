@@ -138,8 +138,8 @@ class SieveOfEratosthenesPara {
   }
 
   /**
-   * @param args Contains the number up to which we want to find prime numbers and
-   *             optionally the amount of threads to assign to the program
+   * Finds all prime numbers using the parallel algorithm up until n and reports
+   * the time it took
    */
   public static void main(String[] args) {
     int n, threads;
@@ -168,6 +168,7 @@ class SieveOfEratosthenesPara {
     soe.getPrimes();
     long afterPrimes = System.nanoTime();
 
-    System.out.println("Time to calculate primes parallel:    " + (afterPrimes - beforePrimes));
+    System.out
+        .println("Time to calculate primes parallel:    " + (afterPrimes / 1000000 - beforePrimes / 1000000) + "ms");
   }
 }
