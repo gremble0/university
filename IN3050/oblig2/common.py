@@ -1,3 +1,5 @@
+from abc import ABC, abstractmethod
+from typing import Tuple
 import numpy as np
 import matplotlib.pyplot as plt
 from sklearn.datasets import make_blobs
@@ -26,11 +28,57 @@ T_BINARY_TRAIN = (T_MULTI_TRAIN >= 3).astype("int")
 T_BINARY_VAL = (T_MULTI_VAL >= 3).astype("int")
 T_BINARY_TEST = (T_MULTI_TEST >= 3).astype("int")
 
-def plot_training_set(features, clusters, plot_name: str, path: str) -> None:
+
+
+class Classifier(ABC):
+    """Abstract base class for classifiers"""
+
+    @abstractmethod
+    def predict(self, X: np.ndarray, threshold: float=0.5) -> np.ndarray: ...
+
+    @abstractmethod
+    def fit(self, X: np.ndarray, T: np.ndarray, learning_rate: float=0.1, epochs=10) -> None: ...
+
+
+def plot_training_set(X: np.ndarray, T: np.ndarray, plot_name: str, path: str) -> None:
     plt.figure(figsize=(8,6))
-    plt.scatter(features[:, 0], features[:, 1], c=clusters, s=10.0)
+    plt.scatter(X[:, 0], X[:, 1], c=T, s=10.0)
     plt.title(plot_name)
     plt.savefig(path)
 
-plot_training_set(X_TRAIN, T_MULTI_TRAIN, "Multi-class set", "assets/multi-class.png")
-plot_training_set(X_TRAIN, T_BINARY_TRAIN, "Binary set", "assets/binary.png")
+
+def plot_decision_regions(
+    X: np.ndarray,
+    T: np.ndarray,
+    classifier: Classifier,
+    size: Tuple[float, float] = (8,6),
+    path: str = "assets/decision-regions.png",
+) -> None:
+    x_min, x_max = X[:, 0].min() - 1, X[:, 0].max() + 1
+    y_min, y_max = X[:, 1].min() - 1, X[:, 1].max() + 1
+
+    h = 0.02 # step size in the mesh
+    xx, yy = np.meshgrid(np.arange(x_min, x_max, h), np.arange(y_min, y_max, h))
+    Z = classifier.predict(np.c_[xx.ravel(), yy.ravel()])
+
+    Z = Z.reshape(xx.shape)
+
+    plt.figure(figsize=size)
+    plt.contourf(xx, yy, Z, alpha=0.2, cmap = 'Paired')
+    plt.scatter(X[:,0], X[:,1], c=T, s=10.0, cmap='Paired')
+    plt.xlim(xx.min(), xx.max())
+    plt.ylim(yy.min(), yy.max())
+    plt.title("Decision regions")
+    plt.xlabel("x0")
+    plt.ylabel("x1")
+
+    plt.savefig(path)
+
+
+def add_bias(X: np.ndarray, bias: float) -> np.ndarray:
+    biases = np.ones((X.shape[0], 1)) * bias
+    return np.concatenate((biases, X), axis=1)
+
+
+def accuracy(predicted: np.ndarray, gold: np.ndarray) -> float:
+    return np.mean(predicted == gold)
