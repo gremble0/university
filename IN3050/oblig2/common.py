@@ -34,6 +34,9 @@ class Classifier(ABC):
     """Abstract base class for classifiers"""
 
     @abstractmethod
+    def __init__(self, bias: float=-1) -> None: ...
+
+    @abstractmethod
     def predict(self, X: np.ndarray, threshold: float=0.5) -> np.ndarray: ...
 
     @abstractmethod

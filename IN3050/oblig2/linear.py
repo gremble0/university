@@ -16,10 +16,10 @@ class LinearRegressionClassifier(Classifier):
 
         n_datapoints, n_features = X.shape
 
-        self.weights = weights = np.zeros(n_features)
+        self.weights = np.zeros(n_features)
 
         for _ in range(epochs):
-            weights -= learning_rate / n_datapoints * X.T @ (X @ weights - T)
+            self.weights -= learning_rate / n_datapoints * X.T @ (X @ self.weights - T)
 
     def predict(self, X: np.ndarray, threshold: float=0.5) -> np.ndarray:
         if self.bias:
