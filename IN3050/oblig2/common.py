@@ -4,6 +4,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 from sklearn.datasets import make_blobs
 
+
 X, T = make_blobs(
     n_samples=[400, 400, 400, 400, 400],
     centers=[[0, 1], [4, 2], [8, 1], [2, 0], [6, 0]],
@@ -27,7 +28,6 @@ T_MULTI_TEST = T[indices[1500:]]
 T_BINARY_TRAIN = (T_MULTI_TRAIN >= 3).astype("int")
 T_BINARY_VAL = (T_MULTI_VAL >= 3).astype("int")
 T_BINARY_TEST = (T_MULTI_TEST >= 3).astype("int")
-
 
 
 class Classifier(ABC):
