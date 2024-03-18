@@ -1,8 +1,9 @@
+from typing import Type
 import numpy as np
 
 from scaling import minmax_scaler, standard_scaler
-from common import T_BINARY_TRAIN, T_BINARY_VAL, X_TRAIN, X_VAL, accuracy, plot_decision_regions
-from linear import LinearRegressionClassifier
+from common import T_BINARY_TRAIN, T_BINARY_VAL, X_TRAIN, X_VAL, plot_decision_regions
+from classifiers import Classifier, LinearRegressionClassifier, LogisticRegressionClassifier, accuracy
 
 
 def test_linear_classifier(
@@ -10,16 +11,17 @@ def test_linear_classifier(
     t_train: np.ndarray,
     x_val: np.ndarray,
     t_val: np.ndarray,
-    plot_path: str
+    plot_path: str,
+    classifier: Type[Classifier],
 ) -> None:
     best = 0.0
     best_epochs = None
     best_learning_rate = None
-    best_classifier = LinearRegressionClassifier()
+    best_classifier = classifier()
 
     for epoch in range(100):
         for learning_rate in [0.0001, 0.001, 0.01, 0.1, 0.15, 0.2, 0.25, 0.3, 0.35, 0.4, 0.45, 0.5]:
-            linear_classifier = LinearRegressionClassifier()
+            linear_classifier = classifier()
             linear_classifier.fit(x_train, t_train, learning_rate, epoch)
 
             acc = accuracy(linear_classifier.predict(x_val), t_val)
@@ -41,7 +43,7 @@ def test_linear_classifier_without_scaling() -> None:
     # epochs). We can also get the same accuracy with a very low learning rate
     # and in that case the number of epochs doesn't matter.
     #
-    # If you change the comparison inside the test_linear_classifer function:
+    # If you change the comparison inside the test_linear_classifer function from:
     # ```
     #     if acc > best: ...
     # ```
@@ -57,7 +59,14 @@ def test_linear_classifier_without_scaling() -> None:
     # Either way the best result we can get here seems to be 0.604
 
     print("Testing linear classifier without scaling")
-    test_linear_classifier(X_TRAIN, T_BINARY_TRAIN, X_VAL, T_BINARY_VAL, "assets/linear-without-scaling.png")
+    test_linear_classifier(
+        X_TRAIN,
+        T_BINARY_TRAIN,
+        X_VAL,
+        T_BINARY_VAL,
+        "assets/linear-without-scaling.png",
+        LinearRegressionClassifier,
+    )
 
 
 def test_linear_classifier_with_scaling() -> None:
@@ -66,6 +75,12 @@ def test_linear_classifier_with_scaling() -> None:
     # of 0.762, and for the minmax scaler its 66 epochs and a learning rate of
     # 0.5 resulting in an accuracy of 0.708. Both are significant improvements
     # compared to the unscaled data.
+    #
+    # NOTE: I also noticed that by modifying the threshold of the predict
+    # function of the classifier we could further increase the accuracy on the
+    # standard scaled data. Here i found that ~0.45 would be the optimal 
+    # resulting in an accuracy of 0.79. Though this is definetly specific to
+    # this test data so i left it out from the definition of the classifier.
 
     print("Testing linear classifier with standard scaling")
     test_linear_classifier(
@@ -73,7 +88,8 @@ def test_linear_classifier_with_scaling() -> None:
         T_BINARY_TRAIN,
         standard_scaler(X_VAL),
         T_BINARY_VAL,
-        "assets/linear-with-scaling.png"
+        "assets/linear-with-scaling.png",
+        LinearRegressionClassifier,
     )
 
     print("Testing linear classifier with minmax scaler")
@@ -82,13 +98,32 @@ def test_linear_classifier_with_scaling() -> None:
         T_BINARY_TRAIN,
         minmax_scaler(X_VAL),
         T_BINARY_VAL,
-        "assets/linear-with-scaling.png"
+        "assets/linear-with-scaling.png",
+        LinearRegressionClassifier,
     )
+
+
+def test_logistic_classifier() -> None:
+    # For the lgositic regression classifier we find
+    print("Testing logistic classifier with standard scaling")
+    test_linear_classifier(
+        standard_scaler(X_TRAIN),
+        T_BINARY_TRAIN,
+        standard_scaler(X_VAL),
+        T_BINARY_VAL,
+        "assets/linear-with-scaling.png",
+        LogisticRegressionClassifier,
+    )
+
+    l = LogisticRegressionClassifier()
+    l.fit(X_TRAIN, T_BINARY_TRAIN)
+    print(l.predict_probability(T_BINARY_VAL))
 
 
 def main() -> None:
     test_linear_classifier_without_scaling()
     test_linear_classifier_with_scaling()
+    test_logistic_classifier()
     # plot_training_set(X_TRAIN, T_MULTI_TRAIN, "Multi-class set", "assets/multi-class.png")
     # plot_training_set(X_TRAIN, T_BINARY_TRAIN, "Binary set", "assets/binary.png")
 

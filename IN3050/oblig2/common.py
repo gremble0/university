@@ -1,8 +1,9 @@
-from abc import ABC, abstractmethod
 from typing import Tuple
 import numpy as np
 import matplotlib.pyplot as plt
 from sklearn.datasets import make_blobs
+
+from classifiers import Classifier
 
 
 X, T = make_blobs(
@@ -28,19 +29,6 @@ T_MULTI_TEST = T[indices[1500:]]
 T_BINARY_TRAIN = (T_MULTI_TRAIN >= 3).astype("int")
 T_BINARY_VAL = (T_MULTI_VAL >= 3).astype("int")
 T_BINARY_TEST = (T_MULTI_TEST >= 3).astype("int")
-
-
-class Classifier(ABC):
-    """Abstract base class for classifiers"""
-
-    @abstractmethod
-    def __init__(self, bias: float=-1) -> None: ...
-
-    @abstractmethod
-    def predict(self, X: np.ndarray, threshold: float=0.5) -> np.ndarray: ...
-
-    @abstractmethod
-    def fit(self, X: np.ndarray, T: np.ndarray, learning_rate: float=0.1, epochs=10) -> None: ...
 
 
 def plot_training_set(X: np.ndarray, T: np.ndarray, plot_name: str, path: str) -> None:
@@ -76,12 +64,3 @@ def plot_decision_regions(
     plt.ylabel("x1")
 
     plt.savefig(path)
-
-
-def add_bias(X: np.ndarray, bias: float) -> np.ndarray:
-    biases = np.ones((X.shape[0], 1)) * bias
-    return np.concatenate((biases, X), axis=1)
-
-
-def accuracy(predicted: np.ndarray, gold: np.ndarray) -> float:
-    return np.mean(predicted == gold)
