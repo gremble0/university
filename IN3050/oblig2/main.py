@@ -1,6 +1,6 @@
 import numpy as np
 
-from scaling import standard_scaler
+from scaling import minmax_scaler, standard_scaler
 from common import T_BINARY_TRAIN, T_BINARY_VAL, X_TRAIN, X_VAL, accuracy, plot_decision_regions
 from linear import LinearRegressionClassifier
 
@@ -61,16 +61,26 @@ def test_linear_classifier_without_scaling() -> None:
 
 
 def test_linear_classifier_with_scaling() -> None:
-    # With scaling we get drastically better results where training the classifier
-    # also actually improves it. The optimal parameters for the scaled linear
-    # classifier are 9 epochs with a learning rate of 0.3 resulting in an accuracy
-    # of 0.762, a significant improvement over fitting with unscaled data.
+    # The optimal parameters for the linear classifier scaled with the standard
+    # scaler are 9 epochs with a learning rate of 0.3 resulting in an accuracy
+    # of 0.762, and for the minmax scaler its 66 epochs and a learning rate of
+    # 0.5 resulting in an accuracy of 0.708. Both are significant improvements
+    # compared to the unscaled data.
 
-    print("Testing linear classifier with scaling")
+    print("Testing linear classifier with standard scaling")
     test_linear_classifier(
         standard_scaler(X_TRAIN),
         T_BINARY_TRAIN,
         standard_scaler(X_VAL),
+        T_BINARY_VAL,
+        "assets/linear-with-scaling.png"
+    )
+
+    print("Testing linear classifier with minmax scaler")
+    test_linear_classifier(
+        minmax_scaler(X_TRAIN),
+        T_BINARY_TRAIN,
+        minmax_scaler(X_VAL),
         T_BINARY_VAL,
         "assets/linear-with-scaling.png"
     )
