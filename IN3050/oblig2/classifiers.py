@@ -2,6 +2,7 @@ from abc import ABC, abstractmethod
 import numpy as np
 
 
+# TODO: make these methods?
 def add_bias(X: np.ndarray, bias: float) -> np.ndarray:
     biases = np.ones((X.shape[0], 1)) * bias
     return np.concatenate((biases, X), axis=1)
@@ -45,7 +46,7 @@ class LinearRegressionClassifier(Classifier):
         return (X @ self.weights) > threshold
 
 
-class LogisticRegressionClassifier(LinearRegressionClassifier):
+class LogisticRegressionClassifier(Classifier):
     def fit(self, X: np.ndarray, T: np.ndarray, learning_rate: float=0.1, epochs: int=10) -> None:
         if self.bias:
             X = add_bias(X, self.bias)

@@ -19,44 +19,31 @@ def test_linear_classifier(
     best_learning_rate = None
     best_classifier = classifier()
 
-    for epoch in range(100):
+    for epoch in range(200):
         for learning_rate in [0.0001, 0.001, 0.01, 0.1, 0.15, 0.2, 0.25, 0.3, 0.35, 0.4, 0.45, 0.5]:
-            linear_classifier = classifier()
-            linear_classifier.fit(x_train, t_train, learning_rate, epoch)
+            c = classifier()
+            c.fit(x_train, t_train, learning_rate, epoch)
 
-            acc = accuracy(linear_classifier.predict(x_val), t_val)
+            acc = accuracy(c.predict(x_val), t_val)
 
             if acc > best:
                 best = acc
                 best_epochs = epoch
                 best_learning_rate = learning_rate
-                best_classifier = linear_classifier
+                best_classifier = c
 
     print(f"Best accuracy: {best}, with parameters: {best_epochs=}, {best_learning_rate=}")
     plot_decision_regions(x_val, t_val, best_classifier, path=plot_path)
 
 
 def test_linear_classifier_without_scaling() -> None:
-    # Running this code we will find that pretty much any sort of training will
-    # decrease the accuracy of the model. The best parameters are 0 epochs, 0
-    # learning_rate (Although the learning rate does not matter when we run 0
-    # epochs). We can also get the same accuracy with a very low learning rate
-    # and in that case the number of epochs doesn't matter.
-    #
-    # If you change the comparison inside the test_linear_classifer function from:
-    # ```
-    #     if acc > best: ...
-    # ```
-    # to
-    # ```
-    #     if acc >= best: ...
-    # ```
-    # We will get different parameters with the same accuracy.
-    # 
-    # All three of these alternatives are essentially the same because it
-    # means that we are not really training the classifier at all.
-    #
-    # Either way the best result we can get here seems to be 0.604
+    # When first running the below code with testing for epochs from 1..100 I
+    # found that pretty much any training would decrease the accuracy of the
+    # model. The best we could do was get the same accuracy as with an untrained
+    # classifier. However after increasing the amount of epochs to 200 I finally
+    # found an accuracy ever so slightly better than default. With a learning
+    # rate of 0.01 and 194 epochs we can get an accuracy of 0.61.
+    # (this is compared to the default value of 0.604)
 
     print("Testing linear classifier without scaling")
     test_linear_classifier(
@@ -104,20 +91,18 @@ def test_linear_classifier_with_scaling() -> None:
 
 
 def test_logistic_classifier() -> None:
-    # For the lgositic regression classifier we find
+    # For the logistic regression classifier we find the optimal paramters to be
+    # 104 epochs with a learning rate of 0.5 resulting in an accuracy of 0.766
+
     print("Testing logistic classifier with standard scaling")
     test_linear_classifier(
         standard_scaler(X_TRAIN),
         T_BINARY_TRAIN,
         standard_scaler(X_VAL),
         T_BINARY_VAL,
-        "assets/linear-with-scaling.png",
+        "assets/logistic.png",
         LogisticRegressionClassifier,
     )
-
-    l = LogisticRegressionClassifier()
-    l.fit(X_TRAIN, T_BINARY_TRAIN)
-    print(l.predict_probability(T_BINARY_VAL))
 
 
 def main() -> None:

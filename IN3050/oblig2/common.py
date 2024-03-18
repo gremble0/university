@@ -49,16 +49,16 @@ def plot_decision_regions(
     y_min, y_max = X[:, 1].min() - 1, X[:, 1].max() + 1
 
     h = 0.02 # step size in the mesh
-    xx, yy = np.meshgrid(np.arange(x_min, x_max, h), np.arange(y_min, y_max, h))
-    Z = classifier.predict(np.c_[xx.ravel(), yy.ravel()])
+    x, y = np.meshgrid(np.arange(x_min, x_max, h), np.arange(y_min, y_max, h))
+    Z = classifier.predict(np.c_[x.ravel(), y.ravel()])
 
-    Z = Z.reshape(xx.shape)
+    Z = Z.reshape(x.shape)
 
     plt.figure(figsize=size)
-    plt.contourf(xx, yy, Z, alpha=0.2, cmap = 'Paired')
+    plt.contourf(x, y, Z, alpha=0.2, cmap = 'Paired')
     plt.scatter(X[:,0], X[:,1], c=T, s=10.0, cmap='Paired')
-    plt.xlim(xx.min(), xx.max())
-    plt.ylim(yy.min(), yy.max())
+    plt.xlim(x.min(), x.max())
+    plt.ylim(y.min(), y.max())
     plt.title("Decision regions")
     plt.xlabel("x0")
     plt.ylabel("x1")
