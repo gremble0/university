@@ -16,15 +16,24 @@ class Classifier(ABC):
     """Abstract base class for classifiers"""
     bias: float
     weights: np.ndarray
+    losses: np.ndarray
 
     def __init__(self, bias: float=-1) -> None:
         self.bias = bias
+        self.losses = np.array([], dtype=float)
 
     @abstractmethod
     def predict(self, X: np.ndarray, threshold: float=0.5) -> np.ndarray: ...
 
     @abstractmethod
     def fit(self, X: np.ndarray, T: np.ndarray, learning_rate: float=0.1, epochs: int=10) -> None: ...
+
+    def _cross_entropy_loss(self, X: np.ndarray, T: np.ndarray) -> np.float64:
+        return -np.mean(T * np.log(X) + (1 - T) * np.log(1 - X))
+
+    def _mean_squared_error(self, X: np.ndarray, T: np.ndarray) -> np.float64:
+        # TODO: check if right
+        return np.mean((X - T) ** 2)
 
 
 class LinearRegressionClassifier(Classifier):
@@ -37,7 +46,10 @@ class LinearRegressionClassifier(Classifier):
         self.weights = np.zeros(n_features)
 
         for _ in range(epochs):
-            self.weights -= learning_rate / n_datapoints * X.T @ (X @ self.weights - T)
+            predictions = X @ self.weights
+            self.weights -= learning_rate / n_datapoints * X.T @ (predictions - T)
+
+            self.losses = np.append(self.losses, self._mean_squared_error(predictions, T))
 
     def predict(self, X: np.ndarray, threshold: float=0.5) -> np.ndarray:
         if self.bias:
@@ -56,7 +68,10 @@ class LogisticRegressionClassifier(Classifier):
         self.weights = np.zeros(n_features)
         
         for _ in range(epochs):
-            self.weights -= learning_rate / n_datapoints *  X.T @ (self._forward(X) - T)      
+            predictions = self._forward(X)
+            self.losses = np.append(self.losses, self._cross_entropy_loss(predictions, T))
+
+            self.weights -= learning_rate / n_datapoints * X.T @ (predictions - T)      
     
     def predict(self, X: np.ndarray, threshold: float=0.5) -> np.ndarray:
         if self.bias:

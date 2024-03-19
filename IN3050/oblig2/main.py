@@ -89,6 +89,10 @@ def test_linear_classifier_with_scaling() -> None:
         LinearRegressionClassifier,
     )
 
+    l = LinearRegressionClassifier()
+    l.fit(standard_scaler(X_TRAIN), T_BINARY_TRAIN, epochs=66, learning_rate=0.3)
+    print(l.losses)
+
 
 def test_logistic_classifier() -> None:
     # For the logistic regression classifier we find the optimal paramters to be
@@ -104,11 +108,15 @@ def test_logistic_classifier() -> None:
         LogisticRegressionClassifier,
     )
 
+    l = LogisticRegressionClassifier()
+    l.fit(standard_scaler(X_TRAIN), T_BINARY_TRAIN, epochs=104, learning_rate=0.5)
+    print(l.losses)
+
 
 def main() -> None:
-    test_linear_classifier_without_scaling()
+    # test_linear_classifier_without_scaling()
     test_linear_classifier_with_scaling()
-    test_logistic_classifier()
+    # test_logistic_classifier()
     # plot_training_set(X_TRAIN, T_MULTI_TRAIN, "Multi-class set", "assets/multi-class.png")
     # plot_training_set(X_TRAIN, T_BINARY_TRAIN, "Binary set", "assets/binary.png")
 
