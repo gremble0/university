@@ -6,7 +6,7 @@ from common import T_BINARY_TRAIN, T_BINARY_VAL, X_TRAIN, X_VAL, plot_decision_r
 from classifiers import Classifier, LinearRegressionClassifier, LogisticRegressionClassifier, accuracy
 
 
-def test_linear_classifier(
+def test_classifier(
     x_train: np.ndarray,
     t_train: np.ndarray,
     x_val: np.ndarray,
@@ -17,12 +17,12 @@ def test_linear_classifier(
     best = 0.0
     best_epochs = None
     best_learning_rate = None
-    best_classifier = classifier()
+    best_c = classifier()
 
-    for epoch in range(200):
+    for epoch in range(100):
         for learning_rate in [0.0001, 0.001, 0.01, 0.1, 0.15, 0.2, 0.25, 0.3, 0.35, 0.4, 0.45, 0.5]:
             c = classifier()
-            c.fit(x_train, t_train, learning_rate, epoch)
+            c.fit(x_train, t_train, x_val, t_val, learning_rate, epoch)
 
             acc = accuracy(c.predict(x_val), t_val)
 
@@ -30,10 +30,15 @@ def test_linear_classifier(
                 best = acc
                 best_epochs = epoch
                 best_learning_rate = learning_rate
-                best_classifier = c
+                best_c = c
 
     print(f"Best accuracy: {best}, with parameters: {best_epochs=}, {best_learning_rate=}")
-    plot_decision_regions(x_val, t_val, best_classifier, path=plot_path)
+    if best_c.val_losses.size > 0:
+        print(f"Loss function change for value set: {best_c.val_losses[0]} -> {best_c.val_losses[best_c.val_losses.size - 1]}\n")
+    else:
+        print("Classifier did not improve\n")
+
+    plot_decision_regions(x_val, t_val, best_c, path=plot_path)
 
 
 def test_linear_classifier_without_scaling() -> None:
@@ -43,10 +48,12 @@ def test_linear_classifier_without_scaling() -> None:
     # classifier. However after increasing the amount of epochs to 200 I finally
     # found an accuracy ever so slightly better than default. With a learning
     # rate of 0.01 and 194 epochs we can get an accuracy of 0.61.
-    # (this is compared to the default value of 0.604)
+    # (this is compared to the default value of 0.604). I ended up reverting
+    # back to 100 epochs however as 200 took too long and would lead to
+    # number overflow errors.
 
     print("Testing linear classifier without scaling")
-    test_linear_classifier(
+    test_classifier(
         X_TRAIN,
         T_BINARY_TRAIN,
         X_VAL,
@@ -70,7 +77,7 @@ def test_linear_classifier_with_scaling() -> None:
     # this test data so i left it out from the definition of the classifier.
 
     print("Testing linear classifier with standard scaling")
-    test_linear_classifier(
+    test_classifier(
         standard_scaler(X_TRAIN),
         T_BINARY_TRAIN,
         standard_scaler(X_VAL),
@@ -80,7 +87,7 @@ def test_linear_classifier_with_scaling() -> None:
     )
 
     print("Testing linear classifier with minmax scaler")
-    test_linear_classifier(
+    test_classifier(
         minmax_scaler(X_TRAIN),
         T_BINARY_TRAIN,
         minmax_scaler(X_VAL),
@@ -89,17 +96,13 @@ def test_linear_classifier_with_scaling() -> None:
         LinearRegressionClassifier,
     )
 
-    l = LinearRegressionClassifier()
-    l.fit(standard_scaler(X_TRAIN), T_BINARY_TRAIN, epochs=66, learning_rate=0.3)
-    print(l.losses)
-
 
 def test_logistic_classifier() -> None:
     # For the logistic regression classifier we find the optimal paramters to be
     # 104 epochs with a learning rate of 0.5 resulting in an accuracy of 0.766
 
     print("Testing logistic classifier with standard scaling")
-    test_linear_classifier(
+    test_classifier(
         standard_scaler(X_TRAIN),
         T_BINARY_TRAIN,
         standard_scaler(X_VAL),
@@ -108,15 +111,11 @@ def test_logistic_classifier() -> None:
         LogisticRegressionClassifier,
     )
 
-    l = LogisticRegressionClassifier()
-    l.fit(standard_scaler(X_TRAIN), T_BINARY_TRAIN, epochs=104, learning_rate=0.5)
-    print(l.losses)
-
 
 def main() -> None:
-    # test_linear_classifier_without_scaling()
+    test_linear_classifier_without_scaling()
     test_linear_classifier_with_scaling()
-    # test_logistic_classifier()
+    test_logistic_classifier()
     # plot_training_set(X_TRAIN, T_MULTI_TRAIN, "Multi-class set", "assets/multi-class.png")
     # plot_training_set(X_TRAIN, T_BINARY_TRAIN, "Binary set", "assets/binary.png")
 

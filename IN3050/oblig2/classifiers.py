@@ -1,4 +1,5 @@
 from abc import ABC, abstractmethod
+from typing import Optional
 import numpy as np
 
 
@@ -14,42 +15,68 @@ def accuracy(predicted: np.ndarray, gold: np.ndarray) -> float:
 
 class Classifier(ABC):
     """Abstract base class for classifiers"""
-    bias: float
-    weights: np.ndarray
-    losses: np.ndarray
-
     def __init__(self, bias: float=-1) -> None:
         self.bias = bias
-        self.losses = np.array([], dtype=float)
+        self.train_losses = np.array([], dtype=float)
+        self.val_losses = np.array([], dtype=float)
 
     @abstractmethod
     def predict(self, X: np.ndarray, threshold: float=0.5) -> np.ndarray: ...
 
     @abstractmethod
-    def fit(self, X: np.ndarray, T: np.ndarray, learning_rate: float=0.1, epochs: int=10) -> None: ...
+    def fit(
+        self,
+        X: np.ndarray,
+        T: np.ndarray,
+        XV: Optional[np.ndarray],
+        TV: Optional[np.ndarray],
+        learning_rate: float=0.1,
+        epochs: int=10
+    ) -> None: ...
 
     def _cross_entropy_loss(self, X: np.ndarray, T: np.ndarray) -> np.float64:
         return -np.mean(T * np.log(X) + (1 - T) * np.log(1 - X))
 
     def _mean_squared_error(self, X: np.ndarray, T: np.ndarray) -> np.float64:
-        # TODO: check if right
         return np.mean((X - T) ** 2)
 
 
 class LinearRegressionClassifier(Classifier):
-    def fit(self, X: np.ndarray, T: np.ndarray, learning_rate: float=0.1, epochs: int=10) -> None:
+    def fit(
+        self, 
+        X: np.ndarray, 
+        T: np.ndarray, 
+        XV: Optional[np.ndarray], 
+        TV: Optional[np.ndarray], 
+        learning_rate: float=0.1, 
+        epochs: int=10
+    ) -> None:
         if self.bias:
             X = add_bias(X, self.bias)
+            if XV is not None:
+                XV = add_bias(XV, self.bias)
 
         n_datapoints, n_features = X.shape
 
         self.weights = np.zeros(n_features)
 
-        for _ in range(epochs):
-            predictions = X @ self.weights
-            self.weights -= learning_rate / n_datapoints * X.T @ (predictions - T)
+        # Only check condition once instead of for every iteration in loop
+        if XV is not None and TV is not None:
+            for _ in range(epochs):
+                train_predictions = X @ self.weights
+                val_predictions = XV @ self.weights
 
-            self.losses = np.append(self.losses, self._mean_squared_error(predictions, T))
+                self.train_losses = np.append(self.train_losses, self._mean_squared_error(train_predictions, T))
+                self.val_losses = np.append(self.val_losses, self._mean_squared_error(val_predictions, TV))
+
+                self.weights -= learning_rate / n_datapoints * X.T @ (train_predictions - T)
+        else:
+            for _ in range(epochs):
+                train_predictions = X @ self.weights
+                self.train_losses = np.append(self.train_losses, self._mean_squared_error(train_predictions, T))
+
+                self.weights -= learning_rate / n_datapoints * X.T @ (train_predictions - T)
+
 
     def predict(self, X: np.ndarray, threshold: float=0.5) -> np.ndarray:
         if self.bias:
@@ -59,19 +86,38 @@ class LinearRegressionClassifier(Classifier):
 
 
 class LogisticRegressionClassifier(Classifier):
-    def fit(self, X: np.ndarray, T: np.ndarray, learning_rate: float=0.1, epochs: int=10) -> None:
+    def fit(
+        self,
+        X: np.ndarray,
+        T: np.ndarray,
+        XV: Optional[np.ndarray],
+        TV: Optional[np.ndarray],
+        learning_rate: float=0.1,
+        epochs: int=10
+    ) -> None:
         if self.bias:
             X = add_bias(X, self.bias)
+            if XV is not None:
+                XV = add_bias(XV, self.bias)
 
         n_datapoints, n_features = X.shape
         
         self.weights = np.zeros(n_features)
         
-        for _ in range(epochs):
-            predictions = self._forward(X)
-            self.losses = np.append(self.losses, self._cross_entropy_loss(predictions, T))
+        if XV is not None and TV is not None:
+            for _ in range(epochs):
+                train_predictions = self._forward(X)
+                val_predictions = self._forward(XV)
+                self.train_losses = np.append(self.train_losses, self._cross_entropy_loss(train_predictions, T))
+                self.val_losses = np.append(self.val_losses, self._cross_entropy_loss(val_predictions, TV))
 
-            self.weights -= learning_rate / n_datapoints * X.T @ (predictions - T)      
+                self.weights -= learning_rate / n_datapoints * X.T @ (train_predictions - T)      
+        else:
+            for _ in range(epochs):
+                train_predictions = self._forward(X)
+                self.train_losses = np.append(self.train_losses, self._cross_entropy_loss(train_predictions, T))
+
+                self.weights -= learning_rate / n_datapoints * X.T @ (train_predictions - T)      
     
     def predict(self, X: np.ndarray, threshold: float=0.5) -> np.ndarray:
         if self.bias:
