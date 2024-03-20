@@ -34,9 +34,10 @@ def test_classifier(
 
     print(f"Best accuracy: {best}, with parameters: {best_epochs=}, {best_learning_rate=}")
     if best_c.val_losses.size > 0:
-        print(f"Loss function change for value set: {best_c.val_losses[0]} -> {best_c.val_losses[best_c.val_losses.size - 1]}\n")
+        print(f"Loss function change for value set: {best_c.val_losses[0]} -> {best_c.val_losses[best_c.val_losses.size - 1]}")
     else:
-        print("Classifier did not improve\n")
+        print("Classifier did not improve")
+    print(f"Classifier trained for {best_c.trained_epochs} epochs\n")
 
     plot_decision_regions(x_val, t_val, best_c, path=plot_path)
 
