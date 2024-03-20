@@ -15,7 +15,7 @@ $ java TestAll 200000000
 ## Parallel Sieve of Eratosthenes
 My solution here had a couple iterations. I first tried a more direct mapping from sequential to parallel, with each bit in every byte of the oddNumbers were a flag for whether a number was composite or not. This worked for smaller values of n. However for bigger values i noticed that sometimes the parallel version would skip over a couple primes. I figured this was because simultaneous updating of the same byte would result in a race condition where sometimes one (or more) of the threads changes would be overwritten by the other thread(s). 
 
-After that i tried a very simple ArrayList<Long> approach where i would add all composite numbers to the arraylist and then synchronize with the results at the end. However this resulted in some quite ridiculous memory usage (even allocating > 20GB of ram would cause the program to crash for larger n values).
+After that i tried a very simple ArrayList<Long> approach where i would add all composite numbers to the arraylist and then synchronize with the results at the end. However this resulted in some quite ridiculous memory usage (even allocating 20GB of ram would cause the program to crash for larger n values).
 
 Finally I arrived at my final solution which is quite similar to the sequential, just using a full byte for each composite number flag. This is quite memory inefficient (7-8x worse than for the sequential), but this seems to be the only way to transfer this version of the algorithm to a parallel version.
 
@@ -30,6 +30,8 @@ For storing the factors I went with the arraylist datastructure because we canno
 
 Synchronization regarding the `factors` list of lists is done by first sequentially instantiating empty lists at the start of the algorithm, and then at the start of each number factorization we index into the list of empty lists to get that numbers factors list, and then update that list while iterating.
 
+Oblig says that the algorithm must parallelize each factorization, but I do not see a way of doing this that would be faster than the sequential version as this seems like an inherently sequential problem and since we are already utilizing all our threads to factorize other numbers this will not give a performance improvement.
+
 ## Testing
 While first making the classes testing was primarily done by running that class' main method with the different parameters specified in the oblig text. After the first implementations of each of the classes i made the TestAll class which i from then on used to verify the outputs of the algorithms and also to compare runtimes when making changes. I also continuously checked that the outputs of the factorization had not changed by comparing the new Factors_... files with the old ones by using the linux `diff` command.
 
@@ -37,8 +39,6 @@ While first making the classes testing was primarily done by running that class'
 In the graphs below we can see the runtimes for the different algorithms matching the times in the appendix below. All runs were on an AMD Ryzen 5 3600x, 6 cores 12 threads @3.8GHz, with the same command line arguments as in the appendix.
 
 NOTE: primes calculated are for n * 2, not n * n. See comment inside TestAll.java for more explanation.
-
-### Prime Calculation Times
 
 | n    | Sequential (ms) | Parallel (ms) |
 |------|-----------------|---------------|
@@ -48,7 +48,7 @@ NOTE: primes calculated are for n * 2, not n * n. See comment inside TestAll.jav
 | 2B   | 10046           | 8536          |
 ![Prime times](./prime_times.png "Prime times")
 
-### Factorization Times
+The parallel version of the sieve compared to the sequential one is not much faster, even for larger values for n. I mentioned above that a significant portion of the parallel algorithm was spent doing sequential operations (collectPrimes), but for it to be this slow there may be something other than that and general threading overhead that slows it down.
 
 | n    | Sequential (ms) | Parallel (ms) |
 |------|-----------------|---------------|
@@ -57,6 +57,8 @@ NOTE: primes calculated are for n * 2, not n * n. See comment inside TestAll.jav
 | 200M | 607             | 133           |
 | 2B   | 3323            | 639           |
 ![Factor times](./factor_times.png "Factor times")
+
+The parallel version of the factorization algorithm is quite a lot faster than the sequential, the rate of which it is faster than the sequential also grows with n (proven by 6/9 > 30/70 > 133/607 > 639/3323). This makes sense as this problem is relatively easy to parallelize.
 
 ## Appendix
 Following are the terminal outputs of running the program with the different n values specified in the oblig and the other fields left blank. The numbers are also added in a more readable format on the lines above each terminal input.
@@ -93,30 +95,3 @@ Average time to calculate factors sequential: 3323ms
 Average time to calculate factors parallel:   639ms
 
 ```
-
-
-
-
-n=2 000 000
-Average time to find primes sequential:       6ms
-Average time to find primes parallel:         4ms
-Average time to calculate factors sequential: 9ms
-Average time to calculate factors parallel:   6ms
-
-n=20 000 000
-Average time to find primes sequential:       64ms
-Average time to find primes parallel:         41ms
-Average time to calculate factors sequential: 70ms
-Average time to calculate factors parallel:   30ms
-
-n=200 000 000
-Average time to find primes sequential:       634ms
-Average time to find primes parallel:         722ms
-Average time to calculate factors sequential: 607ms
-Average time to calculate factors parallel:   133ms
-
-n=2 000 000 000
-Average time to find primes sequential:       10046ms
-Average time to find primes parallel:         8536ms
-Average time to calculate factors sequential: 3323ms
-Average time to calculate factors parallel:   639ms
