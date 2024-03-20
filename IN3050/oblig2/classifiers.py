@@ -101,7 +101,7 @@ class LogisticRegressionClassifier(Classifier):
         TV: Optional[np.ndarray],
         learning_rate: float=0.1,
         epochs: int=10,
-        tol: float=0.01,
+        tol: float=0.001,
         n_epochs_no_update: int=5,
     ) -> None:
         if self.bias:

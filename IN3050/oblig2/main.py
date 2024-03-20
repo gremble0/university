@@ -17,26 +17,35 @@ def test_classifier(
     best = 0.0
     best_epochs = None
     best_learning_rate = None
+    best_tol = None
     best_c = classifier()
 
+    # Since we're brute forcing so many different combinations of parameters, this may take a while
+    # however in practice we would only have to run this once per dataset so thats fine.
     for epoch in range(100):
         for learning_rate in [0.0001, 0.001, 0.01, 0.1, 0.15, 0.2, 0.25, 0.3, 0.35, 0.4, 0.45, 0.5]:
-            c = classifier()
-            c.fit(x_train, t_train, x_val, t_val, learning_rate, epoch)
+            for tol in [0.0001, 0.0001, 0.001, 0.01]:
+                c = classifier()
+                c.fit(x_train, t_train, x_val, t_val, learning_rate, epoch, tol)
 
-            acc = accuracy(c.predict(x_val), t_val)
+                acc = accuracy(c.predict(x_val), t_val)
 
-            if acc > best:
-                best = acc
-                best_epochs = epoch
-                best_learning_rate = learning_rate
-                best_c = c
+                if acc > best:
+                    best = acc
+                    best_epochs = epoch
+                    best_learning_rate = learning_rate
+                    best_tol = tol
+                    best_c = c
 
-    print(f"Best accuracy: {best}, with parameters: {best_epochs=}, {best_learning_rate=}")
+    print(f"Best accuracy: {best}, with parameters: {best_epochs=}, {best_learning_rate=}, {best_tol=}")
     if best_c.val_losses.size > 0:
         print(f"Loss function change for value set: {best_c.val_losses[0]} -> {best_c.val_losses[best_c.val_losses.size - 1]}")
     else:
         print("Classifier did not improve")
+
+    # As far as I'm aware this will always be the same as best_epochs, so we don't even
+    # really need to track it, but at least it lets us extract it from outside this local
+    # function
     print(f"Classifier trained for {best_c.trained_epochs} epochs\n")
 
     plot_decision_regions(x_val, t_val, best_c, path=plot_path)
