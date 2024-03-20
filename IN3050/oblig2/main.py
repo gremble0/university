@@ -13,7 +13,6 @@ def test_classifier(
     t_val: np.ndarray,
     decision_plot_path: str,
     losses_plot_path: str,
-    # val_losses_plot_path: str,
     classifier: Type[Classifier],
 ) -> None:
     best = 0.0
@@ -53,8 +52,17 @@ def test_classifier(
 
     plot_decision_regions(x_val, t_val, best_c, path=decision_plot_path)
 
+    # From the plotting of the losses i noticed that some of the classifiers
+    # grow to get a lower loss on the validation set than the training set which
+    # is somewhat unexpected though not unheard of. All the curves are monotone
+    # as the loops above will always choose the best classifier after brute forcing
+    # the best parameters, meaning if there is a combination where the graph is not
+    # monotone there will always be a combination with fewer epochs that will stop
+    # before the graph changes direction. There could theoretically be a combination
+    # where the graph briefly changed in the wrong direction, but then later
+    # changes back, but all these combinations would be eliminated by the early
+    # stopping implemented in task 1.1e.
     plot_losses(best_c.train_losses, best_c.val_losses, path=losses_plot_path)
-    # plot_losses(best_c.val_losses, path=val_losses_plot_path)
 
 
 def test_linear_classifier_without_scaling() -> None:

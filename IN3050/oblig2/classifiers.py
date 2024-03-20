@@ -130,12 +130,6 @@ class LogisticRegressionClassifier(Classifier):
                 return
             else:
                 self.trained_epochs += 1
-    
-    def predict(self, X: np.ndarray, threshold: float=0.5) -> np.ndarray:
-        if self.bias:
-            X = add_bias(X, self.bias)
-
-        return (self._forward(X) > threshold).astype('int')
 
     def predict_probability(self, X: np.ndarray) -> np.ndarray:
         if self.bias:
@@ -143,5 +137,8 @@ class LogisticRegressionClassifier(Classifier):
 
         return self._forward(X)
     
+    def predict(self, X: np.ndarray, threshold: float=0.5) -> np.ndarray:
+        return (self.predict_probability(X) > threshold).astype("int")
+
     def _forward(self, X: np.ndarray) -> np.ndarray:
         return 1 / (1 + np.exp(-X @ self.weights))
