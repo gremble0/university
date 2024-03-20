@@ -2,8 +2,8 @@ from typing import Type
 import numpy as np
 
 from scaling import minmax_scaler, standard_scaler
-from common import T_BINARY_TRAIN, T_BINARY_VAL, X_TRAIN, X_VAL, plot_decision_regions, plot_losses
-from classifiers import Classifier, LinearRegressionClassifier, LogisticRegressionClassifier, accuracy
+from common import T_BINARY_TRAIN, T_BINARY_VAL, T_MULTI_TRAIN, T_MULTI_VAL, X_TRAIN, X_VAL, plot_decision_regions, plot_losses
+from classifiers import Classifier, LinearRegressionClassifier, LogisticRegressionClassifier, MultiLogisticRegressionClassifier, accuracy
 
 
 def test_classifier(
@@ -140,10 +140,30 @@ def test_logistic_classifier() -> None:
     )
 
 
+def test_multi_logistic_classifier() -> None:
+    print("Testing mutli class logistic classifier with standard scaling")
+
+    c = MultiLogisticRegressionClassifier()
+    c.fit(standard_scaler(X_TRAIN), T_MULTI_TRAIN, standard_scaler(X_VAL), T_MULTI_VAL)
+    print(accuracy(c.predict(T_MULTI_TRAIN), T_MULTI_VAL))
+
+    test_classifier(
+        standard_scaler(X_TRAIN),
+        T_MULTI_TRAIN,
+        standard_scaler(X_VAL),
+        T_MULTI_VAL,
+        "assets/logistic-multi.png",
+        "assets/logistic-mutli-losses.png",
+        MultiLogisticRegressionClassifier,
+    )
+
+
 def main() -> None:
-    test_linear_classifier_without_scaling()
-    test_linear_classifier_with_scaling()
-    test_logistic_classifier()
+    # test_linear_classifier_without_scaling()
+    # test_linear_classifier_with_scaling()
+    # test_logistic_classifier()
+    test_multi_logistic_classifier()
+
     # plot_training_set(X_TRAIN, T_MULTI_TRAIN, "Multi-class set", "assets/multi-class.png")
     # plot_training_set(X_TRAIN, T_BINARY_TRAIN, "Binary set", "assets/binary.png")
 

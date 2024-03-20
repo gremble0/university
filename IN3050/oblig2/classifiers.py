@@ -1,5 +1,5 @@
 from abc import ABC, abstractmethod
-from typing import Optional
+from typing import List, Optional
 import numpy as np
 
 
@@ -142,3 +142,33 @@ class LogisticRegressionClassifier(Classifier):
 
     def _forward(self, X: np.ndarray) -> np.ndarray:
         return 1 / (1 + np.exp(-X @ self.weights))
+
+
+class MultiLogisticRegressionClassifier(LogisticRegressionClassifier):
+    def fit(
+        self,
+        X: np.ndarray,
+        T: np.ndarray,
+        XV: Optional[np.ndarray],
+        TV: Optional[np.ndarray],
+        learning_rate: float=0.1,
+        epochs: int=10,
+        tol: float=0.001,
+        n_epochs_no_update: int=5,
+    ) -> None:
+        self.classifiers: List[LogisticRegressionClassifier] = []
+        # class_ because class is a keyword
+        for class_ in np.unique(T):
+            T_BINARY = (T == class_).astype("int")
+            TV_BINARY = (TV == class_).astype("int") if TV is not None else None
+
+            classifier = LogisticRegressionClassifier()
+            classifier.fit(X, T_BINARY, XV, TV_BINARY, learning_rate, epochs, tol, n_epochs_no_update)
+
+            self.classifiers.append(classifier)
+
+    def predict(self, X: np.ndarray, threshold: float=0.5) -> np.ndarray:
+        probabilities = [probability for probability in
+                         map(lambda classifier: classifier.predict_probability(X), self.classifiers)]
+        print(probabilities)
+        # return (self.predict_probability(X) > threshold).astype("int")
