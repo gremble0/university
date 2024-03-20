@@ -31,8 +31,9 @@ T_BINARY_VAL = (T_MULTI_VAL >= 3).astype("int")
 T_BINARY_TEST = (T_MULTI_TEST >= 3).astype("int")
 
 
+# TODO: size as param
 def plot_training_set(X: np.ndarray, T: np.ndarray, plot_name: str, path: str) -> None:
-    plt.figure(figsize=(8,6))
+    plt.figure(figsize=(8, 6))
     plt.scatter(X[:, 0], X[:, 1], c=T, s=10.0)
     plt.title(plot_name)
     plt.savefig(path)
@@ -42,7 +43,7 @@ def plot_decision_regions(
     X: np.ndarray,
     T: np.ndarray,
     classifier: Classifier,
-    size: Tuple[float, float] = (8,6),
+    size: Tuple[float, float] = (8, 6),
     path: str = "assets/decision-regions.png",
 ) -> None:
     x_min, x_max = X[:, 0].min() - 1, X[:, 0].max() + 1
@@ -62,5 +63,21 @@ def plot_decision_regions(
     plt.title("Decision regions")
     plt.xlabel("x0")
     plt.ylabel("x1")
+
+    plt.savefig(path)
+
+
+def plot_losses(
+    train_losses: np.ndarray,
+    val_losses: np.ndarray,
+    size: Tuple[float, float] = (8, 6),
+    path: str = "assets/losses.png",
+) ->  None:
+    plt.figure(figsize=size)
+    plt.title("Losses")
+    plt.xlabel("epoch")
+    plt.ylabel("loss")
+    plt.plot(train_losses, label="Training loss")
+    plt.plot(val_losses, label="Validation loss")
 
     plt.savefig(path)

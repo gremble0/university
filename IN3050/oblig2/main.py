@@ -2,7 +2,7 @@ from typing import Type
 import numpy as np
 
 from scaling import minmax_scaler, standard_scaler
-from common import T_BINARY_TRAIN, T_BINARY_VAL, X_TRAIN, X_VAL, plot_decision_regions
+from common import T_BINARY_TRAIN, T_BINARY_VAL, X_TRAIN, X_VAL, plot_decision_regions, plot_losses
 from classifiers import Classifier, LinearRegressionClassifier, LogisticRegressionClassifier, accuracy
 
 
@@ -11,7 +11,9 @@ def test_classifier(
     t_train: np.ndarray,
     x_val: np.ndarray,
     t_val: np.ndarray,
-    plot_path: str,
+    decision_plot_path: str,
+    losses_plot_path: str,
+    # val_losses_plot_path: str,
     classifier: Type[Classifier],
 ) -> None:
     best = 0.0
@@ -21,18 +23,19 @@ def test_classifier(
     best_c = classifier()
 
     # Since we're brute forcing so many different combinations of parameters, this may take a while
-    # however in practice we would only have to run this once per dataset so thats fine.
-    for epoch in range(100):
+    # however in practice we would only have to run this once per dataset so thats fine. We could also
+    # add more guesses for possible values here if we wanted.
+    for epochs in range(100):
         for learning_rate in [0.0001, 0.001, 0.01, 0.1, 0.15, 0.2, 0.25, 0.3, 0.35, 0.4, 0.45, 0.5]:
-            for tol in [0.0001, 0.0001, 0.001, 0.01]:
+            for tol in [0.0001, 0.0005, 0.001, 0.01]:
                 c = classifier()
-                c.fit(x_train, t_train, x_val, t_val, learning_rate, epoch, tol)
+                c.fit(x_train, t_train, x_val, t_val, learning_rate, epochs, tol)
 
                 acc = accuracy(c.predict(x_val), t_val)
 
                 if acc > best:
                     best = acc
-                    best_epochs = epoch
+                    best_epochs = epochs
                     best_learning_rate = learning_rate
                     best_tol = tol
                     best_c = c
@@ -48,7 +51,10 @@ def test_classifier(
     # function
     print(f"Classifier trained for {best_c.trained_epochs} epochs\n")
 
-    plot_decision_regions(x_val, t_val, best_c, path=plot_path)
+    plot_decision_regions(x_val, t_val, best_c, path=decision_plot_path)
+
+    plot_losses(best_c.train_losses, best_c.val_losses, path=losses_plot_path)
+    # plot_losses(best_c.val_losses, path=val_losses_plot_path)
 
 
 def test_linear_classifier_without_scaling() -> None:
@@ -69,6 +75,7 @@ def test_linear_classifier_without_scaling() -> None:
         X_VAL,
         T_BINARY_VAL,
         "assets/linear-without-scaling.png",
+        "assets/linear-without-scaling-losses.png",
         LinearRegressionClassifier,
     )
 
@@ -92,7 +99,8 @@ def test_linear_classifier_with_scaling() -> None:
         T_BINARY_TRAIN,
         standard_scaler(X_VAL),
         T_BINARY_VAL,
-        "assets/linear-with-scaling.png",
+        "assets/linear-standard-scaling.png",
+        "assets/linear-standard-scaling-losses.png",
         LinearRegressionClassifier,
     )
 
@@ -102,7 +110,8 @@ def test_linear_classifier_with_scaling() -> None:
         T_BINARY_TRAIN,
         minmax_scaler(X_VAL),
         T_BINARY_VAL,
-        "assets/linear-with-scaling.png",
+        "assets/linear-minmax-scaling.png",
+        "assets/linear-minmax-scaling-losses.png",
         LinearRegressionClassifier,
     )
 
@@ -118,6 +127,7 @@ def test_logistic_classifier() -> None:
         standard_scaler(X_VAL),
         T_BINARY_VAL,
         "assets/logistic.png",
+        "assets/logistic-losses.png",
         LogisticRegressionClassifier,
     )
 
