@@ -157,18 +157,42 @@ class MultiLogisticRegressionClassifier(LogisticRegressionClassifier):
         n_epochs_no_update: int=5,
     ) -> None:
         self.classifiers: List[LogisticRegressionClassifier] = []
-        # class_ because class is a keyword
-        for class_ in np.unique(T):
-            T_BINARY = (T == class_).astype("int")
-            TV_BINARY = (TV == class_).astype("int") if TV is not None else None
+        unique_classes = np.unique(T)
 
-            classifier = LogisticRegressionClassifier()
+        for class_index in unique_classes:
+            T_BINARY = (T == class_index).astype("int")
+            TV_BINARY = (TV == class_index).astype("int") if TV is not None else None
+
+            classifier = LogisticRegressionClassifier(self.bias)
             classifier.fit(X, T_BINARY, XV, TV_BINARY, learning_rate, epochs, tol, n_epochs_no_update)
 
             self.classifiers.append(classifier)
 
+        # calculate losses as the sums of all the classifiers' losses divided by the number of classifiers
+        self.train_losses = self.classifiers[0].train_losses
+        self.val_losses = self.classifiers[0].val_losses
+
+        for i in range(2, len(self.classifiers)):
+            if len(self.classifiers[i].train_losses) > len(self.train_losses):
+                self.train_losses.resize(self.classifiers[i].train_losses.shape)
+            elif len(self.classifiers[i].train_losses) < len(self.train_losses):
+                self.classifiers[i].train_losses.resize(self.train_losses.shape)
+
+            if len(self.classifiers[i].val_losses) > len(self.val_losses):
+                self.val_losses.resize(self.classifiers[i].val_losses.shape)
+            elif len(self.classifiers[i].val_losses) < len(self.val_losses):
+                self.classifiers[i].val_losses.resize(self.val_losses.shape)
+
+            self.train_losses += self.classifiers[i].train_losses
+            self.val_losses += self.classifiers[i].val_losses
+
+        self.train_losses = np.divide(self.train_losses, len(unique_classes))
+        self.val_losses = np.divide(self.val_losses, len(unique_classes))
+
+        # calculate this classifier's trained epochs as the sum of all the binary classifiers trained epochs
+        self.trained_epochs = np.sum(np.array([classifier.trained_epochs for classifier in self.classifiers]))
+
     def predict(self, X: np.ndarray, threshold: float=0.5) -> np.ndarray:
-        probabilities = [probability for probability in
-                         map(lambda classifier: classifier.predict_probability(X), self.classifiers)]
-        print(probabilities)
-        # return (self.predict_probability(X) > threshold).astype("int")
+        probabilities = np.array([classifier.predict_probability(X) for classifier in self.classifiers])
+
+        return np.argmax(probabilities, axis=0)

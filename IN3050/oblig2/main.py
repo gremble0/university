@@ -141,11 +141,7 @@ def test_logistic_classifier() -> None:
 
 
 def test_multi_logistic_classifier() -> None:
-    print("Testing mutli class logistic classifier with standard scaling")
-
-    c = MultiLogisticRegressionClassifier()
-    c.fit(standard_scaler(X_TRAIN), T_MULTI_TRAIN, standard_scaler(X_VAL), T_MULTI_VAL)
-    print(accuracy(c.predict(T_MULTI_TRAIN), T_MULTI_VAL))
+    print("Testing multi class logistic classifier with standard scaling")
 
     test_classifier(
         standard_scaler(X_TRAIN),
