@@ -7,10 +7,10 @@ from classifiers import Classifier, LinearRegressionClassifier, LogisticRegressi
 
 
 def test_classifier(
-    x_train: np.ndarray,
-    t_train: np.ndarray,
-    x_val: np.ndarray,
-    t_val: np.ndarray,
+    X_TRAIN: np.ndarray,
+    T_TRAIN: np.ndarray,
+    X_VAL: np.ndarray,
+    T_VAL: np.ndarray,
     decision_plot_path: str,
     losses_plot_path: str,
     classifier: Type[Classifier],
@@ -28,9 +28,9 @@ def test_classifier(
         for learning_rate in [0.0001, 0.001, 0.01, 0.1, 0.15, 0.2, 0.25, 0.3, 0.35, 0.4, 0.45, 0.5]:
             for tol in [0.0001, 0.0005, 0.001, 0.01]:
                 c = classifier()
-                c.fit(x_train, t_train, x_val, t_val, learning_rate, epochs, tol)
+                c.fit(X_TRAIN, T_TRAIN, X_VAL, T_VAL, learning_rate, epochs, tol)
 
-                acc = accuracy(c.predict(x_val), t_val)
+                acc = accuracy(c.predict(X_VAL), T_VAL)
 
                 if acc > best:
                     best = acc
@@ -50,7 +50,7 @@ def test_classifier(
     # function
     print(f"Classifier trained for {best_c.trained_epochs} epochs\n")
 
-    plot_decision_regions(x_val, t_val, best_c, path=decision_plot_path)
+    plot_decision_regions(X_VAL, T_VAL, best_c, path=decision_plot_path)
 
     # From the plotting of the losses i noticed that some of the classifiers
     # grow to get a lower loss on the validation set than the training set which
@@ -155,13 +155,11 @@ def test_multi_logistic_classifier() -> None:
 
 
 def main() -> None:
-    # test_linear_classifier_without_scaling()
-    # test_linear_classifier_with_scaling()
-    # test_logistic_classifier()
+    test_linear_classifier_without_scaling()
+    test_linear_classifier_with_scaling()
+    test_logistic_classifier()
     test_multi_logistic_classifier()
 
-    # plot_training_set(X_TRAIN, T_MULTI_TRAIN, "Multi-class set", "assets/multi-class.png")
-    # plot_training_set(X_TRAIN, T_BINARY_TRAIN, "Binary set", "assets/binary.png")
 
 if __name__ == "__main__":
     main()

@@ -3,7 +3,6 @@ from typing import List, Optional
 import numpy as np
 
 
-# TODO: make these methods?
 def add_bias(X: np.ndarray, bias: float) -> np.ndarray:
     biases = np.ones((X.shape[0], 1)) * bias
     return np.concatenate((biases, X), axis=1)
@@ -11,6 +10,15 @@ def add_bias(X: np.ndarray, bias: float) -> np.ndarray:
 
 def accuracy(predicted: np.ndarray, gold: np.ndarray) -> float:
     return np.mean(predicted == gold)
+
+
+def cross_entropy_loss(X: np.ndarray, T: np.ndarray) -> np.float64:
+    return -np.mean(T * np.log(X) + (1 - T) * np.log(1 - X))
+
+
+def mean_squared_error_loss(X: np.ndarray, T: np.ndarray) -> np.float64:
+    return np.mean((X - T) ** 2)
+
 
 
 class Classifier(ABC):
@@ -27,54 +35,48 @@ class Classifier(ABC):
     @abstractmethod
     def fit(
         self,
-        X: np.ndarray,
-        T: np.ndarray,
-        XV: Optional[np.ndarray], #TODO -> X_VAL, T_VAL
-        TV: Optional[np.ndarray],
+        X_TRAIN: np.ndarray,
+        T_TRAIN: np.ndarray,
+        X_VAL: Optional[np.ndarray], #TODO -> X_VAL, T_VAL
+        T_VAL: Optional[np.ndarray],
         learning_rate: float=0.1,
         epochs: int=10,
         tol: float=0.01,
         n_epochs_no_update: int=5,
     ) -> None: ...
 
-    def _cross_entropy_loss(self, X: np.ndarray, T: np.ndarray) -> np.float64:
-        return -np.mean(T * np.log(X) + (1 - T) * np.log(1 - X))
-
-    def _mean_squared_error(self, X: np.ndarray, T: np.ndarray) -> np.float64:
-        return np.mean((X - T) ** 2)
-
 
 class LinearRegressionClassifier(Classifier):
     def fit(
         self, 
-        X: np.ndarray, 
-        T: np.ndarray, 
-        XV: Optional[np.ndarray], 
-        TV: Optional[np.ndarray], 
+        X_TRAIN: np.ndarray, 
+        T_TRAIN: np.ndarray, 
+        X_VAL: Optional[np.ndarray], 
+        T_VAL: Optional[np.ndarray], 
         learning_rate: float=0.1, 
         epochs: int=10,
         tol: float=0.001,
         n_epochs_no_update: int=5,
     ) -> None:
         if self.bias:
-            X = add_bias(X, self.bias)
-            if XV is not None:
-                XV = add_bias(XV, self.bias)
+            X_TRAIN = add_bias(X_TRAIN, self.bias)
+            if X_VAL is not None:
+                X_VAL = add_bias(X_VAL, self.bias)
 
-        n_datapoints, n_features = X.shape
+        n_datapoints, n_features = X_TRAIN.shape
 
         self.weights = np.zeros(n_features)
 
         for _ in range(epochs):
-            train_predictions = X @ self.weights
-            self.train_losses = np.append(self.train_losses, self._mean_squared_error(train_predictions, T))
+            train_predictions = X_TRAIN @ self.weights
+            self.train_losses = np.append(self.train_losses, mean_squared_error_loss(train_predictions, T_TRAIN))
 
             # Checking condition every iteration is not optimal, but alterantive is major code duplication
-            if XV is not None and TV is not None:
-                val_predictions = XV @ self.weights
-                self.val_losses = np.append(self.val_losses, self._mean_squared_error(val_predictions, TV))
+            if X_VAL is not None and T_VAL is not None:
+                val_predictions = X_VAL @ self.weights
+                self.val_losses = np.append(self.val_losses, mean_squared_error_loss(val_predictions, T_VAL))
 
-            self.weights -= learning_rate / n_datapoints * X.T @ (train_predictions - T)
+            self.weights -= learning_rate / n_datapoints * X_TRAIN.T @ (train_predictions - T_TRAIN)
 
             # Should we return early?
             if self.trained_epochs < n_epochs_no_update:
@@ -95,33 +97,33 @@ class LinearRegressionClassifier(Classifier):
 class LogisticRegressionClassifier(Classifier):
     def fit(
         self,
-        X: np.ndarray,
-        T: np.ndarray,
-        XV: Optional[np.ndarray],
-        TV: Optional[np.ndarray],
+        X_TRAIN: np.ndarray,
+        T_TRAIN: np.ndarray,
+        X_VAL: Optional[np.ndarray],
+        T_VAL: Optional[np.ndarray],
         learning_rate: float=0.1,
         epochs: int=10,
         tol: float=0.001,
         n_epochs_no_update: int=5,
     ) -> None:
         if self.bias:
-            X = add_bias(X, self.bias)
-            if XV is not None:
-                XV = add_bias(XV, self.bias)
+            X_TRAIN = add_bias(X_TRAIN, self.bias)
+            if X_VAL is not None:
+                X_VAL = add_bias(X_VAL, self.bias)
 
-        n_datapoints, n_features = X.shape
+        n_datapoints, n_features = X_TRAIN.shape
         
         self.weights = np.zeros(n_features)
         
         for _ in range(epochs):
-            train_predictions = self._forward(X)
-            self.train_losses = np.append(self.train_losses, self._cross_entropy_loss(train_predictions, T))
+            train_predictions = self._forward(X_TRAIN)
+            self.train_losses = np.append(self.train_losses, cross_entropy_loss(train_predictions, T_TRAIN))
 
-            if XV is not None and TV is not None:
-                val_predictions = self._forward(XV)
-                self.val_losses = np.append(self.val_losses, self._cross_entropy_loss(val_predictions, TV))
+            if X_VAL is not None and T_VAL is not None:
+                val_predictions = self._forward(X_VAL)
+                self.val_losses = np.append(self.val_losses, cross_entropy_loss(val_predictions, T_VAL))
 
-            self.weights -= learning_rate / n_datapoints * X.T @ (train_predictions - T)      
+            self.weights -= learning_rate / n_datapoints * X_TRAIN.T @ (train_predictions - T_TRAIN)      
 
             if self.trained_epochs < n_epochs_no_update:
                 self.trained_epochs += 1
@@ -147,24 +149,24 @@ class LogisticRegressionClassifier(Classifier):
 class MultiLogisticRegressionClassifier(LogisticRegressionClassifier):
     def fit(
         self,
-        X: np.ndarray,
-        T: np.ndarray,
-        XV: Optional[np.ndarray],
-        TV: Optional[np.ndarray],
+        X_TRAIN: np.ndarray,
+        T_TRAIN: np.ndarray,
+        X_VAL: Optional[np.ndarray],
+        T_VAL: Optional[np.ndarray],
         learning_rate: float=0.1,
         epochs: int=10,
         tol: float=0.001,
         n_epochs_no_update: int=5,
     ) -> None:
         self.classifiers: List[LogisticRegressionClassifier] = []
-        unique_classes = np.unique(T)
+        unique_classes = np.unique(T_TRAIN)
 
         for class_index in unique_classes:
-            T_BINARY = (T == class_index).astype("int")
-            TV_BINARY = (TV == class_index).astype("int") if TV is not None else None
+            T_BINARY = (T_TRAIN == class_index).astype("int")
+            TV_BINARY = (T_VAL == class_index).astype("int") if T_VAL is not None else None
 
             classifier = LogisticRegressionClassifier(self.bias)
-            classifier.fit(X, T_BINARY, XV, TV_BINARY, learning_rate, epochs, tol, n_epochs_no_update)
+            classifier.fit(X_TRAIN, T_BINARY, X_VAL, TV_BINARY, learning_rate, epochs, tol, n_epochs_no_update)
 
             self.classifiers.append(classifier)
 
@@ -196,3 +198,7 @@ class MultiLogisticRegressionClassifier(LogisticRegressionClassifier):
         probabilities = np.array([classifier.predict_probability(X) for classifier in self.classifiers])
 
         return np.argmax(probabilities, axis=0)
+
+
+class MultiLayerLinearRegressionClassifier(Classifier):
+    ...
