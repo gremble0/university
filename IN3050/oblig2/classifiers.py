@@ -4,6 +4,10 @@ import numpy as np
 
 
 def add_bias(X: np.ndarray, bias: float) -> np.ndarray:
+    # If bias is falsy (0), do not add any bias
+    if not bias:
+        return X
+
     biases = np.ones((X.shape[0], 1)) * bias
     return np.concatenate((biases, X), axis=1)
 
@@ -12,6 +16,7 @@ def accuracy(predicted: np.ndarray, gold: np.ndarray) -> float:
     return np.mean(predicted == gold)
 
 
+# Loss functions
 def cross_entropy_loss(X: np.ndarray, T: np.ndarray) -> np.float64:
     return -np.mean(T * np.log(X) + (1 - T) * np.log(1 - X))
 
@@ -20,9 +25,17 @@ def mean_squared_error_loss(X: np.ndarray, T: np.ndarray) -> np.float64:
     return np.mean((X - T) ** 2)
 
 
+def logistic(X: np.ndarray) -> np.ndarray:
+    return 1 / (1 + np.exp(-X))
+
+
+def logistic_diff(Y: np.ndarray) -> np.ndarray:
+    return Y * (1 - Y)
+
 
 class Classifier(ABC):
     """Abstract base class for classifiers"""
+
     def __init__(self, bias: float=-1) -> None:
         self.bias = bias
         self.train_losses = np.array([], dtype=float)
@@ -30,14 +43,14 @@ class Classifier(ABC):
         self.trained_epochs = 0
 
     @abstractmethod
-    def predict(self, X: np.ndarray, threshold: float=0.5) -> np.ndarray: ...
+    def predict(self, X: np.ndarray, threshold: Optional[float]=None) -> np.ndarray: ...
 
     @abstractmethod
     def fit(
         self,
         X_TRAIN: np.ndarray,
         T_TRAIN: np.ndarray,
-        X_VAL: Optional[np.ndarray], #TODO -> X_VAL, T_VAL
+        X_VAL: Optional[np.ndarray],
         T_VAL: Optional[np.ndarray],
         learning_rate: float=0.1,
         epochs: int=10,
@@ -58,10 +71,9 @@ class LinearRegressionClassifier(Classifier):
         tol: float=0.001,
         n_epochs_no_update: int=5,
     ) -> None:
-        if self.bias:
-            X_TRAIN = add_bias(X_TRAIN, self.bias)
-            if X_VAL is not None:
-                X_VAL = add_bias(X_VAL, self.bias)
+        X_TRAIN = add_bias(X_TRAIN, self.bias)
+        if X_VAL is not None:
+            X_VAL = add_bias(X_VAL, self.bias)
 
         n_datapoints, n_features = X_TRAIN.shape
 
@@ -87,9 +99,11 @@ class LinearRegressionClassifier(Classifier):
             else:
                 self.trained_epochs += 1
 
-    def predict(self, X: np.ndarray, threshold: float=0.5) -> np.ndarray:
-        if self.bias:
-            X = add_bias(X, self.bias)
+    def predict(self, X: np.ndarray, threshold: Optional[float]=0.5) -> np.ndarray:
+        if not threshold:
+            raise ValueError("'threshold' parameter should not be omitted for this class")
+
+        X = add_bias(X, self.bias)
 
         return (X @ self.weights) > threshold
 
@@ -106,10 +120,9 @@ class LogisticRegressionClassifier(Classifier):
         tol: float=0.001,
         n_epochs_no_update: int=5,
     ) -> None:
-        if self.bias:
-            X_TRAIN = add_bias(X_TRAIN, self.bias)
-            if X_VAL is not None:
-                X_VAL = add_bias(X_VAL, self.bias)
+        X_TRAIN = add_bias(X_TRAIN, self.bias)
+        if X_VAL is not None:
+            X_VAL = add_bias(X_VAL, self.bias)
 
         n_datapoints, n_features = X_TRAIN.shape
         
@@ -134,12 +147,14 @@ class LogisticRegressionClassifier(Classifier):
                 self.trained_epochs += 1
 
     def predict_probability(self, X: np.ndarray) -> np.ndarray:
-        if self.bias:
-            X = add_bias(X, self.bias)
+        X = add_bias(X, self.bias)
 
         return self._forward(X)
     
-    def predict(self, X: np.ndarray, threshold: float=0.5) -> np.ndarray:
+    def predict(self, X: np.ndarray, threshold: Optional[float]=0.5) -> np.ndarray:
+        if not threshold:
+            raise ValueError("'threshold' parameter should not be omitted for this class")
+
         return (self.predict_probability(X) > threshold).astype("int")
 
     def _forward(self, X: np.ndarray) -> np.ndarray:
@@ -194,7 +209,10 @@ class MultiLogisticRegressionClassifier(LogisticRegressionClassifier):
         # calculate this classifier's trained epochs as the sum of all the binary classifiers trained epochs
         self.trained_epochs = np.sum(np.array([classifier.trained_epochs for classifier in self.classifiers]))
 
-    def predict(self, X: np.ndarray, threshold: float=0.5) -> np.ndarray:
+    def predict(self, X: np.ndarray, threshold: Optional[float]=None) -> np.ndarray:
+        if threshold:
+            raise ValueError("'threshold' parameter should be omitted for this class")
+
         probabilities = np.array([classifier.predict_probability(X) for classifier in self.classifiers])
 
         return np.argmax(probabilities, axis=0)
