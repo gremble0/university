@@ -3,7 +3,7 @@ import numpy as np
 
 from scaling import minmax_scaler, standard_scaler
 from common import T_BINARY_TRAIN, T_BINARY_VAL, T_MULTI_TRAIN, T_MULTI_VAL, X_TRAIN, X_VAL, plot_decision_regions, plot_losses
-from classifiers import Classifier, LinearRegressionClassifier, LogisticRegressionClassifier, MultiLogisticRegressionClassifier, accuracy
+from classifiers import Classifier, LinearRegressionClassifier, LogisticRegressionClassifier, MLPLinearRegressionClassifier, MultiClassLogisticRegressionClassifier, accuracy
 
 
 def test_classifier(
@@ -15,7 +15,7 @@ def test_classifier(
     losses_plot_path: str,
     classifier: Type[Classifier],
 ) -> None:
-    best = 0.0
+    best_accuracy = 0.0
     best_epochs = None
     best_learning_rate = None
     best_tol = None
@@ -32,14 +32,14 @@ def test_classifier(
 
                 acc = accuracy(c.predict(X_VAL), T_VAL)
 
-                if acc > best:
-                    best = acc
+                if acc > best_accuracy:
+                    best_accuracy = acc
                     best_epochs = epochs
                     best_learning_rate = learning_rate
                     best_tol = tol
                     best_c = c
 
-    print(f"Best accuracy: {best}, with parameters: {best_epochs=}, {best_learning_rate=}, {best_tol=}")
+    print(f"Best accuracy: {best_accuracy}, with parameters: {best_epochs=}, {best_learning_rate=}, {best_tol=}")
     if best_c.val_losses.size > 0:
         print(f"Loss function change for value set: {best_c.val_losses[0]} -> {best_c.val_losses[best_c.val_losses.size - 1]}")
     else:
@@ -149,22 +149,31 @@ def test_multi_logistic_classifier() -> None:
         standard_scaler(X_VAL),
         T_MULTI_VAL,
         "assets/logistic-multi.png",
-        "assets/logistic-mutli-losses.png",
-        MultiLogisticRegressionClassifier,
+        "assets/logistic-multi-losses.png",
+        MultiClassLogisticRegressionClassifier,
     )
 
 
-def test_multi_layer_neural_networks() -> None:
-    ...
+def test_binary_mlp_classifier() -> None:
+    print("Testing binary multi layer perceptron with standard scaling")
 
+    test_classifier(
+        standard_scaler(X_TRAIN),
+        T_BINARY_TRAIN,
+        standard_scaler(X_VAL),
+        T_BINARY_VAL,
+        "assets/multi-layer-nn.png",
+        "assets/multi-layer-nn-losses.png",
+        MLPLinearRegressionClassifier,
+    )
 
 
 def main() -> None:
-    test_linear_classifier_without_scaling()
-    test_linear_classifier_with_scaling()
-    test_logistic_classifier()
-    test_multi_logistic_classifier()
-    # test_multi_layer_neural_networks()
+    # test_linear_classifier_without_scaling()
+    # test_linear_classifier_with_scaling()
+    # test_logistic_classifier()
+    # test_multi_logistic_classifier()
+    test_binary_mlp_classifier()
 
 
 if __name__ == "__main__":

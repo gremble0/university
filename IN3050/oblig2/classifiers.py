@@ -100,7 +100,7 @@ class LinearRegressionClassifier(Classifier):
                 self.trained_epochs += 1
 
     def predict(self, X: np.ndarray, threshold: Optional[float]=0.5) -> np.ndarray:
-        if not threshold:
+        if threshold is None:
             raise ValueError("'threshold' parameter should not be omitted for this class")
 
         X = add_bias(X, self.bias)
@@ -152,7 +152,7 @@ class LogisticRegressionClassifier(Classifier):
         return self._forward(X)
     
     def predict(self, X: np.ndarray, threshold: Optional[float]=0.5) -> np.ndarray:
-        if not threshold:
+        if threshold is None:
             raise ValueError("'threshold' parameter should not be omitted for this class")
 
         return (self.predict_probability(X) > threshold).astype("int")
@@ -161,7 +161,7 @@ class LogisticRegressionClassifier(Classifier):
         return 1 / (1 + np.exp(-X @ self.weights))
 
 
-class MultiLogisticRegressionClassifier(LogisticRegressionClassifier):
+class MultiClassLogisticRegressionClassifier(LogisticRegressionClassifier):
     def fit(
         self,
         X_TRAIN: np.ndarray,
@@ -210,7 +210,7 @@ class MultiLogisticRegressionClassifier(LogisticRegressionClassifier):
         self.trained_epochs = np.sum(np.array([classifier.trained_epochs for classifier in self.classifiers]))
 
     def predict(self, X: np.ndarray, threshold: Optional[float]=None) -> np.ndarray:
-        if threshold:
+        if threshold is not None:
             raise ValueError("'threshold' parameter should be omitted for this class")
 
         probabilities = np.array([classifier.predict_probability(X) for classifier in self.classifiers])
@@ -218,5 +218,142 @@ class MultiLogisticRegressionClassifier(LogisticRegressionClassifier):
         return np.argmax(probabilities, axis=0)
 
 
-class MultiLayerLinearRegressionClassifier(Classifier):
-    ...
+# class MultiLayerLinearRegressionClassifier(Classifier):
+#     def __init__(self, bias: float = -1, dim_hidden: int = 6):
+#         self.bias = bias
+#         self.dim_hidden = dim_hidden
+#         self.activ = logistic
+#         self.activ_diff = logistic_diff
+#
+#     def fit(
+#         self,
+#         X_TRAIN: np.ndarray,
+#         T_TRAIN: np.ndarray,
+#         X_VAL: Optional[np.ndarray],
+#         T_VAL: Optional[np.ndarray],
+#         learning_rate: float=0.1,
+#         epochs: int=10,
+#         tol: float=0.001,
+#         n_epochs_no_update: int=5,
+#     ) -> None:
+#         X_TRAIN = add_bias(X_TRAIN, self.bias)
+#         T_TRAIN = T_TRAIN.reshape(-1,1)
+#         dim_in = X_TRAIN.shape[1]
+#         dim_out = T_TRAIN.shape[1]
+#
+#         self.weights1 = (np.random.rand(dim_in + 1, self.dim_hidden) * 2 - 1) / np.sqrt(dim_in)
+#         self.weights2 = (np.random.rand(self.dim_hidden+1, dim_out) * 2 - 1) / np.sqrt(self.dim_hidden)
+#
+#         for _ in range(epochs):
+#             hidden_outs, outputs = self.forward(X_TRAIN)
+#             out_deltas = (outputs - T_TRAIN)
+#             hiddenout_diffs = out_deltas @ self.weights2.T
+#             hiddenact_deltas = (hiddenout_diffs[:, 1:] *
+#             self.activ_diff(hidden_outs[:, 1:]))
+#             self.weights2 -= learning_rate * hidden_outs.T @ out_deltas
+#             self.weights1 -= learning_rate * X_TRAIN.T @ hiddenact_deltas
+#
+#     def predict(self, X: np.ndarray, threshold: Optional[float] = 0.5) -> np.ndarray:
+#         if threshold is None:
+#             raise ValueError("'threshold' parameter should not be omitted for this class")
+#         
+#         Z = add_bias(X, self.bias)
+#         forw = self.forward(Z)[1]
+#         score = forw[:, 0]
+#
+#         return (score > threshold)
+#
+#     def forward(self, X):
+#         hidden_outs = self.activ(X @ self.weights1)
+#         outputs = hidden_outs @ self.weights2[1:] + self.weights2[0]  # Exclude the bias term from weights2
+#
+#         return hidden_outs, outputs
+
+class MLPLinearRegressionClassifier(Classifier):
+    def __init__(self, bias: float = -1, dim_hidden: int = 6):
+        super().__init__(bias)
+        self.dim_hidden = dim_hidden
+        self.activ = logistic
+        self.activ_diff = logistic_diff
+        
+    def forward(self, X: np.ndarray):
+        hidden_outs = self.activ(X @ self.weights1)
+        outputs = hidden_outs @ self.weights2[1:] + self.weights2[0]  # Exclude the bias term from weights2
+        return hidden_outs, outputs
+    
+    def predict_probability(self, X):
+        Z = add_bias(X, self.bias)
+        forw = self.forward(Z)[1]
+        probs = logistic(forw[:, 0])
+        return probs
+    
+    # def fit(self, X_TRAIN: np.ndarray, T_TRAIN, X_VAL=None, T_VAL=None,  learning_rate=0.001, epochs=100, tol=1e-4, n_epochs_no_update=5):
+    def fit(
+        self,
+        X_TRAIN: np.ndarray,
+        T_TRAIN: np.ndarray,
+        X_VAL: Optional[np.ndarray],
+        T_VAL: Optional[np.ndarray],
+        learning_rate: float=0.1,
+        epochs: int=10,
+        tol: float=0.001,
+        n_epochs_no_update: int=5,
+    ) -> None:
+        """Train the model."""
+        self.lr = learning_rate
+        T_train = T_TRAIN.reshape(-1, 1)
+        dim_in = X_TRAIN.shape[1]
+        dim_out = T_train.shape[1]
+        
+        self.weights1 = (np.random.rand(dim_in + 1, self.dim_hidden) * 2 - 1) / np.sqrt(dim_in)
+        self.weights2 = (np.random.rand(self.dim_hidden + 1, dim_out) * 2 - 1) / np.sqrt(self.dim_hidden)
+        X_train_bias = add_bias(X_TRAIN, self.bias)
+        
+        best_val_loss = np.inf
+        n_epochs_no_update_count = 0
+        
+        for e in range(epochs):
+            hidden_outs, outputs = self.forward(X_train_bias)
+            probs = logistic(outputs)
+            out_deltas = (probs - T_train) * logistic_diff(probs)
+            hiddenout_diffs = out_deltas @ self.weights2[1:].T
+            hiddenact_deltas = hiddenout_diffs * self.activ_diff(hidden_outs)
+            
+            self.weights2[1:] -= self.lr * hidden_outs.T @ out_deltas
+            self.weights2[0] -= self.lr * np.sum(out_deltas, axis=0)
+            self.weights1 -= self.lr * X_train_bias.T @ hiddenact_deltas
+            
+            eps = 1e-15  # Small epsilon value to avoid log(0)
+            loss = -np.mean(T_train * np.log(probs + eps) + (1 - T_train) * np.log(1 - probs + eps))
+            self.train_losses = np.append(self.train_losses, loss)
+
+            # if self.trained_epochs < n_epochs_no_update:
+            #     self.trained_epochs += 1
+            # elif self.train_losses[self.train_losses.size - 1] - \
+            #      self.train_losses[self.train_losses.size - n_epochs_no_update - 1] + tol > 0:
+            #     return
+            # else:
+            #     self.trained_epochs += 1
+            
+            if X_VAL is not None and T_VAL is not None:
+                val_probs = self.predict_probability(X_VAL)
+                eps = 1e-15  # Small epsilon value to avoid log(0)
+                val_loss = -np.mean(T_VAL * np.log(val_probs + eps) + (1 - T_VAL) * np.log(1 - val_probs + eps))
+                self.val_losses = np.append(self.val_losses, val_loss)
+                
+                if val_loss < best_val_loss - tol:
+                    best_val_loss = val_loss
+                    n_epochs_no_update_count = 0
+                else:
+                    n_epochs_no_update_count += 1
+                    if n_epochs_no_update_count >= n_epochs_no_update:
+                        break
+            
+            self.n_epochs = e + 1
+    
+    def predict(self, X: np.ndarray, threshold: Optional[float] = 0.5) -> np.ndarray:
+        if threshold is None:
+            raise ValueError("'threshold' parameter should not be omitted for this class")
+
+        probs = self.predict_probability(X)
+        return (probs > 0.5).astype(int)
