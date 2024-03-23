@@ -3,7 +3,7 @@ import numpy as np
 
 from scaling import minmax_scaler, standard_scaler
 from common import T_BINARY_TRAIN, T_BINARY_VAL, T_MULTI_TRAIN, T_MULTI_VAL, X_TRAIN, X_VAL, plot_decision_regions, plot_losses
-from classifiers import Classifier, LinearRegressionClassifier, LogisticRegressionClassifier, MLPLinearRegressionClassifier, MultiClassLogisticRegressionClassifier, accuracy
+from classifiers import Classifier, BinaryLinearRegressionClassifier, BinaryLogisticRegressionClassifier, BinaryMLPLinearRegressionClassifier, MultiLogisticRegressionClassifier, accuracy
 
 
 def test_classifier(
@@ -82,9 +82,9 @@ def test_linear_classifier_without_scaling() -> None:
         T_BINARY_TRAIN,
         X_VAL,
         T_BINARY_VAL,
-        "assets/linear-without-scaling.png",
-        "assets/linear-without-scaling-losses.png",
-        LinearRegressionClassifier,
+        "assets/binary-linear-without-scaling.png",
+        "assets/binary-linear-without-scaling-losses.png",
+        BinaryLinearRegressionClassifier,
     )
 
 
@@ -107,9 +107,9 @@ def test_linear_classifier_with_scaling() -> None:
         T_BINARY_TRAIN,
         standard_scaler(X_VAL),
         T_BINARY_VAL,
-        "assets/linear-standard-scaling.png",
-        "assets/linear-standard-scaling-losses.png",
-        LinearRegressionClassifier,
+        "assets/binary-linear-standard-scaling.png",
+        "assets/binary-linear-standard-scaling-losses.png",
+        BinaryLinearRegressionClassifier,
     )
 
     print("Testing linear classifier with minmax scaler")
@@ -118,9 +118,9 @@ def test_linear_classifier_with_scaling() -> None:
         T_BINARY_TRAIN,
         minmax_scaler(X_VAL),
         T_BINARY_VAL,
-        "assets/linear-minmax-scaling.png",
-        "assets/linear-minmax-scaling-losses.png",
-        LinearRegressionClassifier,
+        "assets/binary-linear-minmax-scaling.png",
+        "assets/binary-linear-minmax-scaling-losses.png",
+        BinaryLinearRegressionClassifier,
     )
 
 
@@ -134,13 +134,18 @@ def test_logistic_classifier() -> None:
         T_BINARY_TRAIN,
         standard_scaler(X_VAL),
         T_BINARY_VAL,
-        "assets/logistic.png",
-        "assets/logistic-losses.png",
-        LogisticRegressionClassifier,
+        "assets/binary-logistic-standard-scaling.png",
+        "assets/binary-logistic-standard-scaling-losses.png",
+        BinaryLogisticRegressionClassifier,
     )
 
 
 def test_multi_logistic_classifier() -> None:
+    # Running this test takes a bit longer than the binary classifiers, because
+    # we are running several binary classifiers sequentially. The optimal
+    # parameters for this algorithm are 99 epochs with a learning rate of 0.5
+    # resulting in an accuracy of 0.83
+
     print("Testing multi class logistic classifier with standard scaling")
 
     test_classifier(
@@ -148,9 +153,9 @@ def test_multi_logistic_classifier() -> None:
         T_MULTI_TRAIN,
         standard_scaler(X_VAL),
         T_MULTI_VAL,
-        "assets/logistic-multi.png",
-        "assets/logistic-multi-losses.png",
-        MultiClassLogisticRegressionClassifier,
+        "assets/multi-logistic-standard-scaling.png",
+        "assets/multi-logistic-standard-scaling.png",
+        MultiLogisticRegressionClassifier,
     )
 
 
@@ -162,17 +167,17 @@ def test_binary_mlp_classifier() -> None:
         T_BINARY_TRAIN,
         standard_scaler(X_VAL),
         T_BINARY_VAL,
-        "assets/multi-layer-nn.png",
-        "assets/multi-layer-nn-losses.png",
-        MLPLinearRegressionClassifier,
+        "assets/binary-mlp.png",
+        "assets/binary-mlp-losses.png",
+        BinaryMLPLinearRegressionClassifier,
     )
 
 
 def main() -> None:
-    # test_linear_classifier_without_scaling()
-    # test_linear_classifier_with_scaling()
-    # test_logistic_classifier()
-    # test_multi_logistic_classifier()
+    test_linear_classifier_without_scaling()
+    test_linear_classifier_with_scaling()
+    test_logistic_classifier()
+    test_multi_logistic_classifier()
     test_binary_mlp_classifier()
 
 

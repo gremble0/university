@@ -60,7 +60,7 @@ class Classifier(ABC):
     ) -> None: ...
 
 
-class LinearRegressionClassifier(Classifier):
+class BinaryLinearRegressionClassifier(Classifier):
     def fit(
         self, 
         X_TRAIN: np.ndarray, 
@@ -109,7 +109,7 @@ class LinearRegressionClassifier(Classifier):
         return (X @ self.weights) > threshold
 
 
-class LogisticRegressionClassifier(Classifier):
+class BinaryLogisticRegressionClassifier(Classifier):
     def fit(
         self,
         X_TRAIN: np.ndarray,
@@ -162,7 +162,7 @@ class LogisticRegressionClassifier(Classifier):
         return 1 / (1 + np.exp(-X @ self.weights))
 
 
-class MultiClassLogisticRegressionClassifier(LogisticRegressionClassifier):
+class MultiLogisticRegressionClassifier(BinaryLogisticRegressionClassifier):
     def fit(
         self,
         X_TRAIN: np.ndarray,
@@ -174,14 +174,14 @@ class MultiClassLogisticRegressionClassifier(LogisticRegressionClassifier):
         tol: float=0.001,
         n_epochs_no_update: int=5,
     ) -> None:
-        self.classifiers: List[LogisticRegressionClassifier] = []
+        self.classifiers: List[BinaryLogisticRegressionClassifier] = []
         unique_classes = np.unique(T_TRAIN)
 
         for class_index in unique_classes:
             T_BINARY = (T_TRAIN == class_index).astype("int")
             TV_BINARY = (T_VAL == class_index).astype("int") if T_VAL is not None else None
 
-            classifier = LogisticRegressionClassifier(self.bias)
+            classifier = BinaryLogisticRegressionClassifier(self.bias)
             classifier.fit(X_TRAIN, T_BINARY, X_VAL, TV_BINARY, learning_rate, epochs, tol, n_epochs_no_update)
 
             self.classifiers.append(classifier)
@@ -218,7 +218,7 @@ class MultiClassLogisticRegressionClassifier(LogisticRegressionClassifier):
 
         return np.argmax(probabilities, axis=0)
 
-class MLPLinearRegressionClassifier(Classifier):
+class BinaryMLPLinearRegressionClassifier(Classifier):
     def __init__(self, bias: float = -1, dim_hidden: int = 6):
         super().__init__(bias)
         self.dim_hidden = dim_hidden
