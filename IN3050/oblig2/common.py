@@ -56,8 +56,8 @@ def plot_decision_regions(
     Z = Z.reshape(x.shape)
 
     plt.figure(figsize=size)
-    plt.contourf(x, y, Z, alpha=0.2, cmap = 'Paired')
-    plt.scatter(X[:,0], X[:,1], c=T, s=10.0, cmap='Paired')
+    plt.contourf(x, y, Z, alpha=0.2, cmap='Paired')
+    plt.scatter(X[:,0], X[:,1], c = T, s = 10.0, cmap = 'Paired')
     plt.xlim(x.min(), x.max())
     plt.ylim(y.min(), y.max())
     plt.title("Decision regions")

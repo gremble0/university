@@ -47,7 +47,7 @@ class Classifier(ABC):
         self.trained_epochs = 0
 
     @abstractmethod
-    def predict(self, X: np.ndarray, threshold: Optional[float]=None) -> np.ndarray: ...
+    def predict(self, X: np.ndarray, threshold: Optional[float] = None) -> np.ndarray: ...
 
     @abstractmethod
     def fit(
@@ -56,10 +56,10 @@ class Classifier(ABC):
         T_TRAIN: np.ndarray,
         X_VAL: Optional[np.ndarray],
         T_VAL: Optional[np.ndarray],
-        learning_rate: float=0.1,
-        epochs: int=10,
-        tol: float=0.01,
-        n_epochs_no_update: int=5,
+        learning_rate: float = 0.1,
+        epochs: int = 10,
+        tol: float = 0.01,
+        n_epochs_no_update: int = 5,
     ) -> None: ...
 
 
@@ -121,10 +121,10 @@ class BinaryLogisticRegressionClassifier(Classifier):
         T_TRAIN: np.ndarray,
         X_VAL: Optional[np.ndarray],
         T_VAL: Optional[np.ndarray],
-        learning_rate: float=0.1,
-        epochs: int=10,
-        tol: float=0.001,
-        n_epochs_no_update: int=5,
+        learning_rate: float = 0.1,
+        epochs: int = 10,
+        tol: float = 0.001,
+        n_epochs_no_update: int = 5,
     ) -> None:
         X_TRAIN = add_bias(X_TRAIN, self.bias)
         if X_VAL is not None:
@@ -159,7 +159,7 @@ class BinaryLogisticRegressionClassifier(Classifier):
 
         return self._forward(X)
     
-    def predict(self, X: np.ndarray, threshold: Optional[float]=0.5) -> np.ndarray:
+    def predict(self, X: np.ndarray, threshold: Optional[float] = 0.5) -> np.ndarray:
         if threshold is None:
             raise ValueError("'threshold' parameter should not be omitted for this class")
 
@@ -176,24 +176,24 @@ class MultiLogisticRegressionClassifier(BinaryLogisticRegressionClassifier):
         T_TRAIN: np.ndarray,
         X_VAL: Optional[np.ndarray],
         T_VAL: Optional[np.ndarray],
-        learning_rate: float=0.1,
-        epochs: int=10,
-        tol: float=0.001,
-        n_epochs_no_update: int=5,
+        learning_rate: float = 0.1,
+        epochs: int = 10,
+        tol: float = 0.001,
+        n_epochs_no_update: int = 5,
     ) -> None:
         self.classifiers: List[BinaryLogisticRegressionClassifier] = []
         unique_classes = np.unique(T_TRAIN)
 
         for class_index in unique_classes:
-            T_BINARY = (T_TRAIN == class_index).astype(int)
-            TV_BINARY = (T_VAL == class_index).astype(int) if T_VAL is not None else None
+            T_TRAIN_BINARY = (T_TRAIN == class_index).astype(int)
+            T_VAL_BINARY = (T_VAL == class_index).astype(int) if T_VAL is not None else None
 
             classifier = BinaryLogisticRegressionClassifier(self.bias)
-            classifier.fit(X_TRAIN, T_BINARY, X_VAL, TV_BINARY, learning_rate, epochs, tol, n_epochs_no_update)
+            classifier.fit(X_TRAIN, T_TRAIN_BINARY, X_VAL, T_VAL_BINARY, learning_rate, epochs, tol, n_epochs_no_update)
 
             self.classifiers.append(classifier)
 
-        # calculate losses as the sums of all the classifiers' losses divided by the number of classifiers
+        # calculate losses and accuracies as the averages across all classifiers
         self.train_losses = self.classifiers[0].train_losses
         self.val_losses = self.classifiers[0].val_losses
         self.train_accuracies = self.classifiers[0].train_accuracies
@@ -233,7 +233,7 @@ class MultiLogisticRegressionClassifier(BinaryLogisticRegressionClassifier):
         # calculate this classifier's trained epochs as the sum of all the binary classifiers trained epochs
         self.trained_epochs = np.sum(np.array([classifier.trained_epochs for classifier in self.classifiers]))
 
-    def predict(self, X: np.ndarray, threshold: Optional[float]=None) -> np.ndarray:
+    def predict(self, X: np.ndarray, threshold: Optional[float] = None) -> np.ndarray:
         if threshold is not None:
             raise ValueError("'threshold' parameter should be omitted for this class")
 
@@ -265,10 +265,10 @@ class BinaryMLPLinearRegressionClassifier(Classifier):
         T_TRAIN: np.ndarray,
         X_VAL: Optional[np.ndarray],
         T_VAL: Optional[np.ndarray],
-        learning_rate: float=0.1,
-        epochs: int=10,
-        tol: float=0.001,
-        n_epochs_no_update: int=5,
+        learning_rate: float = 0.1,
+        epochs: int = 10,
+        tol: float = 0.001,
+        n_epochs_no_update: int = 5,
     ) -> None:
         T_TRAIN = T_TRAIN.reshape(-1, 1)
         X_TRAIN_BIAS = add_bias(X_TRAIN, self.bias)
