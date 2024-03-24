@@ -42,10 +42,10 @@ def test_classifier(
 
     # best_accuracy is calculated after the training so that accuracy may be different from the final accuray
     # in the best classifiers val_accuracies field
-    print(f"Best accuracy: {best_accuracy}, with parameters: {best_epochs=}, {best_learning_rate=}, {best_tol=}")
+    print(f"Best accuracy after training: {best_accuracy}, with parameters: {best_epochs=}, {best_learning_rate=}, {best_tol=}")
     if best_c.val_losses.size > 0:
-        print(f"Loss function change for value set:           {best_c.val_losses[0]} -> {best_c.val_losses[best_c.val_losses.size - 1]}")
-        print(f"Accuracy change for value set while training: {best_c.val_accuracies[0]} -> {best_c.val_accuracies[best_c.val_accuracies.size - 1]}")
+        print(f"Loss function change for value set:           {best_c.val_losses[0]:.3f} -> {best_c.val_losses[best_c.val_losses.size - 1]:.3f}")
+        print(f"Accuracy change for value set while training: {best_c.val_accuracies[0]:.3f} -> {best_c.val_accuracies[best_c.val_accuracies.size - 1]:.3f}")
     else:
         print("Classifier did not improve")
 
@@ -132,7 +132,7 @@ def test_logistic_classifier() -> None:
     # For the logistic regression classifier we find the optimal paramters to be
     # 104 epochs with a learning rate of 0.5 resulting in an accuracy of 0.766
 
-    print("Testing logistic classifier with standard scaling")
+    print("Testing binary logistic classifier with standard scaling")
     test_classifier(
         standard_scaler(X_TRAIN),
         T_BINARY_TRAIN,
@@ -188,11 +188,11 @@ def test_binary_mlp_classifier() -> None:
 
 
 def main() -> None:
-    test_linear_classifier_without_scaling()
-    test_linear_classifier_with_scaling()
-    test_logistic_classifier()
+    # test_linear_classifier_without_scaling()
+    # test_linear_classifier_with_scaling()
+    # test_logistic_classifier()
     test_multi_logistic_classifier()
-    test_binary_mlp_classifier()
+    # test_binary_mlp_classifier()
 
 
 if __name__ == "__main__":

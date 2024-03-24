@@ -70,10 +70,10 @@ class BinaryLinearRegressionClassifier(Classifier):
         T_TRAIN: np.ndarray, 
         X_VAL: Optional[np.ndarray], 
         T_VAL: Optional[np.ndarray], 
-        learning_rate: float=0.1, 
-        epochs: int=10,
-        tol: float=0.001,
-        n_epochs_no_update: int=5,
+        learning_rate: float = 0.1, 
+        epochs: int = 10,
+        tol: float = 0.001,
+        n_epochs_no_update: int = 5,
     ) -> None:
         X_TRAIN = add_bias(X_TRAIN, self.bias)
         if X_VAL is not None:
@@ -105,7 +105,7 @@ class BinaryLinearRegressionClassifier(Classifier):
             else:
                 self.trained_epochs += 1
 
-    def predict(self, X: np.ndarray, threshold: Optional[float]=0.5) -> np.ndarray:
+    def predict(self, X: np.ndarray, threshold: Optional[float] = 0.5) -> np.ndarray:
         if threshold is None:
             raise ValueError("'threshold' parameter should not be omitted for this class")
 
@@ -137,12 +137,12 @@ class BinaryLogisticRegressionClassifier(Classifier):
         for _ in range(epochs):
             train_predictions = self._forward(X_TRAIN)
             self.train_losses = np.append(self.train_losses, cross_entropy_loss(train_predictions, T_TRAIN))
-            self.train_accuracies = np.append(self.train_accuracies, accuracy(train_predictions, T_TRAIN))
+            self.train_accuracies = np.append(self.train_accuracies, accuracy((train_predictions > 0.5).astype(int), T_TRAIN))
 
             if X_VAL is not None and T_VAL is not None:
                 val_predictions = self._forward(X_VAL)
                 self.val_losses = np.append(self.val_losses, cross_entropy_loss(val_predictions, T_VAL))
-                self.val_accuracies = np.append(self.val_accuracies, accuracy(train_predictions, T_VAL))
+                self.val_accuracies = np.append(self.val_accuracies, accuracy((val_predictions > 0.5).astype(int), T_VAL))
 
             self.weights -= learning_rate / n_datapoints * X_TRAIN.T @ (train_predictions - T_TRAIN)      
 
