@@ -6,6 +6,7 @@ from common import T_BINARY_TRAIN, T_BINARY_VAL, T_MULTI_TRAIN, T_MULTI_VAL, X_T
 from classifiers import Classifier, BinaryLinearRegressionClassifier, BinaryLogisticRegressionClassifier, BinaryMLPLinearRegressionClassifier, MultiLogisticRegressionClassifier, accuracy
 
 
+# TODO: store accuracy
 def test_classifier(
     X_TRAIN: np.ndarray,
     T_TRAIN: np.ndarray,
@@ -39,9 +40,12 @@ def test_classifier(
                     best_tol = tol
                     best_c = c
 
+    # best_accuracy is calculated after the training so that accuracy may be different from the final accuray
+    # in the best classifiers val_accuracies field
     print(f"Best accuracy: {best_accuracy}, with parameters: {best_epochs=}, {best_learning_rate=}, {best_tol=}")
     if best_c.val_losses.size > 0:
-        print(f"Loss function change for value set: {best_c.val_losses[0]} -> {best_c.val_losses[best_c.val_losses.size - 1]}")
+        print(f"Loss function change for value set:           {best_c.val_losses[0]} -> {best_c.val_losses[best_c.val_losses.size - 1]}")
+        print(f"Accuracy change for value set while training: {best_c.val_accuracies[0]} -> {best_c.val_accuracies[best_c.val_accuracies.size - 1]}")
     else:
         print("Classifier did not improve")
 
@@ -147,7 +151,6 @@ def test_multi_logistic_classifier() -> None:
     # resulting in an accuracy of 0.83
 
     print("Testing multi class logistic classifier with standard scaling")
-
     test_classifier(
         standard_scaler(X_TRAIN),
         T_MULTI_TRAIN,
@@ -160,15 +163,26 @@ def test_multi_logistic_classifier() -> None:
 
 
 def test_binary_mlp_classifier() -> None:
-    print("Testing binary multi layer perceptron with standard scaling")
 
+    # print("Testing binary multi layer perceptron with no scaling")
+    # test_classifier(
+    #     X_TRAIN,
+    #     T_BINARY_TRAIN,
+    #     X_VAL,
+    #     T_BINARY_VAL,
+    #     "assets/binary-mlp.png",
+    #     "assets/binary-mlp-losses.png",
+    #     BinaryMLPLinearRegressionClassifier,
+    # )
+
+    print("Testing binary multi layer perceptron with standard scaling")
     test_classifier(
         standard_scaler(X_TRAIN),
         T_BINARY_TRAIN,
         standard_scaler(X_VAL),
         T_BINARY_VAL,
-        "assets/binary-mlp.png",
-        "assets/binary-mlp-losses.png",
+        "assets/binary-mlp-standard-scaling.png",
+        "assets/binary-mlp-standard-scaling-losses.png",
         BinaryMLPLinearRegressionClassifier,
     )
 

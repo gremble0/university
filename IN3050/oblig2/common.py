@@ -26,9 +26,9 @@ T_MULTI_TRAIN = T[indices[:1000]]
 T_MULTI_VAL = T[indices[1000:1500]]
 T_MULTI_TEST = T[indices[1500:]]
 
-T_BINARY_TRAIN = (T_MULTI_TRAIN >= 3).astype("int")
-T_BINARY_VAL = (T_MULTI_VAL >= 3).astype("int")
-T_BINARY_TEST = (T_MULTI_TEST >= 3).astype("int")
+T_BINARY_TRAIN = (T_MULTI_TRAIN >= 3).astype(int)
+T_BINARY_VAL = (T_MULTI_VAL >= 3).astype(int)
+T_BINARY_TEST = (T_MULTI_TEST >= 3).astype(int)
 
 
 # TODO: size as param

@@ -3,7 +3,7 @@ from typing import List, Optional
 import numpy as np
 
 
-def add_bias(X: np.ndarray, bias: float) -> np.ndarray:
+def add_bias(X: np.ndarray, bias: float = -1) -> np.ndarray:
     # If bias is falsy (0), do not add any bias
     if not bias:
         return X
@@ -26,6 +26,7 @@ def mean_squared_error_loss(X: np.ndarray, T: np.ndarray) -> np.float64:
     return np.mean((X - T) ** 2)
 
 
+# Logistic function and its derivative:
 def logistic(X: np.ndarray) -> np.ndarray:
     return 1 / (1 + np.exp(-X))
 
@@ -41,6 +42,8 @@ class Classifier(ABC):
         self.bias = bias
         self.train_losses = np.array([], dtype=float)
         self.val_losses = np.array([], dtype=float)
+        self.train_accuracies = np.array([], dtype=float)
+        self.val_accuracies = np.array([], dtype=float)
         self.trained_epochs = 0
 
     @abstractmethod
@@ -83,13 +86,15 @@ class BinaryLinearRegressionClassifier(Classifier):
         for _ in range(epochs):
             train_predictions = X_TRAIN @ self.weights
             self.train_losses = np.append(self.train_losses, mean_squared_error_loss(train_predictions, T_TRAIN))
+            self.train_accuracies = np.append(self.train_accuracies, accuracy((train_predictions > 0.5).astype(int), T_TRAIN))
 
             # Checking condition every iteration is not optimal, but alterantive is major code duplication
             if X_VAL is not None and T_VAL is not None:
                 val_predictions = X_VAL @ self.weights
                 self.val_losses = np.append(self.val_losses, mean_squared_error_loss(val_predictions, T_VAL))
+                self.val_accuracies = np.append(self.val_accuracies, accuracy((val_predictions > 0.5).astype(int), T_VAL))
 
-            self.weights -= learning_rate / n_datapoints * X_TRAIN.T @ (train_predictions - T_TRAIN)
+            self.weights -= learning_rate / n_datapoints * X_TRAIN.T @ (X_TRAIN @ self.weights - T_TRAIN)
 
             # Should we return early?
             if self.trained_epochs < n_epochs_no_update:
@@ -132,10 +137,12 @@ class BinaryLogisticRegressionClassifier(Classifier):
         for _ in range(epochs):
             train_predictions = self._forward(X_TRAIN)
             self.train_losses = np.append(self.train_losses, cross_entropy_loss(train_predictions, T_TRAIN))
+            self.train_accuracies = np.append(self.train_accuracies, accuracy(train_predictions, T_TRAIN))
 
             if X_VAL is not None and T_VAL is not None:
                 val_predictions = self._forward(X_VAL)
                 self.val_losses = np.append(self.val_losses, cross_entropy_loss(val_predictions, T_VAL))
+                self.val_accuracies = np.append(self.val_accuracies, accuracy(train_predictions, T_VAL))
 
             self.weights -= learning_rate / n_datapoints * X_TRAIN.T @ (train_predictions - T_TRAIN)      
 
@@ -156,7 +163,7 @@ class BinaryLogisticRegressionClassifier(Classifier):
         if threshold is None:
             raise ValueError("'threshold' parameter should not be omitted for this class")
 
-        return (self.predict_probability(X) > threshold).astype("int")
+        return (self.predict_probability(X) > threshold).astype(int)
 
     def _forward(self, X: np.ndarray) -> np.ndarray:
         return 1 / (1 + np.exp(-X @ self.weights))
@@ -178,8 +185,8 @@ class MultiLogisticRegressionClassifier(BinaryLogisticRegressionClassifier):
         unique_classes = np.unique(T_TRAIN)
 
         for class_index in unique_classes:
-            T_BINARY = (T_TRAIN == class_index).astype("int")
-            TV_BINARY = (T_VAL == class_index).astype("int") if T_VAL is not None else None
+            T_BINARY = (T_TRAIN == class_index).astype(int)
+            TV_BINARY = (T_VAL == class_index).astype(int) if T_VAL is not None else None
 
             classifier = BinaryLogisticRegressionClassifier(self.bias)
             classifier.fit(X_TRAIN, T_BINARY, X_VAL, TV_BINARY, learning_rate, epochs, tol, n_epochs_no_update)
@@ -189,6 +196,8 @@ class MultiLogisticRegressionClassifier(BinaryLogisticRegressionClassifier):
         # calculate losses as the sums of all the classifiers' losses divided by the number of classifiers
         self.train_losses = self.classifiers[0].train_losses
         self.val_losses = self.classifiers[0].val_losses
+        self.train_accuracies = self.classifiers[0].train_accuracies
+        self.val_accuracies = self.classifiers[0].val_accuracies
 
         for i in range(2, len(self.classifiers)):
             if len(self.classifiers[i].train_losses) > len(self.train_losses):
@@ -201,11 +210,25 @@ class MultiLogisticRegressionClassifier(BinaryLogisticRegressionClassifier):
             elif len(self.classifiers[i].val_losses) < len(self.val_losses):
                 self.classifiers[i].val_losses.resize(self.val_losses.shape)
 
-            self.train_losses += self.classifiers[i].train_losses
-            self.val_losses += self.classifiers[i].val_losses
+            if len(self.classifiers[i].train_accuracies) > len(self.train_accuracies):
+                self.train_accuracies.resize(self.classifiers[i].train_accuracies.shape)
+            elif len(self.classifiers[i].train_accuracies) < len(self.train_accuracies):
+                self.classifiers[i].train_accuracies.resize(self.train_accuracies.shape)
+
+            if len(self.classifiers[i].val_accuracies) > len(self.val_accuracies):
+                self.val_accuracies.resize(self.classifiers[i].val_accuracies.shape)
+            elif len(self.classifiers[i].val_accuracies) < len(self.val_accuracies):
+                self.classifiers[i].val_accuracies.resize(self.val_accuracies.shape)
+
+            self.train_accuracies += self.classifiers[i].train_accuracies
+            self.val_accuracies += self.classifiers[i].val_accuracies
+            self.train_accuracies += self.classifiers[i].train_accuracies
+            self.val_accuracies += self.classifiers[i].val_accuracies
 
         self.train_losses = np.divide(self.train_losses, len(unique_classes))
         self.val_losses = np.divide(self.val_losses, len(unique_classes))
+        self.train_accuracies = np.divide(self.train_accuracies, len(unique_classes))
+        self.val_accuracies = np.divide(self.val_accuracies, len(unique_classes))
 
         # calculate this classifier's trained epochs as the sum of all the binary classifiers trained epochs
         self.trained_epochs = np.sum(np.array([classifier.trained_epochs for classifier in self.classifiers]))
@@ -248,15 +271,15 @@ class BinaryMLPLinearRegressionClassifier(Classifier):
         n_epochs_no_update: int=5,
     ) -> None:
         T_TRAIN = T_TRAIN.reshape(-1, 1)
+        X_TRAIN_BIAS = add_bias(X_TRAIN, self.bias)
         dim_in = X_TRAIN.shape[1]
         dim_out = T_TRAIN.shape[1]
         
         self.weights1 = (np.random.rand(dim_in + 1, self.dim_hidden) * 2 - 1) / np.sqrt(dim_in)
         self.weights2 = (np.random.rand(self.dim_hidden + 1, dim_out) * 2 - 1) / np.sqrt(self.dim_hidden)
-        X_train_bias = add_bias(X_TRAIN, self.bias)
         
         for _ in range(epochs):
-            hidden_outs, outputs = self.forward(X_train_bias)
+            hidden_outs, outputs = self.forward(X_TRAIN_BIAS)
             probs = logistic(outputs)
             out_deltas = (probs - T_TRAIN) * logistic_diff(probs)
             hiddenout_diffs = out_deltas @ self.weights2[1:].T
@@ -264,12 +287,14 @@ class BinaryMLPLinearRegressionClassifier(Classifier):
             
             self.weights2[1:] -= learning_rate * hidden_outs.T @ out_deltas
             self.weights2[0] -= learning_rate * np.sum(out_deltas, axis=0)
-            self.weights1 -= learning_rate * X_train_bias.T @ hiddenact_deltas
+            self.weights1 -= learning_rate * X_TRAIN_BIAS.T @ hiddenact_deltas
 
             self.train_losses = np.append(self.train_losses, cross_entropy_loss(probs, T_TRAIN))
+            self.train_accuracies = np.append(self.train_accuracies, accuracy(probs, T_TRAIN))
             
             if X_VAL is not None and T_VAL is not None:
                 self.val_losses = np.append(self.val_losses, cross_entropy_loss(self.predict_probability(X_VAL), T_VAL))
+                self.val_accuracies = np.append(self.val_accuracies, accuracy(probs, T_VAL))
 
             if self.trained_epochs < n_epochs_no_update:
                 self.trained_epochs += 1
