@@ -1,3 +1,4 @@
+from dataclasses import dataclass
 from typing import Type
 import numpy as np
 
@@ -6,7 +7,13 @@ from common import T_BINARY_TRAIN, T_BINARY_VAL, T_MULTI_TRAIN, T_MULTI_VAL, X_T
 from classifiers import Classifier, BinaryLinearRegressionClassifier, BinaryLogisticRegressionClassifier, BinaryMLPLinearRegressionClassifier, MultiLogisticRegressionClassifier, accuracy
 
 
-# TODO: store accuracy
+@dataclass
+class ClassifierParameters:
+    learning_rate: float
+    epochs: int
+    tol: float
+
+
 def test_classifier(
     X_TRAIN: np.ndarray,
     T_TRAIN: np.ndarray,
@@ -15,7 +22,7 @@ def test_classifier(
     decision_plot_path: str,
     losses_plot_path: str,
     classifier: Type[Classifier],
-) -> None:
+) -> ClassifierParameters:
     best_accuracy = 0.0
     best_epochs = None
     best_learning_rate = None
@@ -67,6 +74,8 @@ def test_classifier(
     # changes back, but all these combinations would be eliminated by the early
     # stopping implemented in task 1.1e.
     plot_losses(best_c.train_losses, best_c.val_losses, path=losses_plot_path)
+
+    return ClassifierParameters(best_learning_rate or 0, best_epochs or 0, best_tol or 0)
 
 
 def test_linear_classifier_without_scaling() -> None:
@@ -165,6 +174,10 @@ def test_multi_logistic_classifier() -> None:
 
 
 def test_binary_mlp_classifier() -> None:
+    # The best parameters will vary based on the randomness in the classifier's initialization
+    # so we cannot really know the actual best parameters for certain. This will find the
+    # parameters that were best for this call of `test_classifier` and then try those params
+    # again 10 times and report the mean and standard deviation for that.
 
     # print("Testing binary multi layer perceptron with no scaling")
     # test_classifier(
@@ -178,23 +191,46 @@ def test_binary_mlp_classifier() -> None:
     # )
 
     print("Testing binary multi layer perceptron with standard scaling")
-    test_classifier(
-        standard_scaler(X_TRAIN),
+
+    scaled_x_train = standard_scaler(X_TRAIN)
+    scaled_x_val = standard_scaler(X_VAL)
+    best_params = test_classifier(
+        scaled_x_train,
         T_BINARY_TRAIN,
-        standard_scaler(X_VAL),
+        scaled_x_val,
         T_BINARY_VAL,
         "assets/binary-mlp-standard-scaling.png",
         "assets/binary-mlp-standard-scaling-losses.png",
         BinaryMLPLinearRegressionClassifier,
     )
 
+    print("Getting standard deviation and mean of given parameters")
+
+    accuracies = np.array([])
+
+    for _ in range(10):
+        c = BinaryMLPLinearRegressionClassifier()
+        c.fit(
+            scaled_x_train,
+            T_BINARY_VAL, 
+            scaled_x_val, 
+            T_BINARY_VAL, 
+            best_params.learning_rate, 
+            best_params.epochs, 
+            best_params.tol,
+        )
+
+        accuracies = np.append(accuracies, accuracy(c.predict(scaled_x_val), T_BINARY_VAL))
+
+    print(f"Standard deviation {np.std(accuracies)}, mean {np.mean(accuracies)}")
+
 
 def main() -> None:
     # test_linear_classifier_without_scaling()
     # test_linear_classifier_with_scaling()
     # test_logistic_classifier()
-    test_multi_logistic_classifier()
-    # test_binary_mlp_classifier()
+    # test_multi_logistic_classifier()
+    test_binary_mlp_classifier()
 
 
 if __name__ == "__main__":

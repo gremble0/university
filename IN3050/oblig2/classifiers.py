@@ -225,17 +225,6 @@ class BinaryMLPLinearRegressionClassifier(Classifier):
         self.activ = logistic
         self.activ_diff = logistic_diff
         
-    def forward(self, X: np.ndarray):
-        hidden_outs = self.activ(X @ self.weights1)
-        outputs = hidden_outs @ self.weights2[1:] + self.weights2[0]  # Exclude the bias term from weights2
-        return hidden_outs, outputs
-    
-    def predict_probability(self, X):
-        Z = add_bias(X, self.bias)
-        forw = self.forward(Z)[1]
-        probs = logistic(forw[:, 0])
-        return probs
-    
     def fit(
         self,
         X_TRAIN: np.ndarray,
@@ -267,11 +256,11 @@ class BinaryMLPLinearRegressionClassifier(Classifier):
             self.weights1 -= learning_rate * X_TRAIN_BIAS.T @ hiddenact_deltas
 
             self.train_losses = np.append(self.train_losses, cross_entropy_loss(probs, T_TRAIN))
-            self.train_accuracies = np.append(self.train_accuracies, accuracy(probs, T_TRAIN))
+            self.train_accuracies = np.append(self.train_accuracies, accuracy(self.predict(X_TRAIN), T_TRAIN))
             
             if X_VAL is not None and T_VAL is not None:
                 self.val_losses = np.append(self.val_losses, cross_entropy_loss(self.predict_probability(X_VAL), T_VAL))
-                self.val_accuracies = np.append(self.val_accuracies, accuracy(probs, T_VAL))
+                self.val_accuracies = np.append(self.val_accuracies, accuracy(self.predict(X_VAL), T_VAL))
 
             if self.trained_epochs < n_epochs_no_update:
                 self.trained_epochs += 1
@@ -280,6 +269,18 @@ class BinaryMLPLinearRegressionClassifier(Classifier):
                 return
             else:
                 self.trained_epochs += 1
+
+    def forward(self, X: np.ndarray):
+        hidden_outs = self.activ(X @ self.weights1)
+        outputs = hidden_outs @ self.weights2[1:] + self.weights2[0]  # Exclude the bias term from weights2
+        return hidden_outs, outputs
+    
+    def predict_probability(self, X):
+        Z = add_bias(X, self.bias)
+        forw = self.forward(Z)[1]
+        probs = logistic(forw[:, 0])
+        return probs
+    
     
     def predict(self, X: np.ndarray, threshold: Optional[float] = 0.5) -> np.ndarray:
         if threshold is None:
