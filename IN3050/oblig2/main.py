@@ -3,7 +3,7 @@ from typing import Type
 import numpy as np
 
 from scaling import minmax_scaler, standard_scaler
-from common import T_BINARY_TEST, T_BINARY_TRAIN, T_BINARY_VAL, T_MULTI_TRAIN, T_MULTI_VAL, X_TEST, X_TRAIN, X_VAL, plot_decision_regions, plot_losses
+from common import T_BINARY_TEST, T_BINARY_TRAIN, T_BINARY_VAL, T_MULTI_TEST, T_MULTI_TRAIN, T_MULTI_VAL, X_TEST, X_TRAIN, X_VAL, plot_decision_regions, plot_losses
 from classifiers import Classifier, BinaryLinearRegressionClassifier, BinaryLogisticRegressionClassifier, BinaryMLPLinearRegressionClassifier, MultiLogisticRegressionClassifier, accuracy
 
 
@@ -24,6 +24,7 @@ def test_classifier(
     decision_plot_path: str,
     losses_plot_path: str,
     classifier: Type[Classifier],
+    is_binary: bool,
 ) -> ClassifierParameters:
     best_accuracy = 0.0
     best_epochs = None
@@ -34,7 +35,7 @@ def test_classifier(
     # Since we're brute forcing so many different combinations of parameters, this may take a while
     # however in practice we would only have to run this once per dataset so thats fine. We could also
     # add more guesses for possible values here if we wanted.
-    for epochs in range(1, 100):
+    for epochs in range(1, 20):
         for learning_rate in [0.0001, 0.001, 0.01, 0.1, 0.15, 0.2, 0.25, 0.3, 0.35, 0.4, 0.45, 0.5]:
             for tol in [0.0001, 0.0005, 0.001, 0.01]:
                 c = classifier()
@@ -50,16 +51,31 @@ def test_classifier(
                     best_c = c
 
 
-    test_set_accuracy = accuracy(best_c.predict(X_TEST), T_TEST)
+    test_prediction = best_c.predict(X_TEST)
+    test_set_accuracy = accuracy(test_prediction, T_TEST)
 
     # best_accuracy is calculated after the training so that accuracy may be different from the final accuracy
     # in the best classifiers val_accuracies field
-    print(f"Best accuracy after training:                 {best_accuracy}, with parameters: {best_epochs=}, {best_learning_rate=}, {best_tol=}")
-    print(f"Final accuracy on test set:                   {test_set_accuracy}")
-    print(f"Loss function change for value set:           {best_c.val_losses[0]:.3f} -> {best_c.val_losses[best_c.val_losses.size - 1]:.3f}")
-    print(f"Accuracy change for value set while training: {best_c.val_accuracies[0]:.3f} -> {best_c.val_accuracies[best_c.val_accuracies.size - 1]:.3f}")
+    print(f"Best accuracy after training:       {best_accuracy}")
+    print(f"Best parameters:                    {best_epochs=}, {best_learning_rate=}, {best_tol=}")
+    print(f"Final accuracy on test set:         {test_set_accuracy}")
+    print(f"Loss change for validation set:     {best_c.val_losses[0]:.3f} -> {best_c.val_losses[best_c.val_losses.size - 1]:.3f}")
+    print(f"Accuracy change for validation set: {best_c.val_accuracies[0]:.3f} -> {best_c.val_accuracies[best_c.val_accuracies.size - 1]:.3f}")
     # This will most of the time just be the same as best_epochs
-    print(f"Number of epochs classifier trained for:      {best_c.trained_epochs}\n")
+    print(f"Number of trained epochs:           {best_c.trained_epochs}")
+
+
+    if is_binary:
+        true_positives = np.sum((test_prediction == 1) & (T_TEST == 1))
+        if true_positives == 0:
+            print("Algorithm has no true guesses, cannot calculate precision and recall")
+        else:
+            false_positives = np.sum((test_prediction == 1) & (T_TEST == 0))
+            false_negatives = np.sum((test_prediction == 0) & (T_TEST == 1))
+            print(f"Precision on test set:              {true_positives / (true_positives + false_positives)}")
+            print(f"Recall on test set:                 {true_positives / (true_positives + false_negatives)}")
+
+    print()
 
     plot_decision_regions(X_VAL, T_VAL, best_c, path=decision_plot_path)
 
@@ -100,6 +116,7 @@ def test_linear_classifier_without_scaling() -> None:
         "assets/binary-linear-without-scaling.png",
         "assets/binary-linear-without-scaling-losses.png",
         BinaryLinearRegressionClassifier,
+        True,
     )
 
 
@@ -127,6 +144,7 @@ def test_linear_classifier_with_scaling() -> None:
         "assets/binary-linear-standard-scaling.png",
         "assets/binary-linear-standard-scaling-losses.png",
         BinaryLinearRegressionClassifier,
+        True,
     )
 
     print("Testing linear classifier with minmax scaler")
@@ -140,6 +158,7 @@ def test_linear_classifier_with_scaling() -> None:
         "assets/binary-linear-minmax-scaling.png",
         "assets/binary-linear-minmax-scaling-losses.png",
         BinaryLinearRegressionClassifier,
+        True,
     )
 
 
@@ -158,6 +177,7 @@ def test_logistic_classifier() -> None:
         "assets/binary-logistic-standard-scaling.png",
         "assets/binary-logistic-standard-scaling-losses.png",
         BinaryLogisticRegressionClassifier,
+        True,
     )
 
 
@@ -175,11 +195,12 @@ def test_multi_logistic_classifier() -> None:
         T_MULTI_TRAIN,
         standard_scaler(X_VAL),
         T_MULTI_VAL,
-        minmax_scaler(X_TEST),
-        T_BINARY_TEST,
+        standard_scaler(X_TEST),
+        T_MULTI_TEST,
         "assets/multi-logistic-standard-scaling.png",
         "assets/multi-logistic-standard-scaling.png",
         MultiLogisticRegressionClassifier,
+        False,
     )
 
 
@@ -219,6 +240,7 @@ def test_binary_mlp_classifier() -> None:
         "assets/binary-mlp-standard-scaling.png",
         "assets/binary-mlp-standard-scaling-losses.png",
         BinaryMLPLinearRegressionClassifier,
+        True,
     )
 
     print("Getting mean and standard deviation of accuracy for given parameters")
@@ -247,6 +269,18 @@ def test_binary_mlp_classifier() -> None:
 
 def main() -> None:
     # Running all these can take quite a while (~6 minutes on my machine)
+    #
+    # The three algorithms have vastly different results, and the difference between non-
+    # scaled and scaled datasets is significant (using non scaled datasets also proved to
+    # lead to number overflows). I also noticed how terribly the algorithms performed when
+    # given the opportunity to optimize for the validation set and I had probably set the
+    # the range of epochs to test for (100) too high, however this is a number that's easy
+    # to tweak after developing the classifiers. When setting this number to something
+    # lower like 20, all the numbers in the benchmark shuffle around dramatically.
+    # Here the best accuracy on the validation set drops, the accuracy on the test set
+    # increases (though is still somewhat low for some algorithms, some of them even
+    # being below 50% when testing for up to 20 epochs), and of course the runtimes
+    # are drastically shorter since we don't have to test as many combinations.
 
     test_linear_classifier_without_scaling()
     test_linear_classifier_with_scaling()
