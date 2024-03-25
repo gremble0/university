@@ -3,7 +3,7 @@ from typing import Type
 import numpy as np
 
 from scaling import minmax_scaler, standard_scaler
-from common import T_BINARY_TRAIN, T_BINARY_VAL, T_MULTI_TRAIN, T_MULTI_VAL, X_TRAIN, X_VAL, plot_decision_regions, plot_losses
+from common import T_BINARY_TEST, T_BINARY_TRAIN, T_BINARY_VAL, T_MULTI_TRAIN, T_MULTI_VAL, X_TEST, X_TRAIN, X_VAL, plot_decision_regions, plot_losses
 from classifiers import Classifier, BinaryLinearRegressionClassifier, BinaryLogisticRegressionClassifier, BinaryMLPLinearRegressionClassifier, MultiLogisticRegressionClassifier, accuracy
 
 
@@ -19,6 +19,8 @@ def test_classifier(
     T_TRAIN: np.ndarray,
     X_VAL: np.ndarray,
     T_VAL: np.ndarray,
+    X_TEST: np.ndarray,
+    T_TEST: np.ndarray,
     decision_plot_path: str,
     losses_plot_path: str,
     classifier: Type[Classifier],
@@ -47,19 +49,17 @@ def test_classifier(
                     best_tol = tol
                     best_c = c
 
-    # best_accuracy is calculated after the training so that accuracy may be different from the final accuray
-    # in the best classifiers val_accuracies field
-    print(f"Best accuracy after training: {best_accuracy}, with parameters: {best_epochs=}, {best_learning_rate=}, {best_tol=}")
-    if best_c.val_losses.size > 0:
-        print(f"Loss function change for value set:           {best_c.val_losses[0]:.3f} -> {best_c.val_losses[best_c.val_losses.size - 1]:.3f}")
-        print(f"Accuracy change for value set while training: {best_c.val_accuracies[0]:.3f} -> {best_c.val_accuracies[best_c.val_accuracies.size - 1]:.3f}")
-    else:
-        print("Classifier did not improve")
 
-    # As far as I'm aware this will always be the same as best_epochs, so we don't even
-    # really need to track it, but at least it lets us extract it from outside this local
-    # function
-    print(f"Classifier trained for {best_c.trained_epochs} epochs\n")
+    test_set_accuracy = accuracy(best_c.predict(X_TEST), T_TEST)
+
+    # best_accuracy is calculated after the training so that accuracy may be different from the final accuracy
+    # in the best classifiers val_accuracies field
+    print(f"Best accuracy after training:                 {best_accuracy}, with parameters: {best_epochs=}, {best_learning_rate=}, {best_tol=}")
+    print(f"Final accuracy on test set:                   {test_set_accuracy}")
+    print(f"Loss function change for value set:           {best_c.val_losses[0]:.3f} -> {best_c.val_losses[best_c.val_losses.size - 1]:.3f}")
+    print(f"Accuracy change for value set while training: {best_c.val_accuracies[0]:.3f} -> {best_c.val_accuracies[best_c.val_accuracies.size - 1]:.3f}")
+    # This will most of the time just be the same as best_epochs
+    print(f"Number of epochs classifier trained for:      {best_c.trained_epochs}\n")
 
     plot_decision_regions(X_VAL, T_VAL, best_c, path=decision_plot_path)
 
@@ -95,6 +95,8 @@ def test_linear_classifier_without_scaling() -> None:
         T_BINARY_TRAIN,
         X_VAL,
         T_BINARY_VAL,
+        X_TEST,
+        T_BINARY_TEST,
         "assets/binary-linear-without-scaling.png",
         "assets/binary-linear-without-scaling-losses.png",
         BinaryLinearRegressionClassifier,
@@ -112,7 +114,7 @@ def test_linear_classifier_with_scaling() -> None:
     # function of the classifier we could further increase the accuracy on the
     # standard scaled data. Here i found that ~0.45 would be the optimal 
     # resulting in an accuracy of 0.79. Though this is definetly specific to
-    # this test data so i left it out from the definition of the classifier.
+    # this dataset so i left it out from the definition of the classifier.
 
     print("Testing linear classifier with standard scaling")
     test_classifier(
@@ -120,6 +122,8 @@ def test_linear_classifier_with_scaling() -> None:
         T_BINARY_TRAIN,
         standard_scaler(X_VAL),
         T_BINARY_VAL,
+        standard_scaler(X_TEST),
+        T_BINARY_TEST,
         "assets/binary-linear-standard-scaling.png",
         "assets/binary-linear-standard-scaling-losses.png",
         BinaryLinearRegressionClassifier,
@@ -131,6 +135,8 @@ def test_linear_classifier_with_scaling() -> None:
         T_BINARY_TRAIN,
         minmax_scaler(X_VAL),
         T_BINARY_VAL,
+        minmax_scaler(X_TEST),
+        T_BINARY_TEST,
         "assets/binary-linear-minmax-scaling.png",
         "assets/binary-linear-minmax-scaling-losses.png",
         BinaryLinearRegressionClassifier,
@@ -147,6 +153,8 @@ def test_logistic_classifier() -> None:
         T_BINARY_TRAIN,
         standard_scaler(X_VAL),
         T_BINARY_VAL,
+        standard_scaler(X_TEST),
+        T_BINARY_TEST,
         "assets/binary-logistic-standard-scaling.png",
         "assets/binary-logistic-standard-scaling-losses.png",
         BinaryLogisticRegressionClassifier,
@@ -167,6 +175,8 @@ def test_multi_logistic_classifier() -> None:
         T_MULTI_TRAIN,
         standard_scaler(X_VAL),
         T_MULTI_VAL,
+        minmax_scaler(X_TEST),
+        T_BINARY_TEST,
         "assets/multi-logistic-standard-scaling.png",
         "assets/multi-logistic-standard-scaling.png",
         MultiLogisticRegressionClassifier,
@@ -179,12 +189,16 @@ def test_binary_mlp_classifier() -> None:
     # parameters that were best for this call of `test_classifier` and then try those params
     # again 10 times and report the mean and standard deviation for that.
 
+    # Running this will result in a number overflow due to lack of regularization or
+    # scaling, regardless it will finish with mostly fine results.
     # print("Testing binary multi layer perceptron with no scaling")
     # test_classifier(
     #     X_TRAIN,
     #     T_BINARY_TRAIN,
     #     X_VAL,
     #     T_BINARY_VAL,
+    #     minmax_scaler(X_TEST),
+    #     T_BINARY_TEST,
     #     "assets/binary-mlp.png",
     #     "assets/binary-mlp-losses.png",
     #     BinaryMLPLinearRegressionClassifier,
@@ -194,25 +208,27 @@ def test_binary_mlp_classifier() -> None:
 
     scaled_x_train = standard_scaler(X_TRAIN)
     scaled_x_val = standard_scaler(X_VAL)
+    scaled_x_test = standard_scaler(X_VAL)
     best_params = test_classifier(
         scaled_x_train,
         T_BINARY_TRAIN,
         scaled_x_val,
         T_BINARY_VAL,
+        scaled_x_test,
+        T_BINARY_TEST,
         "assets/binary-mlp-standard-scaling.png",
         "assets/binary-mlp-standard-scaling-losses.png",
         BinaryMLPLinearRegressionClassifier,
     )
 
-    print("Getting standard deviation and mean of given parameters")
+    print("Getting mean and standard deviation of accuracy for given parameters")
 
     accuracies = np.array([])
-
     for _ in range(10):
         c = BinaryMLPLinearRegressionClassifier()
         c.fit(
             scaled_x_train,
-            T_BINARY_VAL, 
+            T_BINARY_TRAIN, 
             scaled_x_val, 
             T_BINARY_VAL, 
             best_params.learning_rate, 
@@ -222,14 +238,20 @@ def test_binary_mlp_classifier() -> None:
 
         accuracies = np.append(accuracies, accuracy(c.predict(scaled_x_val), T_BINARY_VAL))
 
-    print(f"Standard deviation {np.std(accuracies)}, mean {np.mean(accuracies)}")
+    # The standard deviation will likely be higher when testing classifiers with a lower number
+    # of epochs, in which case the good result is likely a result of rolling a good random seed.
+    # However if we keep the range of tested epochs at a decent size (100 above) we will most
+    # likely have a relatively low standard deviation and a mean close to the best result.
+    print(f"Standard deviation {(np.std(accuracies)):.3f}, mean {(np.mean(accuracies)):.3f}")
 
 
 def main() -> None:
-    # test_linear_classifier_without_scaling()
-    # test_linear_classifier_with_scaling()
-    # test_logistic_classifier()
-    # test_multi_logistic_classifier()
+    # Running all these can take quite a while (~6 minutes on my machine)
+
+    test_linear_classifier_without_scaling()
+    test_linear_classifier_with_scaling()
+    test_logistic_classifier()
+    test_multi_logistic_classifier()
     test_binary_mlp_classifier()
 
 
