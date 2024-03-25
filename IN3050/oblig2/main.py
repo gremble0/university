@@ -20,12 +20,12 @@ def test_classifier(
     best_epochs = None
     best_learning_rate = None
     best_tol = None
-    best_c = classifier()
+    best_c = classifier() # None?
 
     # Since we're brute forcing so many different combinations of parameters, this may take a while
     # however in practice we would only have to run this once per dataset so thats fine. We could also
     # add more guesses for possible values here if we wanted.
-    for epochs in range(100):
+    for epochs in range(1, 100):
         for learning_rate in [0.0001, 0.001, 0.01, 0.1, 0.15, 0.2, 0.25, 0.3, 0.35, 0.4, 0.45, 0.5]:
             for tol in [0.0001, 0.0005, 0.001, 0.01]:
                 c = classifier()
@@ -148,7 +148,9 @@ def test_multi_logistic_classifier() -> None:
     # Running this test takes a bit longer than the binary classifiers, because
     # we are running several binary classifiers sequentially. The optimal
     # parameters for this algorithm are 99 epochs with a learning rate of 0.5
-    # resulting in an accuracy of 0.83
+    # resulting in an accuracy of 0.82. If we remove the tracking of losses
+    # and accuracies while training and just train the binary classifiers
+    # fully instead of 1 epoch at a time we can also reduce the runtime by ~4x
 
     print("Testing multi class logistic classifier with standard scaling")
     test_classifier(

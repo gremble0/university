@@ -1,5 +1,5 @@
 from abc import ABC, abstractmethod
-from typing import List, Optional
+from typing import Optional
 import numpy as np
 
 
@@ -45,6 +45,7 @@ class Classifier(ABC):
         self.train_accuracies = np.array([], dtype=float)
         self.val_accuracies = np.array([], dtype=float)
         self.trained_epochs = 0
+        self.weights = None
 
     @abstractmethod
     def predict(self, X: np.ndarray, threshold: Optional[float] = None) -> np.ndarray: ...
@@ -81,7 +82,8 @@ class BinaryLinearRegressionClassifier(Classifier):
 
         n_datapoints, n_features = X_TRAIN.shape
 
-        self.weights = np.zeros(n_features)
+        if self.weights is None:
+            self.weights = np.zeros(n_features)
 
         for _ in range(epochs):
             train_predictions = X_TRAIN @ self.weights
@@ -131,8 +133,9 @@ class BinaryLogisticRegressionClassifier(Classifier):
             X_VAL = add_bias(X_VAL, self.bias)
 
         n_datapoints, n_features = X_TRAIN.shape
-        
-        self.weights = np.zeros(n_features)
+
+        if self.weights is None:
+            self.weights = np.zeros(n_features)
         
         for _ in range(epochs):
             train_predictions = self._forward(X_TRAIN)
@@ -169,7 +172,7 @@ class BinaryLogisticRegressionClassifier(Classifier):
         return 1 / (1 + np.exp(-X @ self.weights))
 
 
-class MultiLogisticRegressionClassifier(BinaryLogisticRegressionClassifier):
+class MultiLogisticRegressionClassifier(Classifier):
     def fit(
         self,
         X_TRAIN: np.ndarray,
@@ -181,57 +184,31 @@ class MultiLogisticRegressionClassifier(BinaryLogisticRegressionClassifier):
         tol: float = 0.001,
         n_epochs_no_update: int = 5,
     ) -> None:
-        self.classifiers: List[BinaryLogisticRegressionClassifier] = []
         unique_classes = np.unique(T_TRAIN)
+        self.classifiers = [BinaryLogisticRegressionClassifier(self.bias) for _ in unique_classes]
 
-        for class_index in unique_classes:
-            T_TRAIN_BINARY = (T_TRAIN == class_index).astype(int)
-            T_VAL_BINARY = (T_VAL == class_index).astype(int) if T_VAL is not None else None
+        # Precompute the binary target arrays for training and validation sets
+        T_TRAIN_BINARIES = [(T_TRAIN == class_index).astype(int) for class_index in unique_classes]
+        T_VAL_BINARIES = [(T_VAL == class_index).astype(int) for class_index in unique_classes] if T_VAL is not None else [None] * len(unique_classes)
 
-            classifier = BinaryLogisticRegressionClassifier(self.bias)
-            classifier.fit(X_TRAIN, T_TRAIN_BINARY, X_VAL, T_VAL_BINARY, learning_rate, epochs, tol, n_epochs_no_update)
+        for _ in range(epochs):
+            for classifier, T_TRAIN_BINARY, T_VAL_BINARY in zip(self.classifiers, T_TRAIN_BINARIES, T_VAL_BINARIES):
+                # Here we only train the classifiers one epoch at a time which makes it significantly slower
+                # but gives us more debug information in terms of logging losses and accuracies while training
+                classifier.fit(X_TRAIN, T_TRAIN_BINARY, X_VAL, T_VAL_BINARY, learning_rate, 1, tol, n_epochs_no_update)
 
-            self.classifiers.append(classifier)
+            # Make predictions using the current state of classifiers and calculate losses and accuracies
+            train_predictions = self.predict(X_TRAIN)
+            self.train_losses = np.append(self.train_losses, mean_squared_error_loss(train_predictions, T_TRAIN))
+            self.train_accuracies = np.append(self.train_accuracies, accuracy(train_predictions, T_TRAIN))
 
-        # calculate losses and accuracies as the averages across all classifiers
-        self.train_losses = self.classifiers[0].train_losses
-        self.val_losses = self.classifiers[0].val_losses
-        self.train_accuracies = self.classifiers[0].train_accuracies
-        self.val_accuracies = self.classifiers[0].val_accuracies
+            if X_VAL is not None and T_VAL is not None:
+                val_predictions = self.predict(X_VAL)
+                self.val_losses = np.append(self.val_losses, mean_squared_error_loss(val_predictions, T_VAL))
+                self.val_accuracies = np.append(self.val_accuracies, accuracy(val_predictions, T_VAL))
 
-        for i in range(2, len(self.classifiers)):
-            if len(self.classifiers[i].train_losses) > len(self.train_losses):
-                self.train_losses.resize(self.classifiers[i].train_losses.shape)
-            elif len(self.classifiers[i].train_losses) < len(self.train_losses):
-                self.classifiers[i].train_losses.resize(self.train_losses.shape)
-
-            if len(self.classifiers[i].val_losses) > len(self.val_losses):
-                self.val_losses.resize(self.classifiers[i].val_losses.shape)
-            elif len(self.classifiers[i].val_losses) < len(self.val_losses):
-                self.classifiers[i].val_losses.resize(self.val_losses.shape)
-
-            if len(self.classifiers[i].train_accuracies) > len(self.train_accuracies):
-                self.train_accuracies.resize(self.classifiers[i].train_accuracies.shape)
-            elif len(self.classifiers[i].train_accuracies) < len(self.train_accuracies):
-                self.classifiers[i].train_accuracies.resize(self.train_accuracies.shape)
-
-            if len(self.classifiers[i].val_accuracies) > len(self.val_accuracies):
-                self.val_accuracies.resize(self.classifiers[i].val_accuracies.shape)
-            elif len(self.classifiers[i].val_accuracies) < len(self.val_accuracies):
-                self.classifiers[i].val_accuracies.resize(self.val_accuracies.shape)
-
-            self.train_accuracies += self.classifiers[i].train_accuracies
-            self.val_accuracies += self.classifiers[i].val_accuracies
-            self.train_accuracies += self.classifiers[i].train_accuracies
-            self.val_accuracies += self.classifiers[i].val_accuracies
-
-        self.train_losses = np.divide(self.train_losses, len(unique_classes))
-        self.val_losses = np.divide(self.val_losses, len(unique_classes))
-        self.train_accuracies = np.divide(self.train_accuracies, len(unique_classes))
-        self.val_accuracies = np.divide(self.val_accuracies, len(unique_classes))
-
-        # calculate this classifier's trained epochs as the sum of all the binary classifiers trained epochs
-        self.trained_epochs = np.sum(np.array([classifier.trained_epochs for classifier in self.classifiers]))
+        # Sum trained epochs across all classifiers
+        self.trained_epochs = np.sum([classifier.trained_epochs for classifier in self.classifiers])
 
     def predict(self, X: np.ndarray, threshold: Optional[float] = None) -> np.ndarray:
         if threshold is not None:
