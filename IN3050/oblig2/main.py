@@ -24,7 +24,6 @@ def test_classifier(
     decision_plot_path: str,
     losses_plot_path: str,
     classifier: Type[Classifier],
-    is_binary: bool,
 ) -> ClassifierParameters:
     best_accuracy = 0.0
     best_epochs = None
@@ -64,8 +63,8 @@ def test_classifier(
     # This will most of the time just be the same as best_epochs
     print(f"Number of trained epochs:           {best_c.trained_epochs}")
 
-
-    if is_binary:
+    # If its a binary classification problem we can calculate precision and recall
+    if len(np.unique(T_TEST)) == 2:
         true_positives = np.sum((test_prediction == 1) & (T_TEST == 1))
         if true_positives == 0:
             print("Algorithm has no true guesses, cannot calculate precision and recall")
@@ -116,7 +115,6 @@ def test_linear_classifier_without_scaling() -> None:
         "assets/binary-linear-without-scaling.png",
         "assets/binary-linear-without-scaling-losses.png",
         BinaryLinearRegressionClassifier,
-        True,
     )
 
 
@@ -144,7 +142,6 @@ def test_linear_classifier_with_scaling() -> None:
         "assets/binary-linear-standard-scaling.png",
         "assets/binary-linear-standard-scaling-losses.png",
         BinaryLinearRegressionClassifier,
-        True,
     )
 
     print("Testing linear classifier with minmax scaler")
@@ -158,7 +155,6 @@ def test_linear_classifier_with_scaling() -> None:
         "assets/binary-linear-minmax-scaling.png",
         "assets/binary-linear-minmax-scaling-losses.png",
         BinaryLinearRegressionClassifier,
-        True,
     )
 
 
@@ -177,7 +173,6 @@ def test_logistic_classifier() -> None:
         "assets/binary-logistic-standard-scaling.png",
         "assets/binary-logistic-standard-scaling-losses.png",
         BinaryLogisticRegressionClassifier,
-        True,
     )
 
 
@@ -200,7 +195,6 @@ def test_multi_logistic_classifier() -> None:
         "assets/multi-logistic-standard-scaling.png",
         "assets/multi-logistic-standard-scaling.png",
         MultiLogisticRegressionClassifier,
-        False,
     )
 
 
@@ -210,20 +204,21 @@ def test_binary_mlp_classifier() -> None:
     # parameters that were best for this call of `test_classifier` and then try those params
     # again 10 times and report the mean and standard deviation for that.
 
-    # Running this will result in a number overflow due to lack of regularization or
-    # scaling, regardless it will finish with mostly fine results.
-    # print("Testing binary multi layer perceptron with no scaling")
-    # test_classifier(
-    #     X_TRAIN,
-    #     T_BINARY_TRAIN,
-    #     X_VAL,
-    #     T_BINARY_VAL,
-    #     minmax_scaler(X_TEST),
-    #     T_BINARY_TEST,
-    #     "assets/binary-mlp.png",
-    #     "assets/binary-mlp-losses.png",
-    #     BinaryMLPLinearRegressionClassifier,
-    # )
+    # Running this will result in a number overflow for larger number of epochs
+    # due to lack of regularization or scaling, regardless it will finish with
+    # mostly fine results, though expectedly slightly worse than with scaled data
+    print("Testing binary multi layer perceptron with no scaling")
+    test_classifier(
+        X_TRAIN,
+        T_BINARY_TRAIN,
+        X_VAL,
+        T_BINARY_VAL,
+        minmax_scaler(X_TEST),
+        T_BINARY_TEST,
+        "assets/binary-mlp.png",
+        "assets/binary-mlp-losses.png",
+        BinaryMLPLinearRegressionClassifier,
+    )
 
     print("Testing binary multi layer perceptron with standard scaling")
 
@@ -240,7 +235,6 @@ def test_binary_mlp_classifier() -> None:
         "assets/binary-mlp-standard-scaling.png",
         "assets/binary-mlp-standard-scaling-losses.png",
         BinaryMLPLinearRegressionClassifier,
-        True,
     )
 
     print("Getting mean and standard deviation of accuracy for given parameters")
