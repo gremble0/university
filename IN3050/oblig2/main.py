@@ -3,8 +3,27 @@ from typing import Type
 import numpy as np
 
 from scaling import minmax_scaler, standard_scaler
-from common import T_BINARY_TEST, T_BINARY_TRAIN, T_BINARY_VAL, T_MULTI_TEST, T_MULTI_TRAIN, T_MULTI_VAL, X_TEST, X_TRAIN, X_VAL, plot_decision_regions, plot_losses
-from classifiers import Classifier, BinaryLinearRegressionClassifier, BinaryLogisticRegressionClassifier, BinaryMLPLinearRegressionClassifier, MultiLogisticRegressionClassifier, accuracy
+from common import (
+    T_BINARY_TEST,
+    T_BINARY_TRAIN,
+    T_BINARY_VAL,
+    T_MULTI_TEST,
+    T_MULTI_TRAIN,
+    T_MULTI_VAL,
+    X_TEST,
+    X_TRAIN,
+    X_VAL,
+    plot_decision_regions,
+    plot_losses
+)
+from classifiers import (
+    Classifier,
+    BinaryLinearRegressionClassifier,
+    BinaryLogisticRegressionClassifier,
+    BinaryMLPLinearRegressionClassifier,
+    MultiLogisticRegressionClassifier,
+    accuracy
+)
 
 
 @dataclass
@@ -29,12 +48,12 @@ def test_classifier(
     best_epochs = None
     best_learning_rate = None
     best_tol = None
-    best_c = classifier() # None?
+    best_c = classifier()
 
     # Since we're brute forcing so many different combinations of parameters, this may take a while
     # however in practice we would only have to run this once per dataset so thats fine. We could also
     # add more guesses for possible values here if we wanted.
-    for epochs in range(1, 20):
+    for epochs in range(1, 100):
         for learning_rate in [0.0001, 0.001, 0.01, 0.1, 0.15, 0.2, 0.25, 0.3, 0.35, 0.4, 0.45, 0.5]:
             for tol in [0.0001, 0.0005, 0.001, 0.01]:
                 c = classifier()
@@ -86,8 +105,8 @@ def test_classifier(
     # monotone there will always be a combination with fewer epochs that will stop
     # before the graph changes direction. There could theoretically be a combination
     # where the graph briefly changed in the wrong direction, but then later
-    # changes back, but all these combinations would be eliminated by the early
-    # stopping implemented in task 1.1e.
+    # changes back (graph overcomes local optima), but all these combinations would
+    # be eliminated by the early stopping implemented in task 1.1e.
     plot_losses(best_c.train_losses, best_c.val_losses, path=losses_plot_path)
 
     return ClassifierParameters(best_learning_rate or 0, best_epochs or 0, best_tol or 0)
@@ -102,7 +121,10 @@ def test_linear_classifier_without_scaling() -> None:
     # rate of 0.01 and 194 epochs we can get an accuracy of 0.61.
     # (this is compared to the default value of 0.604). I ended up reverting
     # back to 100 epochs however as 200 took too long and would lead to
-    # number overflow errors.
+    # number overflow errors. I later also realised even 100 epochs caused
+    # over specialization to the train/validation sets, so 200 would be no good.
+    # These results were found by brute forcing different combinations in the 
+    # `test_classifier` function
 
     print("Testing linear classifier without scaling")
     test_classifier(
@@ -123,7 +145,8 @@ def test_linear_classifier_with_scaling() -> None:
     # scaler are 9 epochs with a learning rate of 0.3 resulting in an accuracy
     # of 0.762, and for the minmax scaler its 66 epochs and a learning rate of
     # 0.5 resulting in an accuracy of 0.708. Both are significant improvements
-    # compared to the unscaled data.
+    # compared to the unscaled data. These results were found by brute forcing
+    # different combinations in the `test_classifier` function
     #
     # NOTE: I also noticed that by modifying the threshold of the predict
     # function of the classifier we could further increase the accuracy on the
@@ -160,7 +183,7 @@ def test_linear_classifier_with_scaling() -> None:
 
 def test_logistic_classifier() -> None:
     # For the logistic regression classifier we find the optimal paramters to be
-    # 104 epochs with a learning rate of 0.5 resulting in an accuracy of 0.766
+    # 104 epochs with a learning rate of 0.5 resulting in an accuracy of 0.766.
 
     print("Testing binary logistic classifier with standard scaling")
     test_classifier(
@@ -193,7 +216,7 @@ def test_multi_logistic_classifier() -> None:
         standard_scaler(X_TEST),
         T_MULTI_TEST,
         "assets/multi-logistic-standard-scaling.png",
-        "assets/multi-logistic-standard-scaling.png",
+        "assets/multi-logistic-standard-scaling-losses.png",
         MultiLogisticRegressionClassifier,
     )
 
@@ -204,21 +227,21 @@ def test_binary_mlp_classifier() -> None:
     # parameters that were best for this call of `test_classifier` and then try those params
     # again 10 times and report the mean and standard deviation for that.
 
-    # Running this will result in a number overflow for larger number of epochs
-    # due to lack of regularization or scaling, regardless it will finish with
-    # mostly fine results, though expectedly slightly worse than with scaled data
-    print("Testing binary multi layer perceptron with no scaling")
-    test_classifier(
-        X_TRAIN,
-        T_BINARY_TRAIN,
-        X_VAL,
-        T_BINARY_VAL,
-        minmax_scaler(X_TEST),
-        T_BINARY_TEST,
-        "assets/binary-mlp.png",
-        "assets/binary-mlp-losses.png",
-        BinaryMLPLinearRegressionClassifier,
-    )
+    # Running the MLP without scaling or regularization will result in a number overflow for
+    # larger values of epochs, regardless it will finish with mostly fine results, though
+    # expectedly slightly worse than with scaled data
+    # print("Testing binary multi layer perceptron with no scaling")
+    # test_classifier(
+    #     X_TRAIN,
+    #     T_BINARY_TRAIN,
+    #     X_VAL,
+    #     T_BINARY_VAL,
+    #     minmax_scaler(X_TEST),
+    #     T_BINARY_TEST,
+    #     "assets/binary-mlp.png",
+    #     "assets/binary-mlp-losses.png",
+    #     BinaryMLPLinearRegressionClassifier,
+    # )
 
     print("Testing binary multi layer perceptron with standard scaling")
 
