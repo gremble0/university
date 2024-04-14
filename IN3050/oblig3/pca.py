@@ -1,13 +1,20 @@
+from typing import Tuple
 import numpy as np
-#import matplotlib.pyplot as plt
-
-#import syntheticdata
 
 
-def center_data(A: np.ndarray) -> np.ndarray:
-    return A - A.mean(axis=0)
+def center_data(X: np.ndarray) -> np.ndarray:
+    return X - X.mean(axis=0)
 
 
-def compute_covariance_matrix(A: np.ndarray) -> np.ndarray:
-    centered = center_data(A)
-    return A
+def compute_covariance_matrix(X: np.ndarray) -> np.ndarray:
+    centered = center_data(X)
+    return (centered.T @ centered) / (X.shape[0] - 1)
+
+
+def compute_eigenvalue_eigenvectors(X: np.ndarray) -> Tuple[np.ndarray, np.ndarray]:
+    eig = np.linalg.eig(X)
+    return eig.eigenvalues.real, eig.eigenvectors.real
+
+
+def sort_eigenvalue_eigenvectors(eigval: np.ndarray, eigvec: np.ndarray) -> Tuple[np.ndarray, np.ndarray]:
+    return np.sort(eigval)[::-1], np.sort(eigvec)[::-1]
