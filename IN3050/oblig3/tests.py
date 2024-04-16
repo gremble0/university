@@ -22,8 +22,6 @@ def test_compute_eigenvalue_eigenvectors() -> None:
     expected_eigvec = np.array([[1., 0., 0.], [0., 1., 0.], [0., 0., 1.]])
 
     eigval, eigvec = pca.compute_eigenvalue_eigenvectors(testcase)
-    print(eigval, "\n", eigvec)
-    print(eigval[0], eigvec[0])
 
     np.testing.assert_array_almost_equal(eigval, expected_eigval)
     np.testing.assert_array_almost_equal(eigvec, expected_eigvec)
