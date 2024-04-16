@@ -30,6 +30,6 @@ def pca(X: np.ndarray, n_learned_features: int) -> Tuple[np.ndarray, np.ndarray]
     eig = compute_eigenvalue_eigenvectors(cov)
     eig_sorted = sort_eigenvalue_eigenvectors(eig)
 
-    pca_eigvecs = eig_sorted.eigenvectors[:, :n_learned_features]
+    pca_eigvec = eig_sorted.eigenvectors[:, :n_learned_features]
 
-    return pca_eigvecs, centered @ pca_eigvecs
+    return pca_eigvec, centered @ pca_eigvec

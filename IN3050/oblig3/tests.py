@@ -42,14 +42,18 @@ def test_sort_eigenvalue_eigenvectors() -> None:
 
 def test_pca() -> None:
     testcase = np.array([[22., 11., 5.5], [10., 5., 2.5], [34., 17., 8.5]])
-    x, y = pca.pca(testcase, 2)
+    eigvec, P = pca.pca(testcase, 2)
+
     answer1_file = open("assets/PCAanswer1.pkl", "rb")
     answer2_file = open("assets/PCAanswer2.pkl", "rb")
+
     answer1 = pickle.load(answer1_file)
     answer2 = pickle.load(answer2_file)
-    test_arr_x = np.sum(np.abs(np.abs(x) - np.abs(answer1)), axis=0)
+
+    test_arr_x = np.sum(np.abs(np.abs(eigvec) - np.abs(answer1)), axis=0)
+    test_arr_y = np.sum(np.abs(np.abs(P) - np.abs(answer2)))
+
     np.testing.assert_array_almost_equal(test_arr_x, np.zeros(2))
-    test_arr_y = np.sum(np.abs(np.abs(y) - np.abs(answer2)))
     np.testing.assert_almost_equal(test_arr_y, 0)
 
 
@@ -59,6 +63,7 @@ def main() -> None:
     test_compute_eigenvalue_eigenvectors()
     test_sort_eigenvalue_eigenvectors()
     test_pca()
+
 
 if __name__ == "__main__":
     main()
