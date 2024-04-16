@@ -1,5 +1,6 @@
 import numpy as np
 import pca
+import pickle
 
 
 def test_center_data() -> None:
@@ -11,7 +12,7 @@ def test_center_data() -> None:
 
 def test_compute_covariance_matrix() -> None:
     testcase = np.array([[22., 11., 5.5], [10., 5., 2.5], [34., 17., 8.5], [28., 14., 7]])
-    expected = np.cov(np.transpose(testcase))
+    expected = np.cov(testcase.T)
 
     np.testing.assert_array_almost_equal(pca.compute_covariance_matrix(testcase), expected)
 
@@ -32,11 +33,24 @@ def test_sort_eigenvalue_eigenvectors() -> None:
     expected_sorted_eigval = np.array([5., 3., 2.])
     expected_sorted_eigvec = np.array([[0., 0., 1.], [1., 0., 0.], [0., 1., 0.]])
 
-    eigval, eigvec = pca.compute_eigenvalue_eigenvectors(testcase)
-    sorted_eigval, sorted_eigvec = pca.sort_eigenvalue_eigenvectors(eigval, eigvec)
+    eig = pca.compute_eigenvalue_eigenvectors(testcase)
+    sorted_eigval, sorted_eigvec = pca.sort_eigenvalue_eigenvectors(eig)
 
     np.testing.assert_array_almost_equal(sorted_eigval, expected_sorted_eigval)
     np.testing.assert_array_almost_equal(sorted_eigvec, expected_sorted_eigvec)
+
+
+def test_pca() -> None:
+    testcase = np.array([[22., 11., 5.5], [10., 5., 2.5], [34., 17., 8.5]])
+    x, y = pca.pca(testcase, 2)
+    answer1_file = open("assets/PCAanswer1.pkl", "rb")
+    answer2_file = open("assets/PCAanswer2.pkl", "rb")
+    answer1 = pickle.load(answer1_file)
+    answer2 = pickle.load(answer2_file)
+    test_arr_x = np.sum(np.abs(np.abs(x) - np.abs(answer1)), axis=0)
+    np.testing.assert_array_almost_equal(test_arr_x, np.zeros(2))
+    test_arr_y = np.sum(np.abs(np.abs(y) - np.abs(answer2)))
+    np.testing.assert_almost_equal(test_arr_y, 0)
 
 
 def main() -> None:
@@ -44,6 +58,7 @@ def main() -> None:
     test_compute_covariance_matrix()
     test_compute_eigenvalue_eigenvectors()
     test_sort_eigenvalue_eigenvectors()
+    test_pca()
 
 if __name__ == "__main__":
     main()

@@ -1,3 +1,4 @@
+from typing import Tuple
 from numpy.linalg.linalg import EigResult
 import numpy as np
 
@@ -16,6 +17,19 @@ def compute_eigenvalue_eigenvectors(X: np.ndarray) -> EigResult:
     return EigResult(eig.eigenvalues.real, eig.eigenvectors.real)
 
 
-def sort_eigenvalue_eigenvectors(eigval: np.ndarray, eigvec: np.ndarray) -> EigResult:
-    sorted_indicies = np.argsort(eigval)[::-1]
-    return EigResult(eigval[sorted_indicies], eigvec[:, sorted_indicies])
+# Slightly different signature than from oblig, but effectively the same
+def sort_eigenvalue_eigenvectors(eig: EigResult) -> EigResult:
+    sorted_indicies = np.argsort(eig.eigenvalues)[::-1]
+    return EigResult(eig.eigenvalues[sorted_indicies], eig.eigenvectors[:, sorted_indicies])
+
+
+def pca(X: np.ndarray, n_learned_features: int) -> Tuple[np.ndarray, np.ndarray]:
+    centered = center_data(X)
+    cov = compute_covariance_matrix(centered)
+
+    eig = compute_eigenvalue_eigenvectors(cov)
+    eig_sorted = sort_eigenvalue_eigenvectors(eig)
+
+    pca_eigvecs = eig_sorted.eigenvectors[:, :n_learned_features]
+
+    return pca_eigvecs, centered @ pca_eigvecs
