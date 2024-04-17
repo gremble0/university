@@ -4,13 +4,13 @@ class ConvexHullSeq extends ConvexHull {
   }
 
   private void visitCoord(int coord) {
-    int argMinX = argMin(x);
-    int argMaxX = argMax(x);
-    visited.add(argMinX);
-    visited.add(argMaxX);
-
-    visited.add(furthestNegativeBetween(argMinX, argMaxX));
-    visited.add(furthestPositiveBetween(argMinX, argMaxX));
+    // int argMinX = argMin(x);
+    // int argMaxX = argMax(x);
+    // visited.add(argMinX);
+    // visited.add(argMaxX);
+    //
+    // visited.add(furthestBetweenLineInDirection(argMinX, argMaxX, true));
+    // visited.add(furthestBetweenLineInDirection(argMinX, argMaxX, false));
   }
 
   public IntList makeConvexHull() {
@@ -19,8 +19,8 @@ class ConvexHullSeq extends ConvexHull {
     visited.add(argMinX);
     visited.add(argMaxX);
 
-    visited.add(furthestNegativeBetween(argMinX, argMaxX));
-    // visited.add(furthestPositiveBetween(argMinX, argMaxX));
+    visited.add(furthestBetweenLineInDirection(argMinX, argMaxX, true));
+    visited.add(furthestBetweenLineInDirection(argMinX, argMaxX, false));
 
     return visited;
   }

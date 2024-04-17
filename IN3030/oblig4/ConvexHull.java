@@ -32,67 +32,84 @@ abstract class ConvexHull {
     return max;
   }
 
-  protected int furthestNegativeBetween(int coord1, int coord2) {
-    int xBetween = (x[coord2] + x[coord1]) / 2;
-    int yBetween = (y[coord2] + y[coord1]) / 2;
+  // These geometry functions are mostly just copy pasted and probably
+  // unnecessarily overcomplicated, but they work so I have not looked into better
+  // ways of doing this.
+  protected boolean pointIsAboveLine(int lineStart, int lineEnd, int point) {
+    // int x1 = x[lineStart];
+    // int x2 = x[lineEnd];
+    // int y1 = y[lineStart];
+    // int y2 = y[lineEnd];
+    // int xP = x[point];
+    // int yP = y[point];
 
-    int furthest = 0;
-    int furthestI = 0;
-    for (int i = 0; i < n; i++) {
-      // Euclidian distance
-      int distance = ((x[xBetween] - x[i]) * (x[xBetween] - x[i]))
-          + ((y[yBetween] - y[i]) * (y[yBetween] - y[i]));
+    double m = (double) (y[lineEnd] - y[lineStart]) / (x[lineEnd] - x[lineStart]);
+    double b = y[lineStart] - m * x[lineStart];
+    double yLine = m * x[point] + b;
 
-      if (distance > furthest) { // >= ?
-        furthest = distance;
-        furthestI = i;
-      }
-    }
-
-    return furthestI;
+    return y[point] > yLine;
   }
 
-  protected int furthestPositiveBetween(int coord1, int coord2) {
-    int xBetween = (x[coord2] + x[coord1]) / 2;
-    int yBetween = (y[coord2] + y[coord1]) / 2;
+  public double distanceFromLine(int lineStart, int lineEnd, int point) {
+    int x1 = x[lineStart];
+    int x2 = x[lineEnd];
+    int y1 = y[lineStart];
+    int y2 = y[lineEnd];
+    int xP = x[point];
+    int yP = y[point];
 
-    double furthest = 0;
-    int furthestI = 0;
-    for (int i = 0; i < n; i++) {
-      // Euclidian distance
-      double distance = Math.pow(x[xBetween] - x[i], 2) + Math.pow(y[yBetween] - y[i], 2);
+    int numerator = Math.abs((y2 - y1) * xP - (x2 - x1) * yP + x2 * y1 - y2 * x1);
+    double denominator = Math.sqrt((y2 - y1) * (y2 - y1) + (x2 - x1) * (x2 - x1));
 
-      if (distance > furthest) { // >= ?
-        furthest = distance;
-        furthestI = i;
-      }
-    }
-
-    return furthestI;
+    return numerator / denominator;
   }
 
-  // protected Coordinate furthestPositiveFrom(Coordinate c1, Coordinate c2) {
-  // Coordinate betweenC1C2 = new Coordinate(c2.x - c1.x, c2.y - c1.y);
-  //
+  // protected int furthestNegativeBetween(int coord1, int coord2) {
   // double furthest = 0;
   // int furthestI = 0;
   // for (int i = 0; i < n; i++) {
-  // Coordinate iCoordinate = new Coordinate(x[i], y[i]);
+  // if (!pointIsAboveLine(coord1, coord2, i) || visited.contains(i))
+  // continue;
   //
-  // // Euclidian distance
-  // double distance = Math.pow(betweenC1C2.x - iCoordinate.x, 2) +
-  // Math.pow(betweenC1C2.y - iCoordinate.y, 2);
+  // double distance = distanceFromLine(coord1, coord2, i);
   //
-  // if (distance < furthest) {
+  // if (distance > furthest) { // >= ?
   // furthest = distance;
   // furthestI = i;
   // }
   // }
   //
-  // visited.add(furthestI);
-  //
-  // return new Coordinate(x[furthestI], y[furthestI]);
+  // return furthestI;
   // }
+
+  /**
+   * Get the index into `x` and y of the point furthest away from the line drawn
+   * between two points. Get the furthest above if `above` is true and furthest
+   * below if `above` is false.
+   *
+   * @param coord1 index into `x` and y of the first point
+   * @param coord2 index into `x` and y of the second point
+   * @param above  whether to get the furthest point above or below the line
+   * @return index into `x` and y
+   */
+  protected int furthestBetweenLineInDirection(int coord1, int coord2, boolean above) {
+    double furthest = 0;
+    int furthestI = 0;
+    for (int i = 0; i < n; i++) {
+      boolean isAbove = pointIsAboveLine(coord1, coord2, i);
+      if (above ? isAbove : !isAbove || visited.contains(i))
+        continue;
+
+      double distance = distanceFromLine(coord1, coord2, i);
+
+      if (distance > furthest) { // >= ?
+        furthest = distance;
+        furthestI = i;
+      }
+    }
+
+    return furthestI;
+  }
 
   abstract public IntList makeConvexHull();
 }
