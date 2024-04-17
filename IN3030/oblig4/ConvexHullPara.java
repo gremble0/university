@@ -3,7 +3,7 @@ class ConvexHullPara extends ConvexHull {
     super(n, seed);
   }
 
-  public int[] makeConvexHull() {
-    return x;
+  public IntList makeConvexHull() {
+    return visited;
   }
 }

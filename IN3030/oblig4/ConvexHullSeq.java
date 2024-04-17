@@ -1,17 +1,28 @@
-import java.util.Arrays;
-
 class ConvexHullSeq extends ConvexHull {
   ConvexHullSeq(int n, int seed) {
     super(n, seed);
   }
 
-  public int[] makeConvexHull() {
-    System.out.println(Arrays.toString(x));
-    System.out.println(Arrays.toString(y));
+  private void visitCoord(int coord) {
+    int argMinX = argMin(x);
+    int argMaxX = argMax(x);
+    visited.add(argMinX);
+    visited.add(argMaxX);
 
-    System.out.println(argMax(x));
-    System.out.println(argMin(x));
-    return x;
+    visited.add(furthestNegativeBetween(argMinX, argMaxX));
+    visited.add(furthestPositiveBetween(argMinX, argMaxX));
+  }
+
+  public IntList makeConvexHull() {
+    int argMinX = argMin(x);
+    int argMaxX = argMax(x);
+    visited.add(argMinX);
+    visited.add(argMaxX);
+
+    visited.add(furthestNegativeBetween(argMinX, argMaxX));
+    // visited.add(furthestPositiveBetween(argMinX, argMaxX));
+
+    return visited;
   }
 
   public static void main(String[] args) {
@@ -28,6 +39,10 @@ class ConvexHullSeq extends ConvexHull {
     }
 
     ConvexHullSeq chs = new ConvexHullSeq(n, seed);
-    chs.makeConvexHull();
+    IntList hull = chs.makeConvexHull();
+    hull.print();
+
+    Oblig4Precode precode = new Oblig4Precode(chs, hull);
+    precode.drawGraph();
   }
 }
