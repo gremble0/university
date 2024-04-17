@@ -1,4 +1,9 @@
 class ConvexHullPara extends ConvexHull {
-  ConvexHullPara() {
+  ConvexHullPara(int n, int seed) {
+    super(n, seed);
+  }
+
+  public int[] makeConvexHull() {
+    return x;
   }
 }
