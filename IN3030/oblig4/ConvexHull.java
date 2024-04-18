@@ -64,33 +64,16 @@ abstract class ConvexHull {
     return numerator / denominator;
   }
 
-  // protected int furthestNegativeBetween(int coord1, int coord2) {
-  // double furthest = 0;
-  // int furthestI = 0;
-  // for (int i = 0; i < n; i++) {
-  // if (!pointIsAboveLine(coord1, coord2, i) || visited.contains(i))
-  // continue;
-  //
-  // double distance = distanceFromLine(coord1, coord2, i);
-  //
-  // if (distance > furthest) { // >= ?
-  // furthest = distance;
-  // furthestI = i;
-  // }
-  // }
-  //
-  // return furthestI;
-  // }
-
   /**
-   * Get the index into `x` and y of the point furthest away from the line drawn
+   * Get the index into `x` and 'y' of the point furthest awa'y' from the line
+   * drawn
    * between two points. Get the furthest above if `above` is true and furthest
    * below if `above` is false.
    *
-   * @param coord1 index into `x` and y of the first point
-   * @param coord2 index into `x` and y of the second point
+   * @param coord1 index into `x` and 'y' of the first point
+   * @param coord2 index into `x` and 'y' of the second point
    * @param above  whether to get the furthest point above or below the line
-   * @return index into `x` and y
+   * @return index into `x` and 'y'
    */
   protected int furthestBetweenLineInDirection(int coord1, int coord2, boolean above) {
     double furthest = 0;
