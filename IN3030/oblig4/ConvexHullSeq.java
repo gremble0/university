@@ -4,17 +4,20 @@ class ConvexHullSeq extends ConvexHull {
   }
 
   private void visitLine(int coord1, int coord2) {
-    int furthestAbove = furthestBetweenLineInDirection(coord1, coord2, true);
+    // TODO above param
+    int furthestAbove = furthestAboveLine(coord1, coord2);
     if (!visited.contains(furthestAbove)) {
       visited.add(furthestAbove);
       visitLine(coord1, furthestAbove);
     }
 
-    int furthestBelow = furthestBetweenLineInDirection(coord1, coord2, false);
-    if (!visited.contains(furthestBelow)) {
-      visited.add(furthestBelow);
-      visitLine(furthestBelow, coord2);
-    }
+    return;
+
+    // int furthestBelow = furthestBetweenLineInDirection(coord1, coord2, false);
+    // if (!visited.contains(furthestBelow)) {
+    // visited.add(furthestBelow);
+    // visitLine(furthestBelow, coord2);
+    // }
   }
 
   public IntList makeConvexHull() {

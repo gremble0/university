@@ -3,6 +3,7 @@ import numpy as np
 import pca
 import syntheticdata
 
+
 def plot_pca() -> None:
     X = syntheticdata.get_synthetic_data1()
     plt.scatter(X[:, 0], X[:, 1])
