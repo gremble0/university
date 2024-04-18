@@ -6,15 +6,13 @@ class ConvexHullSeq extends ConvexHull {
   private void visitLine(int coord1, int coord2) {
     // TODO above param
     int furthestAbove = furthestAboveLine(coord1, coord2);
-    if (!visited.contains(furthestAbove)) {
+    if (furthestAbove != -1 && !visited.contains(furthestAbove)) {
       visited.add(furthestAbove);
       visitLine(coord1, furthestAbove);
     }
 
-    return;
-
-    // int furthestBelow = furthestBetweenLineInDirection(coord1, coord2, false);
-    // if (!visited.contains(furthestBelow)) {
+    // int furthestBelow = furthestBelowLine(coord1, coord2);
+    // if (furthestBelow != -1 && !visited.contains(furthestBelow)) {
     // visited.add(furthestBelow);
     // visitLine(furthestBelow, coord2);
     // }
@@ -27,6 +25,9 @@ class ConvexHullSeq extends ConvexHull {
     visited.add(argMaxX);
 
     visitLine(argMaxX, argMinX);
+
+    // System.out.println("ddd: " + distanceFromLine(argMaxX, argMinX, 0) + ". " +
+    // x[0] + "," + y[0]);
 
     return visited;
   }

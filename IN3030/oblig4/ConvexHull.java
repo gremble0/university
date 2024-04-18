@@ -50,7 +50,7 @@ abstract class ConvexHull {
   // return yP > yLine;
   // }
 
-  private double distanceFromLine(int lineStart, int lineEnd, int point) {
+  protected double distanceFromLine(int lineStart, int lineEnd, int point) {
     int x1 = x[lineStart];
     int x2 = x[lineEnd];
     int y1 = y[lineStart];
@@ -61,25 +61,20 @@ abstract class ConvexHull {
     int numerator = (y2 - y1) * xP - (x2 - x1) * yP + x2 * y1 - y2 * x1;
     double denominator = Math.sqrt((y2 - y1) * (y2 - y1) + (x2 - x1) * (x2 - x1));
 
-    System.out.println(numerator / denominator);
-
     return numerator / denominator;
   }
 
   /**
-   * Get the index into `x` and 'y' of the point furthest awa'y' from the line
-   * drawn
-   * between two points. Get the furthest above if `above` is true and furthest
-   * below if `above` is false.
+   * Get the index into `x` and `y` of the point furthest below the line drawn
+   * between two points given by the parameters to the method.
    *
-   * @param coord1 index into `x` and 'y' of the first point
-   * @param coord2 index into `x` and 'y' of the second point
-   * @param above  whether to get the furthest point above or below the line
-   * @return index into `x` and 'y'
+   * @param coord1 index into `x` and `y` of the first point
+   * @param coord2 index into `x` and `y` of the second point
+   * @return index into `x` and `y`
    */
   protected int furthestBelowLine(int coord1, int coord2) {
     double furthest = 0;
-    int furthestI = 0;
+    int furthestI = -1;
     for (int i = 0; i < n; i++) {
       double distance = distanceFromLine(coord1, coord2, i);
 
@@ -96,12 +91,13 @@ abstract class ConvexHull {
       }
     }
 
+    System.out.println(furthestI);
     return furthestI;
   }
 
   protected int furthestAboveLine(int coord1, int coord2) {
     double furthest = 0;
-    int furthestI = 0;
+    int furthestI = -1;
     for (int i = 0; i < n; i++) {
       double distance = distanceFromLine(coord1, coord2, i);
 
