@@ -23,27 +23,14 @@ class ConvexHullSeq extends ConvexHull {
     visitBelow(furthestBelow, coord2);
   }
 
-  private void visitLine(int coord1, int coord2) {
-    visitAbove(coord1, coord2);
-    visitBelow(coord1, coord2);
-    // int furthestAbove = furthestAboveLine(coord1, coord2);
-    // int furthestBelow = furthestBelowLine(coord1, coord2);
-    // if (furthestAbove == -1 || furthestBelow == -1)
-    // return;
-    //
-    // visited.add(furthestAbove);
-    // visited.add(furthestBelow);
-    // visitLine(coord1, furthestAbove);
-    // visitLine(furthestBelow, coord2);
-  }
-
   public IntList makeConvexHull() {
     int argMinX = argMin(x);
     int argMaxX = argMax(x);
     visited.add(argMinX);
     visited.add(argMaxX);
 
-    visitLine(argMaxX, argMinX);
+    visitAbove(argMaxX, argMinX);
+    visitBelow(argMaxX, argMinX);
 
     return visited;
   }
@@ -63,9 +50,8 @@ class ConvexHullSeq extends ConvexHull {
 
     ConvexHullSeq chs = new ConvexHullSeq(n, seed);
     IntList hull = chs.makeConvexHull();
-    hull.print();
 
-    Oblig4Precode precode = new Oblig4Precode(chs, hull);
-    precode.drawGraph();
+    // Oblig4Precode precode = new Oblig4Precode(chs, hull);
+    // precode.drawGraph();
   }
 }
