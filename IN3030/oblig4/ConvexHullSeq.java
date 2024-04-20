@@ -3,19 +3,38 @@ class ConvexHullSeq extends ConvexHull {
     super(n, seed);
   }
 
-  private void visitLine(int coord1, int coord2) {
-    // TODO above param
+  private void visitAbove(int coord1, int coord2) {
     int furthestAbove = furthestAboveLine(coord1, coord2);
-    if (furthestAbove != -1 && !visited.contains(furthestAbove)) {
-      visited.add(furthestAbove);
-      visitLine(coord1, furthestAbove);
-    }
+    if (furthestAbove == -1)
+      return;
 
+    visited.add(furthestAbove);
+    visitAbove(furthestAbove, coord2);
+    visitAbove(coord1, furthestAbove);
+  }
+
+  private void visitBelow(int coord1, int coord2) {
+    int furthestBelow = furthestBelowLine(coord1, coord2);
+    if (furthestBelow == -1)
+      return;
+
+    visited.add(furthestBelow);
+    visitBelow(coord1, furthestBelow);
+    visitBelow(furthestBelow, coord2);
+  }
+
+  private void visitLine(int coord1, int coord2) {
+    visitAbove(coord1, coord2);
+    visitBelow(coord1, coord2);
+    // int furthestAbove = furthestAboveLine(coord1, coord2);
     // int furthestBelow = furthestBelowLine(coord1, coord2);
-    // if (furthestBelow != -1 && !visited.contains(furthestBelow)) {
+    // if (furthestAbove == -1 || furthestBelow == -1)
+    // return;
+    //
+    // visited.add(furthestAbove);
     // visited.add(furthestBelow);
+    // visitLine(coord1, furthestAbove);
     // visitLine(furthestBelow, coord2);
-    // }
   }
 
   public IntList makeConvexHull() {
@@ -25,9 +44,6 @@ class ConvexHullSeq extends ConvexHull {
     visited.add(argMaxX);
 
     visitLine(argMaxX, argMinX);
-
-    // System.out.println("ddd: " + distanceFromLine(argMaxX, argMinX, 0) + ". " +
-    // x[0] + "," + y[0]);
 
     return visited;
   }

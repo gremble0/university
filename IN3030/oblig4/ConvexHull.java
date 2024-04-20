@@ -32,25 +32,7 @@ abstract class ConvexHull {
     return max;
   }
 
-  // These geometry functions are mostly just copy pasted and probably
-  // unnecessarily overcomplicated (I haven't looked into how they work),
-  // but they work so I have not looked into better ways of doing this.
-  // private boolean pointIsAboveLine(int lineStart, int lineEnd, int point) {
-  // int x1 = x[lineStart];
-  // int x2 = x[lineEnd];
-  // int y1 = y[lineStart];
-  // int y2 = y[lineEnd];
-  // int xP = x[point];
-  // int yP = y[point];
-  //
-  // double m = (double) (y2 - y1) / (x2 - x1);
-  // double b = y1 - m * x1;
-  // double yLine = m * xP + b;
-  //
-  // return yP > yLine;
-  // }
-
-  protected double distanceFromLine(int lineStart, int lineEnd, int point) {
+  private double distanceFromLine(int lineStart, int lineEnd, int point) {
     int x1 = x[lineStart];
     int x2 = x[lineEnd];
     int y1 = y[lineStart];
@@ -79,7 +61,7 @@ abstract class ConvexHull {
       double distance = distanceFromLine(coord1, coord2, i);
 
       // TODO: move above distanceFromLine?
-      if (distance > 0 || visited.contains(i))
+      if (distance > 0)
         continue;
 
       // If distance == 0 we are comparing a point that is on the line, which would be
@@ -91,7 +73,6 @@ abstract class ConvexHull {
       }
     }
 
-    System.out.println(furthestI);
     return furthestI;
   }
 
@@ -101,7 +82,7 @@ abstract class ConvexHull {
     for (int i = 0; i < n; i++) {
       double distance = distanceFromLine(coord1, coord2, i);
 
-      if (distance < 0 || visited.contains(i))
+      if (distance < 0)
         continue;
 
       if (distance > furthest) {

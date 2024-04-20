@@ -40,15 +40,6 @@ class IntList {
     len += other.len;
   }
 
-  // NOT IN PRECODE
-  boolean contains(int value) {
-    for (int i = 0; i < len; i++)
-      if (data[i] == value)
-        return true;
-
-    return false;
-  }
-
   void clear() {
     len = 0;
   }
