@@ -5,6 +5,7 @@ class ConvexHullSeq extends ConvexHull {
 
   private void visitAbove(int coord1, int coord2) {
     int furthestAbove = furthestAboveLine(coord1, coord2);
+    // If furthestAboveLine returns -1 there are no more points above or on the line
     if (furthestAbove == -1)
       return;
 
@@ -48,7 +49,7 @@ class ConvexHullSeq extends ConvexHull {
       return;
     }
 
-    ConvexHullSeq chs = new ConvexHullSeq(n, seed);
+    ConvexHull chs = new ConvexHullSeq(n, seed);
     IntList hull = chs.makeConvexHull();
 
     // Oblig4Precode precode = new Oblig4Precode(chs, hull);
