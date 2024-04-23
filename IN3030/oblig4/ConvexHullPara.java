@@ -162,13 +162,13 @@ class ConvexHullPara extends ConvexHull {
       return;
     }
 
-    ConvexHull chs = new ConvexHullPara(n, seed);
+    ConvexHull chp = new ConvexHullPara(n, seed);
 
     long before = System.nanoTime();
-    IntList hull = chs.makeConvexHull();
+    IntList hull = chp.makeConvexHull();
     long after = System.nanoTime();
 
-    System.out.println((after - before) / 1000000);
+    System.out.println("Parallel time: " + (after - before) / 1000000 + "ms");
 
     // Uncomment to draw graph for output. `hull` is not sorted so the graph does
     // not draw the actual hull, only all the points that we have determined to be
