@@ -62,8 +62,6 @@ abstract class ConvexHull {
     int furthestI = -1;
     for (int i = 0; i < n; i++) {
       double distance = distanceFromLine(coord1, coord2, i);
-
-      // TODO: move above distanceFromLine?
       if (distance > 0)
         continue;
 
@@ -114,7 +112,7 @@ abstract class ConvexHull {
     Arrays.sort(times);
     long median = times[N_TEST_RUNS / 2];
 
-    System.out.println(hull + " median time over " + N_TEST_RUNS + "test runs: " + median / 1000000 + "ms");
+    System.out.println(hull + " median time over " + N_TEST_RUNS + " test runs: " + median / 1000000 + "ms");
   }
 
   public static void main(String[] args) {
@@ -135,6 +133,15 @@ abstract class ConvexHull {
 
     benchmarkSubclass(chs);
     benchmarkSubclass(chp);
+
+    // Uncomment to draw graph for output and write to file. `hull` is not sorted so
+    // the graph does not draw the actual hull, only all the points that we have
+    // determined to be in the hull. If we wanted to draw the real hull we would
+    // have to sort the hull returned by makeConvexHull.
+
+    // Oblig4Precode precode = new Oblig4Precode(chp, chp.makeConvexHull());
+    // precode.writeHullPoints();
+    // precode.drawGraph();
   }
 
   abstract public IntList makeConvexHull();

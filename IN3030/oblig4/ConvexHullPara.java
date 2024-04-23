@@ -143,6 +143,8 @@ class ConvexHullPara extends ConvexHull {
       return visited;
     }
 
+    // TODO: remove duplicates
+
     for (int i = 0; i < possibleStarts.size(); i++)
       visited.append(tasks[i].localVisited);
 
