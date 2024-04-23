@@ -149,33 +149,8 @@ class ConvexHullPara extends ConvexHull {
     return visited;
   }
 
-  public static void main(String[] args) {
-    int n, seed;
-    try {
-      if (args.length != 2)
-        throw new Exception("Program takes 2 arguments <n: int> <seed: int>");
-
-      n = Integer.parseInt(args[0]);
-      seed = Integer.parseInt(args[1]);
-    } catch (Exception e) {
-      e.printStackTrace();
-      return;
-    }
-
-    ConvexHull chp = new ConvexHullPara(n, seed);
-
-    long before = System.nanoTime();
-    IntList hull = chp.makeConvexHull();
-    long after = System.nanoTime();
-
-    System.out.println("Parallel time: " + (after - before) / 1000000 + "ms");
-
-    // Uncomment to draw graph for output. `hull` is not sorted so the graph does
-    // not draw the actual hull, only all the points that we have determined to be
-    // in the hull. If we wanted to draw the real hull we would have to sort the
-    // hull returned by makeConvexHull.
-
-    // Oblig4Precode precode = new Oblig4Precode(chs, hull);
-    // precode.drawGraph();
+  @Override
+  public String toString() {
+    return "ConvexHullPara";
   }
 }

@@ -1,5 +1,3 @@
-import java.util.Arrays;
-
 class ConvexHullSeq extends ConvexHull {
   ConvexHullSeq(int n, int seed) {
     super(n, seed);
@@ -38,45 +36,8 @@ class ConvexHullSeq extends ConvexHull {
     return visited;
   }
 
-  public static void main(String[] args) {
-    int n, seed;
-    try {
-      if (args.length != 2)
-        throw new Exception("Program takes 2 arguments <n: int> <seed: int>");
-
-      n = Integer.parseInt(args[0]);
-      seed = Integer.parseInt(args[1]);
-    } catch (Exception e) {
-      e.printStackTrace();
-      return;
-    }
-
-    ConvexHull chs = new ConvexHullSeq(n, seed);
-
-    // Run algorithm `N_TEST_RUNS` times and report median runtime
-    long[] times = new long[N_TEST_RUNS];
-    for (int i = 0; i < N_TEST_RUNS; i++) {
-      long before = System.nanoTime();
-      chs.makeConvexHull();
-      long after = System.nanoTime();
-
-      times[i] = after - before;
-
-      // Cleanup before next usage
-      chs.visited.clear();
-    }
-
-    Arrays.sort(times);
-    long median = times[N_TEST_RUNS / 2];
-
-    System.out.println("Sequential time: " + median / 1000000 + "ms");
-
-    // Uncomment to draw graph for output. `hull` is not sorted so the graph does
-    // not draw the actual hull, only all the points that we have determined to be
-    // in the hull. If we wanted to draw the real hull we would have to sort the
-    // hull returned by makeConvexHull.
-
-    // Oblig4Precode precode = new Oblig4Precode(chs, hull);
-    // precode.drawGraph();
+  @Override
+  public String toString() {
+    return "ConvexHullSeq";
   }
 }

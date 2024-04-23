@@ -1,5 +1,7 @@
+import java.util.Arrays;
+
 abstract class ConvexHull {
-  static final int N_TEST_RUNS = 10;
+  static final int N_TEST_RUNS = 7;
   int n, MAX_X, MAX_Y;
   int x[], y[];
   IntList visited;
@@ -95,9 +97,44 @@ abstract class ConvexHull {
     return furthestI;
   }
 
+  private static void benchmarkSubclass(ConvexHull hull) {
+    // Run algorithm `N_TEST_RUNS` times and report median runtime
+    long[] times = new long[N_TEST_RUNS];
+    for (int i = 0; i < N_TEST_RUNS; i++) {
+      long before = System.nanoTime();
+      hull.makeConvexHull();
+      long after = System.nanoTime();
+
+      times[i] = after - before;
+
+      // Cleanup before next usage
+      hull.visited.clear();
+    }
+
+    Arrays.sort(times);
+    long median = times[N_TEST_RUNS / 2];
+
+    System.out.println(hull + " median time over " + N_TEST_RUNS + "test runs: " + median / 1000000 + "ms");
+  }
+
   public static void main(String[] args) {
-    ConvexHullSeq.main(args);
-    ConvexHullPara.main(args);
+    int n, seed;
+    try {
+      if (args.length != 2)
+        throw new Exception("Program takes 2 arguments <n: int> <seed: int>");
+
+      n = Integer.parseInt(args[0]);
+      seed = Integer.parseInt(args[1]);
+    } catch (Exception e) {
+      e.printStackTrace();
+      return;
+    }
+
+    ConvexHull chs = new ConvexHullSeq(n, seed);
+    ConvexHull chp = new ConvexHullPara(n, seed);
+
+    benchmarkSubclass(chs);
+    benchmarkSubclass(chp);
   }
 
   abstract public IntList makeConvexHull();
