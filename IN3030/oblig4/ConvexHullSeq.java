@@ -52,7 +52,12 @@ class ConvexHullSeq extends ConvexHull {
     ConvexHull chs = new ConvexHullSeq(n, seed);
     IntList hull = chs.makeConvexHull();
 
-    Oblig4Precode precode = new Oblig4Precode(chs, hull);
-    precode.drawGraph();
+    // Uncomment to draw graph for output. `hull` is not sorted so the graph does
+    // not draw the actual hull, only all the points that we have determined to be
+    // in the hull. If we wanted to draw the real hull we would have to sort the
+    // hull returned by makeConvexHull.
+
+    // Oblig4Precode precode = new Oblig4Precode(chs, hull);
+    // precode.drawGraph();
   }
 }

@@ -120,7 +120,6 @@ class ConvexHullPara extends ConvexHull {
     }
 
     int halfSize = possibleStarts.size() / 2;
-    System.out.println(possibleStarts.size() + " " + possibleEnds.size());
     for (int i = 0; i < halfSize; i++) {
       tasks[i] = new ConvexHullAboveLine(possibleStarts.get(i), possibleEnds.get(i));
       threads[i] = new Thread(tasks[i]);
@@ -134,6 +133,9 @@ class ConvexHullPara extends ConvexHull {
     }
 
     try {
+      // All threads may not be initialized if one of the branches in the BFS already
+      // finished before starting the Runnable class, so only iterate up until
+      // possibleStarts-/possibleEnds- .size()
       for (int i = 0; i < possibleStarts.size(); i++)
         threads[i].join();
     } catch (Exception e) {
@@ -161,9 +163,19 @@ class ConvexHullPara extends ConvexHull {
     }
 
     ConvexHull chs = new ConvexHullPara(n, seed);
-    IntList hull = chs.makeConvexHull();
 
-    Oblig4Precode precode = new Oblig4Precode(chs, hull);
-    precode.drawGraph();
+    long before = System.nanoTime();
+    IntList hull = chs.makeConvexHull();
+    long after = System.nanoTime();
+
+    System.out.println((after - before) / 1000000);
+
+    // Uncomment to draw graph for output. `hull` is not sorted so the graph does
+    // not draw the actual hull, only all the points that we have determined to be
+    // in the hull. If we wanted to draw the real hull we would have to sort the
+    // hull returned by makeConvexHull.
+
+    // Oblig4Precode precode = new Oblig4Precode(chs, hull);
+    // precode.drawGraph();
   }
 }

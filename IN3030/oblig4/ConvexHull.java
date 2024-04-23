@@ -94,5 +94,33 @@ abstract class ConvexHull {
     return furthestI;
   }
 
+  public static void main(String[] args) {
+    int n, seed;
+    try {
+      if (args.length != 2)
+        throw new Exception("Program takes 2 arguments <n: int> <seed: int>");
+
+      n = Integer.parseInt(args[0]);
+      seed = Integer.parseInt(args[1]);
+    } catch (Exception e) {
+      e.printStackTrace();
+      return;
+    }
+
+    ConvexHull chs = new ConvexHullPara(n, seed);
+    ConvexHull chp = new ConvexHullSeq(n, seed);
+
+    long beforeSeq = System.nanoTime();
+    chs.makeConvexHull();
+    long afterSeq = System.nanoTime();
+
+    long beforePara = System.nanoTime();
+    chp.makeConvexHull();
+    long afterPara = System.nanoTime();
+
+    System.out.println("Sequential time: " + (afterSeq - beforeSeq) / 1000000 + "ms");
+    System.out.println("Parallel time:   " + (afterPara - beforePara) / 1000000 + "ms");
+  }
+
   abstract public IntList makeConvexHull();
 }
