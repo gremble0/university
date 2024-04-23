@@ -70,7 +70,9 @@ class ConvexHullPara extends ConvexHull {
     possibleStarts.add(argMaxX);
     possibleEnds.add(argMinX);
 
-    // Do a shallow BFS to find the starting points of each thread
+    // Do a shallow BFS to find the starting points of each thread.
+    // sqrt(threads.length) because the (fake) recursive depth will be increasing by
+    // a factor of 2 for each iteration.
     for (int i = 0; i < Math.sqrt(threads.length); i++) {
       // Invariant: possibleStarts and possibleEnds are of the same size. could assert
       // but apparently this requires a compiler flag in java due to backwards
@@ -118,6 +120,7 @@ class ConvexHullPara extends ConvexHull {
     }
 
     int halfSize = possibleStarts.size() / 2;
+    System.out.println(possibleStarts.size() + " " + possibleEnds.size());
     for (int i = 0; i < halfSize; i++) {
       tasks[i] = new ConvexHullAboveLine(possibleStarts.get(i), possibleEnds.get(i));
       threads[i] = new Thread(tasks[i]);
@@ -131,15 +134,14 @@ class ConvexHullPara extends ConvexHull {
     }
 
     try {
-      for (Thread t : threads) {
-        t.join();
-      }
+      for (int i = 0; i < possibleStarts.size(); i++)
+        threads[i].join();
     } catch (Exception e) {
       e.printStackTrace();
       return visited;
     }
 
-    for (int i = 0; i < threads.length; i++)
+    for (int i = 0; i < possibleStarts.size(); i++)
       visited.append(tasks[i].localVisited);
 
     return visited;
