@@ -52,7 +52,7 @@ class ConvexHullSeq extends ConvexHull {
     ConvexHull chs = new ConvexHullSeq(n, seed);
     IntList hull = chs.makeConvexHull();
 
-    // Oblig4Precode precode = new Oblig4Precode(chs, hull);
-    // precode.drawGraph();
+    Oblig4Precode precode = new Oblig4Precode(chs, hull);
+    precode.drawGraph();
   }
 }

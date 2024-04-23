@@ -1,5 +1,6 @@
 class ConvexHullPara extends ConvexHull {
   Thread[] threads;
+  ConvexHullAroundLine[] tasks;
 
   private abstract class ConvexHullAroundLine implements Runnable {
     protected int lineStart, lineEnd;
@@ -55,6 +56,7 @@ class ConvexHullPara extends ConvexHull {
   ConvexHullPara(int n, int seed) {
     super(n, seed);
     threads = new Thread[Runtime.getRuntime().availableProcessors()];
+    tasks = new ConvexHullAroundLine[threads.length];
   }
 
   public IntList makeConvexHull() {
@@ -63,32 +65,82 @@ class ConvexHullPara extends ConvexHull {
     visited.add(argMinX);
     visited.add(argMaxX);
 
-    // int aboveStart = argMaxX;
-    // int aboveEnd = argMinX;
-    // int belowStart = argMaxX;
-    // int belowEnd = argMinX;
-    // int furthestBelow = furthestBelowLine(argMaxX, argMinX);
-    // int furthestAbove = furthestAboveLine(argMaxX, argMinX);
-    // IntList threadStarts = new IntList();
-    // IntList threadEnds = new IntList();
-    // for (int i = 0; i < threads.length; i++) {
-    // }
-    ConvexHullAroundLine[] tasks = new ConvexHullAroundLine[2];
-    tasks[0] = new ConvexHullBelowLine(argMaxX, argMinX);
-    tasks[1] = new ConvexHullAboveLine(argMaxX, argMinX);
-    threads[0] = new Thread(tasks[0]);
-    threads[1] = new Thread(tasks[1]);
-    threads[0].start();
-    threads[1].start();
+    IntList possibleStarts = new IntList();
+    IntList possibleEnds = new IntList();
+    possibleStarts.add(argMaxX);
+    possibleEnds.add(argMinX);
 
-    try {
-      threads[0].join();
-      threads[1].join();
-    } catch (Exception e) {
+    // Do a shallow BFS to find the starting points of each thread
+    for (int i = 0; i < Math.sqrt(threads.length); i++) {
+      // Invariant: possibleStarts and possibleEnds are of the same size. could assert
+      // but apparently this requires a compiler flag in java due to backwards
+      // compatability co cba. Asserting could also increase runtime, which would be
+      // undesirable.
+      int halfSize = possibleStarts.size() / 2;
+      IntList newStarts = new IntList();
+      IntList newEnds = new IntList();
+      for (int j = 0; j < halfSize; j++) {
+        int startsAtJ = possibleStarts.get(j);
+        int endsAtJ = possibleEnds.get(j);
+
+        int furthestAbove = furthestAboveLine(startsAtJ, endsAtJ);
+        if (furthestAbove == -1)
+          continue;
+        visited.add(furthestAbove);
+
+        // Simulating the recursive calls inside the visitAbove method in the sequential
+        // solution
+        newStarts.add(furthestAbove);
+        newEnds.add(endsAtJ);
+        newStarts.add(startsAtJ);
+        newEnds.add(furthestAbove);
+      }
+
+      for (int j = halfSize; j < possibleStarts.size(); j++) {
+        int startsAtJ = possibleStarts.get(j);
+        int endsAtJ = possibleEnds.get(j);
+
+        int furthestBelow = furthestBelowLine(possibleStarts.get(j), possibleEnds.get(j));
+        if (furthestBelow == -1)
+          continue;
+        visited.add(furthestBelow);
+
+        // Simulating the recursive calls inside the visitBelow method in the sequential
+        // solution
+        newStarts.add(startsAtJ);
+        newEnds.add(furthestBelow);
+        newStarts.add(furthestBelow);
+        newEnds.add(endsAtJ);
+      }
+
+      possibleStarts = newStarts;
+      possibleEnds = newEnds;
     }
 
-    visited.append(tasks[0].localVisited);
-    visited.append(tasks[1].localVisited);
+    int halfSize = possibleStarts.size() / 2;
+    for (int i = 0; i < halfSize; i++) {
+      tasks[i] = new ConvexHullAboveLine(possibleStarts.get(i), possibleEnds.get(i));
+      threads[i] = new Thread(tasks[i]);
+      threads[i].start();
+    }
+
+    for (int i = halfSize; i < possibleStarts.size(); i++) {
+      tasks[i] = new ConvexHullBelowLine(possibleStarts.get(i), possibleEnds.get(i));
+      threads[i] = new Thread(tasks[i]);
+      threads[i].start();
+    }
+
+    try {
+      for (Thread t : threads) {
+        t.join();
+      }
+    } catch (Exception e) {
+      e.printStackTrace();
+      return visited;
+    }
+
+    for (int i = 0; i < threads.length; i++)
+      visited.append(tasks[i].localVisited);
 
     return visited;
   }
