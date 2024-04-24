@@ -55,7 +55,7 @@ class ConvexHullPara extends ConvexHull {
 
   ConvexHullPara(int n, int seed) {
     super(n, seed);
-    threads = new Thread[Runtime.getRuntime().availableProcessors()];
+    threads = new Thread[4];
     tasks = new ConvexHullAroundLine[threads.length];
   }
 
@@ -76,7 +76,7 @@ class ConvexHullPara extends ConvexHull {
     for (int i = 0; i < Math.sqrt(threads.length); i++) {
       // Invariant: possibleStarts and possibleEnds are of the same size. could assert
       // but apparently this requires a compiler flag in java due to backwards
-      // compatability co cba. Asserting could also increase runtime, which would be
+      // compatability so cba. Asserting could also increase runtime, which would be
       // undesirable.
       int halfSize = possibleStarts.size() / 2;
       IntList newStarts = new IntList();
@@ -143,8 +143,8 @@ class ConvexHullPara extends ConvexHull {
       return visited;
     }
 
-    // TODO: remove duplicates
-
+    // At the moment some of the localVisited contains duplicates, which means
+    // something is going wrong.
     for (int i = 0; i < possibleStarts.size(); i++)
       visited.append(tasks[i].localVisited);
 

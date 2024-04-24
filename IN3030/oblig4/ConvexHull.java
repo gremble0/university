@@ -110,7 +110,7 @@ abstract class ConvexHull {
     }
 
     Arrays.sort(times);
-    long median = times[N_TEST_RUNS / 2];
+    double median = times[N_TEST_RUNS / 2];
 
     System.out.println(hull + " median time over " + N_TEST_RUNS + " test runs: " + median / 1000000 + "ms");
   }
