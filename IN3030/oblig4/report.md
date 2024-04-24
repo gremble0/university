@@ -17,7 +17,8 @@ The parallel solution tries to first do a sort of shallow BFS until it has reach
 
 I noticed that the performance of the parallel solution can be quite dependant of the shape of the graph its being run on. For example if there are some sections on the graph that have a lot of points on the hull and some points that have very few, the program will be bottlenecked by the threads working on the areas with many points.
 
-Another weird thing I noticed is that the performance is oddly better when there are fewer threads.
+Another weird thing I noticed is that the performance is oddly better when there are fewer threads. For example when initialized with 4 threads I the runtimes were significantly better than when I used all threads on my machine (12). This may be a similar issue to the one described above, where the parallel solution is dependant upon the shape of the graph and if there are many threads we will be doing a lot of unnecessary thread overhead for threads that are doing very little calculating.
 
 ## Run times
-![Run times](./runtimes.png "Run times")
+![Run times 12 cores](./runtimes12.png "Run times 12 cores")
+![Run times 4 cores](./runtimes4.png "Run times 4 cores")
