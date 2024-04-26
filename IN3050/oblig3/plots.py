@@ -2,6 +2,8 @@ import matplotlib.pyplot as plt
 import numpy as np
 import pca
 import syntheticdata
+from sklearn.cluster import KMeans
+from sklearn.linear_model import LogisticRegression
 
 
 def plot_pca() -> None:
@@ -138,11 +140,31 @@ def plot_pca_lfw_data() -> None:
     # m=M.shape[1] is very minimal
 
 
+def plot_pca_kmeans() -> None:
+    X, _ = syntheticdata.get_iris_data()
+    _, P = pca.pca(X, X.shape[1])
+
+    ks = [2, 3, 4, 5]
+    y_hats = []
+    for i, k in enumerate(ks):
+        KM = KMeans(k, random_state=0, n_init="auto")
+        y_hat = KM.fit_predict(P)
+        y_hats.append(y_hat)
+        ax = plt.subplot(len(ks) // 2, len(ks) // 2, i + 1)
+        ax.set_title(f"{k=}")
+        plt.scatter(P[:, 0], P[:, 1], c=y_hat)
+
+    plt.savefig("assets/kmeans.png")
+
+    l = LogisticRegression()
+
+
 def main() -> None:
     plot_pca()
     plot_pca_with_labels()
     plot_pca_iris_data()
     plot_pca_lfw_data()
+    plot_pca_kmeans()
 
 
 if __name__ == "__main__":
