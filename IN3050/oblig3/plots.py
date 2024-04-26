@@ -1,9 +1,13 @@
 import matplotlib.pyplot as plt
 import numpy as np
+from sklearn.preprocessing import OneHotEncoder
 import pca
 import syntheticdata
 from sklearn.cluster import KMeans
 from sklearn.linear_model import LogisticRegression
+from sklearn import metrics
+
+# TODO: pca.pca(..., 2)
 
 
 def plot_pca() -> None:
@@ -118,7 +122,7 @@ def plot_pca_iris_data() -> None:
 
 
 def plot_pca_lfw_data() -> None:
-    X, y, h, w = syntheticdata.get_lfw_data()
+    X, _, h, w = syntheticdata.get_lfw_data()
     plt.imsave("assets/lfw-data.png", X[0, :].reshape((h, w)))
 
     ms = [50, 100, 200, 500, 1000, X.shape[1]]
@@ -141,29 +145,59 @@ def plot_pca_lfw_data() -> None:
 
 
 def plot_pca_kmeans() -> None:
-    X, _ = syntheticdata.get_iris_data()
-    _, P = pca.pca(X, X.shape[1])
+    X, y = syntheticdata.get_iris_data()
+    _, P = pca.pca(X, 2)
 
     ks = [2, 3, 4, 5]
     y_hats = []
     for i, k in enumerate(ks):
-        KM = KMeans(k, random_state=0, n_init="auto")
-        y_hat = KM.fit_predict(P)
+        km = KMeans(k, random_state=0, n_init="auto")
+        y_hat = km.fit_predict(P)
         y_hats.append(y_hat)
+
         ax = plt.subplot(len(ks) // 2, len(ks) // 2, i + 1)
         ax.set_title(f"{k=}")
         plt.scatter(P[:, 0], P[:, 1], c=y_hat)
 
     plt.savefig("assets/kmeans.png")
 
-    l = LogisticRegression()
+    # Comment:
+    # From these graphs we can see the kmeans clustering of different values
+    # for `k`. Since we know from the true labels (assets/pca-projection-iris-data-2d.png")
+    # that there are 3 classes, ideally k=3 should give us the best clustering.
+    # However we can also see from the true labels that they run diagonally
+    # rather than forming around a center point which is what kmeans is best
+    # at. This means that kmeans may not give us perfect answers, but they
+    # look pretty decent anyways.
+
+    c = LogisticRegression()
+    c.fit(P, y)
+    print(f"Accuracy of classifier (PCA): {metrics.accuracy_score(y, c.predict(P))}")
+
+    encoder = OneHotEncoder()
+    for i, k in enumerate(ks):
+        one_hot_encoded = encoder.fit_transform(y_hats[i].reshape(-1, 1))
+        c = LogisticRegression()
+
+        c.fit(one_hot_encoded, y)
+        print(f"Accuracy of classifier (KMeans {k=}): {metrics.accuracy_score(y, c.predict(one_hot_encoded))}")
+
+    # Comment:
+    # We can see that when running the PCA only classifier we get a very good
+    # accuracy (~97%). This indicates that the dimensionality reduction done
+    # by the PCA has retained most of the data necessary for classification.
+    # The KMeans classifiers perform slightly worse (though still very well)
+    # than the PCA only classifier which is expected since these are trained
+    # on artificially created clusters rather than the actual true labels.
+    # We can also see this by comparing `assets/kmeans.png` with the true labels
+    # since they are slightly different.
 
 
 def main() -> None:
-    plot_pca()
-    plot_pca_with_labels()
-    plot_pca_iris_data()
-    plot_pca_lfw_data()
+    # plot_pca()
+    # plot_pca_with_labels()
+    # plot_pca_iris_data()
+    # plot_pca_lfw_data()
     plot_pca_kmeans()
 
 
