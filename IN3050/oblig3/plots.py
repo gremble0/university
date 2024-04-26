@@ -85,11 +85,47 @@ def plot_pca_with_labels() -> None:
     plt.scatter(P[:, 0], np.ones(P.shape[0]), c=y[:, 0])
     plt.title("PCA projection with labels after (dataset 2)")
     plt.savefig("assets/pca-projection-with-labels2-after.png")
+    plt.clf()
+
+
+def plot_pca_iris_data() -> None:
+    X, y = syntheticdata.get_iris_data()
+    X_centered = pca.center_data(X)
+
+    plt.scatter(X_centered[:, 2], X_centered[:, 1], c=y)
+    plt.title("2 random features iris data")
+    plt.savefig("assets/iris-data-2-random.png")
+    plt.clf()
+
+    _, P = pca.pca(X_centered, X_centered.shape[1])
+    plt.scatter(P[:, 0], P[:, 1], c=y)
+    plt.title("2d PCA projection of iris data")
+    plt.savefig("assets/pca-projection-iris-data-2d.png")
+    plt.clf()
+
+    plt.scatter(P[:, 0], np.ones(P.shape[1]), c=y)
+    plt.title("1d PCA projection of iris data")
+    plt.savefig("assets/pca-projection-iris-data-1d.png")
+    plt.clf()
+
+    # Comment:
+    # We can see from the 2d PCA projection that this dataset is easily
+    # reduced to fewer dimensions. By first inspecting the 2d projection we
+    # can see that the graph is almost linearly separable, which means we can
+    # even reduce it down to 1d and still maintain most of the information.
+
+
+def plot_pca_lfw_data() -> None:
+    X, y, h, w = syntheticdata.get_lfw_data()
+    # plt.imshow(X[0, :].reshape((h, w)), cmap=plt.cm.gray)
+    plt.imsave("assets/lfw-data.png", X[0, :].reshape((h, w)), cmap=plt.cm.gray)
 
 
 def main() -> None:
     plot_pca()
     plot_pca_with_labels()
+    plot_pca_iris_data()
+    plot_pca_lfw_data()
 
 
 if __name__ == "__main__":
