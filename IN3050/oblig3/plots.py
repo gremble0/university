@@ -75,7 +75,7 @@ def plot_pca_with_labels() -> None:
     # to classify each individual datapoint, meaning we can not easily discard
     # one axis without losing a large amount of data.
     X, y = syntheticdata.get_synthetic_data_with_labels2()
-    X_centered = pca.center_data(X)
+    X_centered = pca.center_data(X) # unnecessary
     plt.scatter(X_centered[:, 0], X_centered[:, 1], c=y[:, 0])
     plt.title("PCA projection with labels before (dataset 2)")
     plt.savefig("assets/pca-projection-with-labels2-before.png")
@@ -103,7 +103,7 @@ def plot_pca_iris_data() -> None:
     plt.savefig("assets/pca-projection-iris-data-2d.png")
     plt.clf()
 
-    plt.scatter(P[:, 0], np.ones(P.shape[1]), c=y)
+    plt.scatter(P[:, 0], np.ones(P.shape[0]), c=y)
     plt.title("1d PCA projection of iris data")
     plt.savefig("assets/pca-projection-iris-data-1d.png")
     plt.clf()
@@ -117,8 +117,25 @@ def plot_pca_iris_data() -> None:
 
 def plot_pca_lfw_data() -> None:
     X, y, h, w = syntheticdata.get_lfw_data()
-    # plt.imshow(X[0, :].reshape((h, w)), cmap=plt.cm.gray)
-    plt.imsave("assets/lfw-data.png", X[0, :].reshape((h, w)), cmap=plt.cm.gray)
+    plt.imsave("assets/lfw-data.png", X[0, :].reshape((h, w)))
+
+    ms = [50, 100, 200, 500, 1000, X.shape[1]]
+    for i, m in enumerate(ms):
+        P = pca.encode_decode_pca(X, m)
+        ax = plt.subplot(len(ms) // 2, len(ms) // 2, i + 1)
+        ax.set_title(f"{m=}")
+        plt.imshow(P[0, :].reshape((h, w)))
+
+    plt.savefig("assets/lfw-different-ms.png")
+
+    # Comment:
+    # From these images we can see that we can mostly recreate the original
+    # image by uncompressing it after running PCA on it. The reconstructed
+    # image shows most of the characteristics of the original, though with
+    # some amount of loss, especially for smaller values for `m`. We can also
+    # see some sort of diminishing returns for increasing the value for `m`
+    # closer to its original size, as the difference between m=1000 and
+    # m=M.shape[1] is very minimal
 
 
 def main() -> None:

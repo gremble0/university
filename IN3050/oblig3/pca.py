@@ -33,3 +33,9 @@ def pca(X: np.ndarray, n_learned_features: int) -> Tuple[np.ndarray, np.ndarray]
     pca_eigvec = eig_sorted.eigenvectors[:, :n_learned_features]
 
     return pca_eigvec, centered @ pca_eigvec
+
+
+def encode_decode_pca(X: np.ndarray, m: int) -> np.ndarray:
+    eigvecs, P = pca(X, m)
+
+    return P.dot(eigvecs.T)
