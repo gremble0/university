@@ -7,8 +7,6 @@ from sklearn.cluster import KMeans
 from sklearn.linear_model import LogisticRegression
 from sklearn import metrics
 
-# TODO: pca.pca(..., 2)
-
 
 def plot_pca() -> None:
     X = syntheticdata.get_synthetic_data1()
@@ -23,7 +21,7 @@ def plot_pca() -> None:
     plt.savefig("assets/synthetic-data1-centered.png")
     plt.clf()
 
-    eigvec, P = pca.pca(X_centered, X_centered.shape[1])
+    eigvec, P = pca.pca(X_centered, 2)
 
     first_eigvec = eigvec[:, 0]
     plt.scatter(X_centered[:, 0], X_centered[:, 1])
@@ -60,7 +58,7 @@ def plot_pca_with_labels() -> None:
     plt.savefig("assets/pca-projection-with-labels1-before.png")
     plt.clf()
 
-    _, P = pca.pca(X_centered, X_centered.shape[1])
+    _, P = pca.pca(X_centered, 2)
     plt.scatter(P[:, 0], np.ones(P.shape[0]), c=y[:, 0])
     plt.title("PCA projection with labels after (dataset 1)")
     plt.savefig("assets/pca-projection-with-labels1-after.png")
@@ -87,7 +85,7 @@ def plot_pca_with_labels() -> None:
     plt.savefig("assets/pca-projection-with-labels2-before.png")
     plt.clf()
 
-    _, P = pca.pca(X_centered, X_centered.shape[1])
+    _, P = pca.pca(X_centered, 2)
     plt.scatter(P[:, 0], np.ones(P.shape[0]), c=y[:, 0])
     plt.title("PCA projection with labels after (dataset 2)")
     plt.savefig("assets/pca-projection-with-labels2-after.png")
@@ -103,7 +101,7 @@ def plot_pca_iris_data() -> None:
     plt.savefig("assets/iris-data-2-random.png")
     plt.clf()
 
-    _, P = pca.pca(X_centered, X_centered.shape[1])
+    _, P = pca.pca(X_centered, 2)
     plt.scatter(P[:, 0], P[:, 1], c=y)
     plt.title("2d PCA projection of iris data")
     plt.savefig("assets/pca-projection-iris-data-2d.png")
@@ -124,6 +122,7 @@ def plot_pca_iris_data() -> None:
 def plot_pca_lfw_data() -> None:
     X, _, h, w = syntheticdata.get_lfw_data()
     plt.imsave("assets/lfw-data.png", X[0, :].reshape((h, w)))
+    plt.clf()
 
     ms = [50, 100, 200, 500, 1000, X.shape[1]]
     for i, m in enumerate(ms):
@@ -133,6 +132,7 @@ def plot_pca_lfw_data() -> None:
         plt.imshow(P[0, :].reshape((h, w)))
 
     plt.savefig("assets/lfw-different-ms.png")
+    plt.clf()
 
     # Comment:
     # From these images we can see that we can mostly recreate the original
@@ -160,6 +160,7 @@ def plot_pca_kmeans() -> None:
         plt.scatter(P[:, 0], P[:, 1], c=y_hat)
 
     plt.savefig("assets/kmeans.png")
+    plt.clf()
 
     # Comment:
     # From these graphs we can see the kmeans clustering of different values
@@ -194,10 +195,11 @@ def plot_pca_kmeans() -> None:
 
 
 def main() -> None:
-    # plot_pca()
-    # plot_pca_with_labels()
-    # plot_pca_iris_data()
-    # plot_pca_lfw_data()
+    # Running all these shouldn't take too long (<1 min)
+    plot_pca()
+    plot_pca_with_labels()
+    plot_pca_iris_data()
+    plot_pca_lfw_data()
     plot_pca_kmeans()
 
 
