@@ -1,12 +1,13 @@
 import java.util.concurrent.Semaphore;
 
 class WaitNext {
+    static final int n = 10;
     static boolean first = true;
     static boolean second = false;
     static int cores = Runtime.getRuntime().availableProcessors();
-    static Semaphore okToKick = new Semaphore(1);
-    static Semaphore okToEnterHolding = new Semaphore(1);
-    static Semaphore holdingArea = new Semaphore(1);
+    static Semaphore okToKick = new Semaphore(1, true);
+    static Semaphore okToEnterHolding = new Semaphore(1, true);
+    static Semaphore holdingArea = new Semaphore(0, true);
 
     static class Worker implements Runnable {
         final int i;
@@ -17,7 +18,9 @@ class WaitNext {
 
         public void run() {
             System.out.println("START " + i);
-            waitNext();
+            for (int i = 0; i < n; i++)
+                waitAndSwap();
+
             System.out.println("END " + i);
         }
     }
@@ -54,17 +57,24 @@ class WaitNext {
         printSems();
 
         try {
+            okToKick.acquire();
+
             if (first) {
                 first = false;
                 second = true;
-                holdingArea.acquire();
             } else if (second) {
                 second = false;
+                okToKick.release();
+                return;
             } else {
-                holdingArea.release();
-                holdingArea.acquire();
                 second = true;
+                holdingArea.release();
             }
+
+            okToEnterHolding.acquire();
+            okToKick.release();
+            holdingArea.acquire();
+            okToEnterHolding.release();
         } catch (Exception e) {
             e.printStackTrace();
             return;
@@ -74,7 +84,7 @@ class WaitNext {
     public static void main(String[] args) {
         Thread[] ts = new Thread[cores];
         for (int i = 0; i < cores; i++)
-            (ts[i] = new Thread(new Worker(i))).run();
+            (ts[i] = new Thread(new Worker(i))).start();
 
         for (Thread thread : ts) {
             try {
