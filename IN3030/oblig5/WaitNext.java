@@ -1,8 +1,9 @@
 import java.util.concurrent.Semaphore;
 
 class WaitNext {
-    static Semaphore okToKick = new Semaphore(1, true);
-    static Semaphore holdingArea = new Semaphore(1, true);
+    static Semaphore okToKick = new Semaphore(1);
+    static Semaphore okToEnterHoldingArea = new Semaphore(1);
+    static Semaphore holdingArea = new Semaphore(1);
     static boolean first = true;
     static int i = 0;
     static int cores = Runtime.getRuntime().availableProcessors();
@@ -19,6 +20,7 @@ class WaitNext {
 
         try {
             okToKick.acquire();
+            okToEnterHoldingArea.acquire();
 
             if (first)
                 first = false;
@@ -27,7 +29,7 @@ class WaitNext {
 
             okToKick.release();
             holdingArea.acquire();
-
+            okToEnterHoldingArea.release();
         } catch (Exception e) {
             e.printStackTrace();
             return;
