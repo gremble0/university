@@ -1,3 +1,5 @@
+import java.util.ArrayList;
+import java.util.List;
 import java.util.concurrent.*;
 
 class WaitNext2 {
@@ -13,6 +15,8 @@ class WaitNext2 {
     static boolean variableSpeedThreads = true;
     static double variableSpeedRate = 100.0; // threads sleep for a random time between 0 and this rate in microseconds
     static int extraSlowThreads = 0; // number of threads that sleep 10x variableSpeedRate
+
+    static List<Integer> finishOrder;
 
     public static void printSems(int id, int iteration) {
         if (debuglevel > 1)
@@ -182,6 +186,8 @@ class WaitNext2 {
         System.out.println("Number of threads: " + numberofthreads + ";  iterations: " + N + ";  debug: " + debuglevel
                 + ";  varispeed: " + ((long) variableSpeedRate) + " ms;  extra slow: " + extraSlowThreads);
 
+        finishOrder = new ArrayList<>();
+
         for (int j = 0; j < numberofthreads; j++) {
             (t[j] = new Thread(new Worker(j))).start();
         }
@@ -198,14 +204,12 @@ class WaitNext2 {
         public void run() {
             debugPrintln(myId, 0, 1, " START thread");
 
-            for (int i = 0; i < N; i++) {
-                debugPrintln(myId, i, 2, " START iteration");
-                waitAndSwap(myId, i);
-                debugPrintln(myId, i, 2, " END iteration");
-            }
+            waitAndSwap(myId, 0);
             debugPrintln(myId, 0, 1, " END thread");
+
+            finishOrder.add(myId);
+            System.out.println(finishOrder);
         }
 
     }
-
 }
