@@ -5,7 +5,9 @@ class WaitNext2 {
     static Semaphore okToEnterHolding = new Semaphore(1, true);
     static Semaphore holdingArea = new Semaphore(0, true);
     static int N = 4; // defaiult number of iterations
-    static boolean first = true;
+    static boolean firstState = true;
+    static boolean skipState = false; // Indicates the second state described in the oblig (thread will not wiait when
+                                      // in this state)
     static int debuglevel = 9; // 4: varispeed resumption; 3: varispeed delay time; 2: sems values; 1, : (not
                                // implemented)
     static boolean variableSpeedThreads = true;
@@ -53,10 +55,10 @@ class WaitNext2 {
 
             variSpeed(id, iteration);
 
-            if (first) { // kick previous one out - except first time
+            if (firstState) { // kick previous one out - except first time
                 debugPrintln(id, iteration, 1, " I am THE FIRST, so NO KICKING");
                 variSpeed(id, iteration);
-                first = false;
+                firstState = false;
             } else {
                 variSpeed(id, iteration);
 
@@ -76,8 +78,8 @@ class WaitNext2 {
 
             variSpeed(id, iteration);
 
-            debugPrintln(id, iteration, 1, " now entering HOLD " +
-                    ((holdingArea.availablePermits() > 0) ? " - seems I have been pre-released"
+            debugPrintln(id, iteration, 1,
+                    " now entering HOLD " + ((holdingArea.availablePermits() > 0) ? " - seems I have been pre-released"
                             : "- appear that I must wait (might be pre-released later - BEFORE I wait)"));
             holdingArea.acquire(); // my turn to wait - will be released by a future kicker, well, actually, if we
                                    // are slow and the kicker is
@@ -88,6 +90,47 @@ class WaitNext2 {
             variSpeed(id, iteration);
 
         } catch (Exception e) {
+            return;
+        }
+    }
+
+    public static void waitAndSwap(int id, int iteration) {
+        try {
+            TimeUnit.MILLISECONDS.sleep(id * 10);
+
+            okToKick.acquire();
+
+            variSpeed(id, iteration);
+
+            if (firstState) {
+                firstState = false;
+                skipState = true;
+
+                variSpeed(id, iteration);
+            } else if (skipState) {
+                variSpeed(id, iteration);
+
+                skipState = false;
+                okToKick.release();
+
+                variSpeed(id, iteration);
+                return;
+            } else {
+                skipState = true;
+                holdingArea.release();
+            }
+
+            okToEnterHolding.acquire();
+
+            variSpeed(id, iteration);
+
+            okToKick.release();
+            holdingArea.acquire();
+            okToEnterHolding.release();
+
+            variSpeed(id, iteration);
+        } catch (Exception e) {
+            e.printStackTrace();
             return;
         }
     }
@@ -157,7 +200,7 @@ class WaitNext2 {
 
             for (int i = 0; i < N; i++) {
                 debugPrintln(myId, i, 2, " START iteration");
-                waitNext(myId, i);
+                waitAndSwap(myId, i);
                 debugPrintln(myId, i, 2, " END iteration");
             }
             debugPrintln(myId, 0, 1, " END thread");
