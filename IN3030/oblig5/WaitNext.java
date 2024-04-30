@@ -2,8 +2,9 @@ import java.util.concurrent.Semaphore;
 
 class WaitNext {
     static final int n = 10;
-    static boolean first = true;
-    static boolean second = false;
+    static boolean firstState = true;
+    static boolean skipState = false; // Indicates the second state described in the oblig (thread will not wiait when
+                                      // in this state)
     static int cores = Runtime.getRuntime().availableProcessors();
     static Semaphore okToKick = new Semaphore(1, true);
     static Semaphore okToEnterHolding = new Semaphore(1, true);
@@ -38,8 +39,8 @@ class WaitNext {
         try {
             okToKick.acquire();
 
-            if (first)
-                first = false;
+            if (firstState)
+                firstState = false;
             else
                 holdingArea.release();
 
@@ -59,15 +60,15 @@ class WaitNext {
         try {
             okToKick.acquire();
 
-            if (first) {
-                first = false;
-                second = true;
-            } else if (second) {
-                second = false;
+            if (firstState) {
+                firstState = false;
+                skipState = true;
+            } else if (skipState) {
+                skipState = false;
                 okToKick.release();
                 return;
             } else {
-                second = true;
+                skipState = true;
                 holdingArea.release();
             }
 
