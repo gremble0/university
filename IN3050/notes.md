@@ -13,7 +13,22 @@
 
     Alternative reasoning:
     - There are 3 possible tournaments - i1vi2, i1vi3, i2vi3. i1 is less fit than all others meaning it can never win a tournament - selection chance 0, i2 is only stronger than i1 meaning only i1vi2 results in it being selected - 1/3. i3 wins all tournaments it competes in which could be i1vi3 or i2vi3 - 2/3.
-- c: 
+- c: First we must recalculate the fitness values of each individual based on fitness sharing. We can do this by checking for each of the individuals whether they are under the niche size of 3.
+    - d(g1, g2) = abs(0 - 0) + abs(1 - 0) + abs(1 - 0) + abs(1 - 0) + abs(1 - 1) = 3
+    - d(g1, g3) = abs(0 - 1) + abs(1 - 0) + abs(1 - 0) + abs(1 - 1) + abs(1 - 1) = 3
+    - d(g2, g3) = abs(0 - 1) + abs(0 - 0) + abs(0 - 0) + abs(0 - 1) + abs(1 - 1) = 2
+    We can use these values to see how much each individual should share with eachother.
+
+    Then we can calculate the sharing components between the individuals
+    - sh(g1, g2) = 1 - 3/3 = 0
+    - sh(g1, g3) = 1 - 3/3 = 0
+    - sh(g2, g3) = 1 - 2/3 = 1/3
+
+    Then we can calculate the updated fitness values for each individual
+    - f'(g1) = f(g1)/sum(sh(d(g1, g1))..sh(d(g1, g3))) // Range notation is a bit unnecessary here but its just to show that the algorithm uses a sum from the first individual up to the u(mu)'th individual summing them all up
+        - f'(g1) = 1/(1 + 0 + 0) = 1
+    - f'(g2) = 2/(1 + 0 + 1/3) = 2/(4/3) = 1.5
+    - f'(g3) = 3/(1 + 0 + 1/3) = 3/(4/3) = 2.25
 
 ## Genetic algorithm vs hill climbing
 The genetic algorithm is not stochastic meaning its results has some amount of randomness involved - this comes from the mutation and crossover which we could also change to modify the randomness. Thus the genetic algorithm has a higher degree of exploration while the hillclimbing algorithm is pure exploitation. Therefore the hillclimbing algorithm(s) will always end up at the same local optimum(s) (which may be the global optimum), while the genetic algorithm could theoretically end up on any local optimum, which may be better if you for example run it a couple times to make sure youve found the global optimum.
@@ -30,3 +45,8 @@ Filter old and new individuals to select the next generation. u(mu) old generati
 - Elitism.
 - (u,lambda)-selection - new generation is purely based on lambda (best solutions can be lost) - escape local optima - exploration
 - (u+lambda)-selection - new generation is based on combination of u and lambda (best solutions will be kept) - exploitation - elitism
+
+## Diversity
+### Explicit approaches
+- Fitness sharing: individuals share their fitness with similar solutions. `f'(i) = f(i)/sum(sh(d(i,i_1))..sh(d(i,i_u)))`. Amount of individuals on each peak is proportional to the height of that peak (more individuals on higher peaks, fewer on smaller).
+- Crowding: individuals only compete against closest neighbours. Amount of individuals is equal on each peak.
