@@ -30,9 +30,21 @@
     - f'(g2) = 2/(1 + 0 + 1/3) = 2/(4/3) = 1.5
     - f'(g3) = 3/(1 + 0 + 1/3) = 3/(4/3) = 2.25
 
+## Task 3
+- a: In machine learning categorical features are features that can be categorized into a predefined set of possible values. If we look at the table we can say that `spam`, `winner occurs`, `format` and `number` are categorical features - these are sort of like `enum`s in some programming languages. Numerical features are features that are described by some number within an undefined range (if the range is defined for example integers from 1-100 it can be argued that the feature is categorical since we already know all the possible values beforehand). Numerical features from the table are `chars`, `line breaks` and `dollar occurs`.
+- b: Decision trees - categorical
+     kNN - numerical
+     Perceptron - numerical
+     Logistic regression - numerical
+     MLP - numerical
+- c: To convert categorical features to numerical features you can simply assign a numeric value to each category for a feature - this is exactly what `enum`s do in some programming languages. For example we could say that `no` in `winner occurs` has a value of 0 and `yes` has a value of 1. For numbers: `number.none = 0`, `number.small = 1`. `number.big = 2`. Both `format` and `spam` are also binary so they can also be represented as 0 or 1 like `winner occurs`.
+- d: I would first convert all the categorical features to numerical as described in task c - this is necessary for the classifier to work on the dataset. When working with numerical features its also generally a good idea to scale the dataset before using it. In the spam email we can see that there is a large difference in absolute values between some of the numerical features, e.g. `chars` and `line breaks` are orders of magnitude larger than the converted categorical features and `dollar occurs`. This could impact the classifier but would be negated by scaling the data beforehand.
+- e: In this case we would have to convert the numerical features to categorical ones. To do this we could decide for each feature - 1: decide a sensible amount of categories for that feature, 2: decide the numerical ranges for each category. We could do this by doing some educated guesses or programatically finding some sensible values. Some educated guesses for the spam email example could be: `chars 0 = 0`, `chars 1..1000 = 1`, `chars 1001..1000 = 2`, `chars >10000 = 3`. `line breaks 0 = 0`, `line breaks 1..10 = 1`, `line breaks 11..100 = 2`, `line breaks 101..1000 = 3`, `line breaks >1001 = 4`. And something similar for `dollar occurs`. We would then apply these ranges to the dataset before handing it to the classifier - this also has the benefit of acting as a sort of scaler to the dataset.
+
+## Task 4
+
 ## Genetic algorithm vs hill climbing
 The genetic algorithm is not stochastic meaning its results has some amount of randomness involved - this comes from the mutation and crossover which we could also change to modify the randomness. Thus the genetic algorithm has a higher degree of exploration while the hillclimbing algorithm is pure exploitation. Therefore the hillclimbing algorithm(s) will always end up at the same local optimum(s) (which may be the global optimum), while the genetic algorithm could theoretically end up on any local optimum, which may be better if you for example run it a couple times to make sure youve found the global optimum.
-
 
 ## Selection
 ### Parent selection
