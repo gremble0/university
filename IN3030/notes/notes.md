@@ -46,7 +46,81 @@ static void bubbleSort(int array[]) {
 ## NoPass - Parallel bubblesort
 We can define a new synchronization method, let us call it NoPass, that works as follows: Each thread involved in the synchronization is given a unique id, which is merely a nonnegative integer assigned consecutively from zero and up, so if there are N threads involved, the ids will be from zero to N-1. When a thread calls the method NoPass(id), the thread gives its id, and first NoPass checks whether or not there is a thread with an id of id+1 that is blocked and has called NoPass FEWER times than the thread with id of id. If so, it unblocks that thread. Second, the thread checks whether or not there is any thread with a lower id that has called NoPass a FEWER OR THE SAME number of times than the thread with id of id. If so, the thread with id of id blocks itself. NoPass thus ensures that no thread with a higher id ever catches up with any thread that has a lower id. Assume that we have a class NoPassC that implements this type of synchronization. The class has one public method, NoPass(id), as described above. Describe an efficient, parallel version of BubbleSort that uses the NoPass synchronization mechanism described previously.
 
+To make a parallel version of bubblesort with the `nopass` synchronization method we can make a sort of pipeline. We could assign each thread a slice of the array and give them the responsibility of bubbling the largest elements in their slice to the end. This could be done in parallel and after each thread is done sorting their slice they could call the nopass method ensuring they will wa
 
+## IVar
+```java
+import java.util.concurrent.*;
+
+class IVar<T> {
+    Semaphore s;
+    boolean isSet;
+    T value;
+
+    public IVar() {
+        this.s = new Semaphore(0);
+    }
+
+    public boolean put(T value) {
+        if (isSet)
+            return false;
+
+        this.value = value;
+        s.release();
+        isSet = true;
+        return isSet;
+    }
+
+    public T get() {
+        try {
+            s.acquire();
+            return value;
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+            return null;
+        }
+    }
+
+    // Below is just to test the class
+    static class Worker implements Runnable {
+        int id;
+        IVar<Integer> ivar;
+
+        public Worker(int id, IVar<Integer> ivar) {
+            this.id = id;
+            this.ivar = ivar;
+        }
+
+        public void run() {
+            System.out.println(id);
+            try {
+                if (id == 0) {
+                    TimeUnit.SECONDS.sleep(2);
+                    ivar.put(1);
+                } else {
+                    System.out.println(ivar.get());
+                }
+            } catch (Exception e) {
+            }
+        }
+    }
+
+    public static void main(String[] args) {
+        IVar<Integer> ivar = new IVar<>();
+
+        Thread t1 = new Thread(new Worker(0, ivar));
+        Thread t2 = new Thread(new Worker(1, ivar));
+        t1.start();
+        t2.start();
+
+        try {
+            t1.join();
+            t2.join();
+        } catch (Exception e) {
+        }
+    }
+}
+```
 
 ## Threads
 - Can threads spawned by the main thread spawn new threads? - Yes because there is nothing special about the main thread except for the fact that it is the thread that gets assigned to do the `main` function. Any thread can spawn another thread.
@@ -62,8 +136,10 @@ We can define a new synchronization method, let us call it NoPass, that works as
         - Harder to implement, more prone to bugs and errors.
         - Needs to be imported
         - Needs try/finally
+        - Slower(?)
 
 ## Semaphores
+Semaphore(0) means there are no permits until it gets release()'d. A semaphore is just a lock that maintains an intial state of how many permits there are. Constructor param is just the initial number of permits.
 ### JoinP - join using Semaphores
 ```java
 import java.util.concurrent.*;
