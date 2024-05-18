@@ -1,5 +1,6 @@
 ## Random
 Speed of light: 299 792 458 m/s
+finally {} may not be executed if a thread is interrupted inside catch, e.g. `try { ... } catch { Thread.currentThread().interrupt(); } finally { ... }`
 
 ## Cache friendliness of bubblesort
 ```java
@@ -49,39 +50,58 @@ We can define a new synchronization method, let us call it NoPass, that works as
 To make a parallel version of bubblesort with the `nopass` synchronization method we can make a sort of pipeline. We could assign each thread a slice of the array and give them the responsibility of bubbling the largest elements in their slice to the end. This could be done in parallel and after each thread is done sorting their slice they could call the nopass method ensuring they will wa
 
 ## IVar
+This implementation makes two semaphores, one for getting the internal value and one for setting/putting the internal value. The get semaphore is initialized to have 0 permits, meaning acquiring the semaphore will be blocking until it gets released. On the other hand the put semaphore is initalized with 1 permit meaning acquiring the semaphore will not be blocking for the first caller. The put semaphore may not be necessary depending on the usage of the class, but it ensures that the class is fully thread safe even if put is called on separate threads.
+
+This ensures thread safe concurrent access to IVar objects because the get function will block until the get semaphore is released which is only done inside the put method - more specifically only inside the put method when isSet is false which is only the first call to the put method. The put method is also thread safe as the put semaphore is only initialized with 1 permit and the put method starts with an acquiration and ends with a releasing of this semaphore. However according to the docs the finally {} block is not guaranteed to be executed if the thread is interrupted, though it seems to execute in most environments - this problem is probably outside the scope of this question anyways.
+
+There is also a veeeery small chance that the threads calling the get method will be blocked if more than Integer.MAX_VALUE threads call the method at the same time. In this case some threads will have to wait for their turn, however this limitation is virtually irrelevant since you would probably never need more than Integer.MAX_VALUE concurrent accesses to an IVar.
 ```java
 import java.util.concurrent.*;
 
 class IVar<T> {
-    Semaphore s;
-    boolean isSet;
-    T value;
+    private final Semaphore getSem;
+    private final Semaphore putSem;
+    private boolean isSet;
+    private T value;
 
     public IVar() {
-        this.s = new Semaphore(0);
+        this.getSem = new Semaphore(0);
+        this.putSem = new Semaphore(1);
+        isSet = false;
     }
 
     public boolean put(T value) {
-        if (isSet)
-            return false;
+        try {
+            putSem.acquire();
+            if (!isSet) {
+                this.value = value;
+                getSem.release(Integer.MAX_VALUE);
+                isSet = true;
+            }
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+        } finally {
+            putSem.release();
+        }
 
-        this.value = value;
-        s.release();
-        isSet = true;
         return isSet;
     }
 
     public T get() {
         try {
-            s.acquire();
-            return value;
+            // We dont need to do anything between acquiring and releasing -
+            // this is only to block the thread until it gets released by
+            // a call to `put`
+            getSem.acquire();
+            getSem.release();
         } catch (InterruptedException e) {
             Thread.currentThread().interrupt();
-            return null;
         }
+        return value;
     }
 
     // Below is just to test the class
+    // Worker is unused, but something similar may be useful so keep it
     static class Worker implements Runnable {
         int id;
         IVar<Integer> ivar;
@@ -108,14 +128,27 @@ class IVar<T> {
     public static void main(String[] args) {
         IVar<Integer> ivar = new IVar<>();
 
-        Thread t1 = new Thread(new Worker(0, ivar));
-        Thread t2 = new Thread(new Worker(1, ivar));
+        Thread t1 = new Thread(() -> {
+            try {
+                TimeUnit.SECONDS.sleep(2);
+            } catch (Exception e) {
+            }
+            ivar.put(5);
+        });
+        Thread t2 = new Thread(() -> {
+            System.out.println(ivar.get());
+        });
+        Thread t3 = new Thread(() -> {
+            System.out.println(ivar.get());
+        });
         t1.start();
         t2.start();
+        t3.start();
 
         try {
             t1.join();
             t2.join();
+            t3.join();
         } catch (Exception e) {
         }
     }
