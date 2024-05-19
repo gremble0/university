@@ -132,7 +132,16 @@ class IVar<T> {
     public static void main(String[] args) {
         // This main method uses assert which needs to be enabled with the `-ea` command
         // line flag, alternatively we could do some similar logic in an if block and
-        // throwing an AssertionError
+        // throwing an AssertionError.
+        //
+        // This test covers the common usage of an ivar. In chronological order it does:
+        // 1. 2 threads request the value from the ivar, which will block the threads
+        // until the ivar gets set. This tests concurrent access to the get method.
+        // 2. 1 thread sets the value of the ivar. This tests the put method
+        // 2a the 2 threads requesting it gets unblocked. This tests the unblocking of
+        // the getter threads.
+        // 3. Another thread tries to set the ivar. This tests the semi write only
+        // property of the class.
         IVar<Integer> ivar = new IVar<>();
         int expected = 5;
 
