@@ -9,7 +9,7 @@ class IVar<T> {
     public IVar() {
         this.getSem = new Semaphore(0);
         this.putSem = new Semaphore(1);
-        isSet = false;
+        this.isSet = false;
     }
 
     public boolean put(T value) {
@@ -19,14 +19,16 @@ class IVar<T> {
                 this.value = value;
                 getSem.release(Integer.MAX_VALUE);
                 isSet = true;
+                return true;
+            } else {
+                return false;
             }
         } catch (InterruptedException e) {
             Thread.currentThread().interrupt();
+            return false;
         } finally {
             putSem.release();
         }
-
-        return isSet;
     }
 
     public T get() {
@@ -79,28 +81,38 @@ class IVar<T> {
             // assert needs to be enabled with the `-ea` flag , alternatively we could
             // do some similar logic in an if block and throwing an AssertionError()
             assert success == true : "First call to `put` failed";
+            System.out.println(Thread.currentThread().getName() + " successfully called `put`");
         });
-        Thread t2 = new Thread(() -> {
+
+        // Threads 2 and 3 will do the same thing and expect the same output so lets
+        // create a shared variable for this. Reason we make two threads is just to test
+        // that multiple threads calling get concurrently works as expected.
+        Runnable testGet = () -> {
             long before = System.nanoTime();
             Integer i = ivar.get();
             long after = System.nanoTime();
             assert after > before + 2000000000 : "Call to `get` didn't block as expected";
-            assert i == 5;
-        });
-        Thread t3 = new Thread(() -> {
-            long before = System.nanoTime();
-            Integer i = ivar.get();
-            long after = System.nanoTime();
-            assert after > before + 2000000000 : "Call to `get` didn't block as expected";
-            assert i == 5;
-        });
+            System.out.println(Thread.currentThread().getName() + " blocked for a reasonable amount of time");
+            assert i == 5 : "Unexpected value in ivar: " + ivar.value;
+            System.out.println(Thread.currentThread().getName() + " got the expected value from `get`: 5");
+        };
+
+        Thread t2 = new Thread(testGet);
+        Thread t3 = new Thread(testGet);
+
         Thread t4 = new Thread(() -> {
+            // Here we assume that `t4` will call `put` after `t1` which is probably always
+            // going to be true. However it is technically possible that it could end up
+            // before `t1` if the sleep gets interrupted or something makes t1 run
+            // criminally slowly. Despite that this test should suffice for most cases.
             try {
                 TimeUnit.SECONDS.sleep(5);
             } catch (Exception e) {
             }
             boolean success = ivar.put(10);
             assert success == false : "Second call to `put` succeeded when it shouldn't";
+            System.out.println(
+                    Thread.currentThread().getName() + " failed to update the value in the ivar (expected behavior)");
         });
         t1.start();
         t2.start();
@@ -114,5 +126,11 @@ class IVar<T> {
             t4.join();
         } catch (Exception e) {
         }
+
+        // Ivar should have a value of 5 since that should `t1` should put that value
+        // before `t4`
+        assert ivar.value == 5 : "Unexpected value in ivar: " + ivar.value;
+
+        System.out.println("All tests succeeded :)");
     }
 }
