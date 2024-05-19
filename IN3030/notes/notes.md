@@ -131,9 +131,8 @@ class IVar<T> {
 
     public static void main(String[] args) {
         // This main method uses assert which needs to be enabled with the `-ea` command
-        // line flag,
-        // alternatively we could do some similar logic in an if block and throwing an
-        // AssertionError
+        // line flag, alternatively we could do some similar logic in an if block and
+        // throwing an AssertionError
         IVar<Integer> ivar = new IVar<>();
         int expected = 5;
 
