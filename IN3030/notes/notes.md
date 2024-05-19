@@ -1,6 +1,7 @@
 ## Random
 Speed of light: 299 792 458 m/s
 finally {} may not be executed if a thread is interrupted inside catch, e.g. `try { ... } catch { Thread.currentThread().interrupt(); } finally { ... }`
+Remember to comment code
 
 ## Cache friendliness of bubblesort
 ```java
@@ -54,7 +55,7 @@ This implementation makes two semaphores, one for getting the internal value and
 
 This ensures thread safe concurrent access to IVar objects because the get function will block until the get semaphore is released which is only done inside the put method - more specifically only inside the put method when isSet is false which is only the first call to the put method. The put method is also thread safe as the put semaphore is only initialized with 1 permit and the put method starts with an acquiration and ends with a releasing of this semaphore. However according to the docs the finally {} block is not guaranteed to be executed if the thread is interrupted, though it seems to execute in most environments - this problem is probably outside the scope of this question anyways.
 
-There is also a veeeery small chance that the threads calling the get method will be blocked if more than Integer.MAX_VALUE threads call the method at the same time. In this case some threads will have to wait for their turn, however this limitation is virtually irrelevant since you would probably never need more than Integer.MAX_VALUE concurrent accesses to an IVar.
+There is also a veeeery small chance that the threads calling the get method will be blocked if more than Integer.MAX_VALUE threads call the method at the same time. In this case some threads will have to wait for their turn, however this limitation is virtually irrelevant since you would probably never need more than Integer.MAX_VALUE concurrent accesses to an IVar and even so it would not result in a substantial slowdown unless you want orders of magnitude larger than Integer.MAX_VALUE accesses, which would just be absurd.
 ```java
 import java.util.concurrent.*;
 
@@ -133,22 +134,43 @@ class IVar<T> {
                 TimeUnit.SECONDS.sleep(2);
             } catch (Exception e) {
             }
-            ivar.put(5);
+            boolean success = ivar.put(5);
+            // assert needs to be enabled with the `-ea` flag , alternatively we could
+            // do some similar logic in an if block and throwing an AssertionError()
+            assert success == true : "First call to `put` failed";
         });
         Thread t2 = new Thread(() -> {
-            System.out.println(ivar.get());
+            long before = System.nanoTime();
+            Integer i = ivar.get();
+            long after = System.nanoTime();
+            assert after > before + 2000000000 : "Call to `get` didn't block as expected";
+            assert i == 5;
         });
         Thread t3 = new Thread(() -> {
-            System.out.println(ivar.get());
+            long before = System.nanoTime();
+            Integer i = ivar.get();
+            long after = System.nanoTime();
+            assert after > before + 2000000000 : "Call to `get` didn't block as expected";
+            assert i == 5;
+        });
+        Thread t4 = new Thread(() -> {
+            try {
+                TimeUnit.SECONDS.sleep(5);
+            } catch (Exception e) {
+            }
+            boolean success = ivar.put(10);
+            assert success == false : "Second call to `put` succeeded when it shouldn't";
         });
         t1.start();
         t2.start();
         t3.start();
+        t4.start();
 
         try {
             t1.join();
             t2.join();
             t3.join();
+            t4.join();
         } catch (Exception e) {
         }
     }
