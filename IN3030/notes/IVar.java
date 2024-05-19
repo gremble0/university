@@ -70,16 +70,18 @@ class IVar<T> {
     }
 
     public static void main(String[] args) {
+        // This main method uses assert which needs to be enabled with the `-ea` command
+        // line flag, alternatively we could do some similar logic in an if block and
+        // throwing an AssertionError
         IVar<Integer> ivar = new IVar<>();
+        int expected = 5;
 
         Thread t1 = new Thread(() -> {
             try {
                 TimeUnit.SECONDS.sleep(2);
             } catch (Exception e) {
             }
-            boolean success = ivar.put(5);
-            // assert needs to be enabled with the `-ea` flag , alternatively we could
-            // do some similar logic in an if block and throwing an AssertionError()
+            boolean success = ivar.put(expected);
             assert success == true : "First call to `put` failed";
             System.out.println(Thread.currentThread().getName() + " successfully called `put`");
         });
@@ -93,8 +95,8 @@ class IVar<T> {
             long after = System.nanoTime();
             assert after > before + 2000000000 : "Call to `get` didn't block as expected";
             System.out.println(Thread.currentThread().getName() + " blocked for a reasonable amount of time");
-            assert i == 5 : "Unexpected value in ivar: " + ivar.value;
-            System.out.println(Thread.currentThread().getName() + " got the expected value from `get`: 5");
+            assert i == expected : "Unexpected value in ivar: " + ivar.value;
+            System.out.println(Thread.currentThread().getName() + " got the expected value from `get`: " + expected);
         };
 
         Thread t2 = new Thread(testGet);
@@ -127,9 +129,8 @@ class IVar<T> {
         } catch (Exception e) {
         }
 
-        // Ivar should have a value of 5 since that should `t1` should put that value
-        // before `t4`
-        assert ivar.value == 5 : "Unexpected value in ivar: " + ivar.value;
+        assert ivar.value == expected : "Unexpected value in ivar: " + ivar.value;
+        System.out.println("After joining threads ivar still has expected value: " + expected);
 
         System.out.println("All tests succeeded :)");
     }
