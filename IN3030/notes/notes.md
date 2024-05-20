@@ -207,7 +207,7 @@ class IVar<T> {
 ```
 
 ## Threads
-- Can threads spawned by the main thread spawn new threads? - Yes because there is nothing special about the main thread except for the fact that it is the thread that gets assigned to do the `main` function. Any thread can spawn another thread.
+- Can threads spawned by the main thread spawn new threads? - Yes because there is nothing (/very little) special about the main thread except for the fact that it is the thread that gets assigned to do the `main`. Any thread can spawn another thread. Related: A java program terminates when the main thread has terminated AND any threads spawned by the main thread has terminated AND any threads spawned by threads spawned by the main thread has terminated.
 - How can 100 java threads appear to execute concurrently on a 4 core machine? - This is up to the JVM and the operating system's scheduler to schedule time slices for each of the running threads so that they all get assigned time to execute their tasks. The operating system will also have to manage context switches between the different threads. In practice this means that the threads will regularly have to temporarily pause their execution to allow other threads access to the physical hardware. Even if you were to only create 4 java threads on a 4 core machine, it is unlikely that this would lead to true uninterrupted physical concurrency as there is almost always some other program running on the system that needs to do work on the processor which would have to interrupt the threads in your java program.
 
 ## `synchronized`
@@ -1499,3 +1499,45 @@ public static void waitAndSwap(int id, int iteration) {
     }
 }
 ```
+
+Exam 2019
+1.1: a
+1.2: a, c, f
+1.3: a, c
+1.4: d
+
+2: 
+```java
+import java.util.concurrent.*;
+class CyclicBarrierJoinP {
+    static CyclicBarrier cb;
+    public static void done() {
+        try {
+            cb.await();
+        } catch (Exception e) {
+            return;
+        }
+    }
+
+    public static void main(String[] args) {
+        int numberofthreads = 10;
+        Thread[] t = new Thread[numberofthreads];
+        cb = new CyclicBarrier(numberofthreads + 1);
+        for (int j = 0; j < numberofthreads; j++) {
+            (t[j] = new Thread(new ExThread())).start();
+        }
+        done();
+    }
+
+    static class ExThread implements Runnable {
+        public void run() {
+            try {
+                TimeUnit.SECONDS.sleep(10);
+            } catch (Exception e) {
+                return;
+            };
+            done();
+        }
+    }
+}
+``` 
