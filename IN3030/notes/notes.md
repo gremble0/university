@@ -1706,3 +1706,24 @@ class TwinPrimesPara {
     }
 }
 ```
+
+5:
+5.1: c
+5.2: 300 000 000m / 1 000 000 000 = 0.3m = 300mm -> a
+5.3:
+My answer: The relationship here lies in the fact that modern cpus are bottlenecked by the speed of which electrical signals can go through the wires between the computers components. A typical copper wire can transmit electrical signals at around 2/3rds the speed of light and an average modern cpu will have a clock speed between 3-4GHz. This means that the physical distance from the cpu core to the memory is very important for a computers performance. This is why modern computers layer the cache into several layers, where the most relevant cache is physically closest to the core. Ideally the cache would be the high performance memory closest to the core, however this cache is more expensive and there is also a physical limitation for how much cache you can fit close to the core before its performance effectively degrades to the same as a lower level cache - which would defeat the purpose of having a multi level cache system.
+
+Suggested answer:
+The speed of light in vacuum is constant at 300,000 km/s, which corresponds to 30 cm/ns.
+
+The slow speed of light means high latency for access to data over a distance and this
+was one reason that caches were developed (the other being the availability of highspeed-but-expensive memory).
+
+As CPUs got faster, the access latency even to cache got relatively larger resulting in
+multiple level caches as to mitigate this delay.
+
+The latency problem is compounded by the slower speed of propagation in copper and
+fiber optics albeit only by a constant factor of about 2/3.
+
+In summary, the slow speed of light lead to the development of multiple level caches as
+to hide the latency caused by the speed of light.
