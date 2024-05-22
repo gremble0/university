@@ -1500,7 +1500,7 @@ public static void waitAndSwap(int id, int iteration) {
 }
 ```
 
-Exam 2019
+## Exam 2019
 1.1: a
 1.2: a, c, f
 1.3: a, c
@@ -1718,8 +1718,8 @@ Each thread executes one pass of the insertion sort. Because each pass proceeds 
 The problem with this is that it requires one synchronization per element access, which
 is very inefficient. Instead, we can let the k’th thread lock a long segment of the array. If,
 for example, the segments are of length 20 then the number of synchronizations is cut
-down by a factor of 20 albeit it is still O(N*N). However, if the segment size is, for
-example, N/M/20, then the number of synchronizations is O(N*M) and because M is
+down by a factor of 20 albeit it is still O(N * N). However, if the segment size is, for
+example, N/M/20, then the number of synchronizations is O(N * M) and because M is
 much smaller than N, it is essentially O(N).
 
 If M is, say, 2x the number of cores, it is likely that there will be a thread that is able to execute – the faster threads will be delayed and the slower given a chance to barge ahead.
@@ -1752,3 +1752,32 @@ fiber optics albeit only by a constant factor of about 2/3.
 
 In summary, the slow speed of light lead to the development of multiple level caches as
 to hide the latency caused by the speed of light.
+
+## Exam 2018
+1.1: In a Java program, the programmer must create and start every thread that the program uses. Is this right?
+Select an alternative: No, the first thread is created automatically and is automatically started and set to execute the main() method. The remaining threads must be created and started by one of the other threads in the program.
+
+1.2: Which of the following statements are true for Java Threads that are created in the same program? (More than one
+answer is possible.)
+Java threads can execute in parallel independently of one another on multi-core machines. - **TRUE**
+If there are more threads than available cores, the program cannot be run. - **FALSE**, If there are more threads than available cores, the program can still run. The operating system's scheduler will time-slice the threads, giving the appearance of parallel execution.
+Java threads execute at the same speed because each thread is assigned to its own core. - **FALSE**, Java threads do not necessarily execute at the same speed, and threads are not guaranteed to be assigned to their own core.
+Java threads can access the local variable of one another. - **FALSE**, Java threads cannot directly access the local variables of one another. Each thread has its own stack, and local variables are stored in the stack.
+Java threads reside in a common part of memory and can access static variables declared in the class containing the threads. - **TRUE**
+Java threads always execute one at a time. - **FALSE**, Java threads can run concurrently. They do not always execute one at a time unless they are synchronized or the system is single-threaded.
+
+1.3: Can we ensure that only one thread at a time is executing a method by prefixing the method with the synchronized keyword?
+Yes, if more than one thread calls the method, the Java system ensures that only one thread is executing the method at a time. - **TRUE**
+Yes, except for the initial thread running main() -- it is always allowed to execute the method even if another thread is running the method at the same time. - **FALSE**
+No, inside the method, we must add a synchronization of some kind, e.g., CyclicBarrier. - **FALSE**
+Only if the method return type is void. - **FALSE**
+
+1.4: Which of the following statements is closest to reality?
+Select an alternative:
+Java threads can be created and run so quickly that even if we are just doing two or three integer additions, it
+is worth doing them in a separate thread because the thread will execute quickly on another core.
+Java threads take a lot of time to create and to synchronize so in general a thread should not be created
+unless it can do a lot of work, e.g., at least many thousands of additions.
+Java Threads are cheap to create as long as there are less threads than cores on the machine.
+Java threads are expensive to create but it becomes cheaper and cheaper to create threads the more threads
+a program creates.
