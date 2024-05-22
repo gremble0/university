@@ -1707,6 +1707,31 @@ class TwinPrimesPara {
 }
 ```
 
+4:
+4.1:
+Insertsort can be parallelized in more than one way.
+Method using parallel passes:
+One way is to use M threads where M is 1-2 x the number of cores. Insertion sort can be described as a number of passes, the k’th pass inserts the k’th element into the 0 .. k-1 other elements utilizing the fact that they are in non-decreasing order.
+
+Each thread executes one pass of the insertion sort. Because each pass proceeds from the k’th element and downwards toward the zeroth element, we need to make sure that when the k’th pass has reached element i (where 0 < i <= k) then the (k+1)’th pass must not have gotten further down than i+1. We can ensure this by having a semaphore for EACH element in the array. A thread doing pass k then locks every element before accessing it – and releases when it moves to the next lower element. If we ensure that it gets the lock for the k’th element before any pass with a pass number higher than k, then the passes with a higher number cannot “overtake” the thread doing the k’th pass.
+
+The problem with this is that it requires one synchronization per element access, which
+is very inefficient. Instead, we can let the k’th thread lock a long segment of the array. If,
+for example, the segments are of length 20 then the number of synchronizations is cut
+down by a factor of 20 albeit it is still O(N*N). However, if the segment size is, for
+example, N/M/20, then the number of synchronizations is O(N*M) and because M is
+much smaller than N, it is essentially O(N).
+
+If M is, say, 2x the number of cores, it is likely that there will be a thread that is able to execute – the faster threads will be delayed and the slower given a chance to barge ahead.
+
+Each thread enters a new pass by locking an entry region.
+
+In the entry region, it grabs the next pass number, grabs the lock of the first segment, and thereafter releasing the lock for the entry region. This ensures that threads are started in the order of the pass numbers. We identify the pass numbers by the number of elements that must be treated in the pass, i.e., the first pass is k because it need to treat elements from 0 to k.
+
+For locking the entry region and each segment, we use a semaphore initialized to one.
+
+Both of these algorithms are faithful to the bubblesort algorithm – and both can achieve speedup for the parallel version. 
+
 5:
 5.1: c
 5.2: 300 000 000m / 1 000 000 000 = 0.3m = 300mm -> a
