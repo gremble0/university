@@ -3,6 +3,7 @@ Speed of light: 299 792 458 m/s
 finally {} may not be executed if a thread is interrupted inside catch, e.g. `try { ... } catch { Thread.currentThread().interrupt(); } finally { ... }`
 Remember to comment code
 1 second = 1 000 000 000 nanoseconds
+Read all questions before answering any of them
 
 ## Cache friendliness of bubblesort
 ```java
@@ -30,6 +31,11 @@ static void bubbleSort(int array[]) {
 ### Improvements (In general)
 - Even though a better solution for an algorithm is not necessarily always more cache friendly there is generally a correlation, we can say that this is mostly due to cache saturation. More efficient algorithms do fewer operations for the same result, leading to less cache saturation. This is especially true for larger datasets. Since there is very little inherently cache inefficient with the bubble sort algorithm, we can say that any speedups that maintain the `identity` of the bubble sort algorithm is an improvement.
 - Parallelism: If we were to parallelize the algorithm we could reduce the cache saturation. The benefit of this would vary depending on both amount of threads and the size of the array, where larger arrays and more threads are benefitial. The sweetspot here would be if we could splice the array to perfectly fit the size of a cache line for each thread (there is also a sweetspot for a not). In terms of implementing this we would end up with an array where it contains several sorted subarrays. We could then run something like mergesort on these subarrays. This (sort of) maintains the integrity of still being the bubblesort algorithm.
+
+Mergesort version is not good!!! Try to stay loyal to the algorithm -> nopass. Start threads bubblesorting the array from 0..N-1, each thread containing an ID where no thread with a higher ID (started later) can pass a thread with a lower ID (Sort of like having several sliding windows). Next sort from 0..N-2, etc., until N==1.
+
+Bubblesort is good when an array is almost sorted.
+
 ### Improvements (This implementation)
 - Switch inner for loop to range from `j = i .. j < size - 1`
 ```java
@@ -309,6 +315,8 @@ class JoinP {
     }
 }
 ```
+## Prefetching
+When youre accessing data the likelyhood youre going to need data sequentially after it is high so the computer can prefetch this data so that it doesnt have to wait for the slow speed of light to get it - it's better to already have it ready.
 
 ## Sorting algorithms
 ```c
@@ -323,6 +331,9 @@ void arr_swap(void *arr, int i, int j, size_t type_size) {
   memcpy(arr + j * type_size, temp, type_size);
 }
 
+// NOTE: if we move the second condition in the inner loop into an if statement
+// we could remove the swapped varable and make it purely iterative. This would
+// mean each inner loop would be a lot longer however.
 void bubblesort(int *arr, int size) {
   char swapped = 0;
   // Loop through each number
@@ -1738,6 +1749,12 @@ Both of these algorithms are faithful to the bubblesort algorithm – and both c
 5.3:
 My answer: The relationship here lies in the fact that modern cpus are bottlenecked by the speed of which electrical signals can go through the wires between the computers components. A typical copper wire can transmit electrical signals at around 2/3rds the speed of light and an average modern cpu will have a clock speed between 3-4GHz. This means that the physical distance from the cpu core to the memory is very important for a computers performance. This is why modern computers layer the cache into several layers, where the most relevant cache is physically closest to the core. Ideally the cache would be the high performance memory closest to the core, however this cache is more expensive and there is also a physical limitation for how much cache you can fit close to the core before its performance effectively degrades to the same as a lower level cache - which would defeat the purpose of having a multi level cache system.
 
+Speed of light is a little bit faster in fiberoptic than in copper.
+
+Speed of light is an unavoidable physical latency for computers, caching can reduce this physical latency by reducing the physical distance the light has to travel.
+
+3GHz -> 3 additions per nanosecond.
+
 Suggested answer:
 The speed of light in vacuum is constant at 300,000 km/s, which corresponds to 30 cm/ns.
 
@@ -1774,10 +1791,7 @@ Only if the method return type is void. - **FALSE**
 
 1.4: Which of the following statements is closest to reality?
 Select an alternative:
-Java threads can be created and run so quickly that even if we are just doing two or three integer additions, it
-is worth doing them in a separate thread because the thread will execute quickly on another core.
-Java threads take a lot of time to create and to synchronize so in general a thread should not be created
-unless it can do a lot of work, e.g., at least many thousands of additions.
+Java threads can be created and run so quickly that even if we are just doing two or three integer additions, it is worth doing them in a separate thread because the thread will execute quickly on another core.
+Java threads take a lot of time to create and to synchronize so in general a thread should not be created unless it can do a lot of work, e.g., at least many thousands of additions.
 Java Threads are cheap to create as long as there are less threads than cores on the machine.
-Java threads are expensive to create but it becomes cheaper and cheaper to create threads the more threads
-a program creates.
+Java threads are expensive to create but it becomes cheaper and cheaper to create threads the more threads a program creates.
