@@ -42,7 +42,11 @@
 - e: In this case we would have to convert the numerical features to categorical ones. To do this we could decide for each feature - 1: decide a sensible amount of categories for that feature, 2: decide the numerical ranges for each category. We could do this by doing some educated guesses or programatically finding some sensible values. Some educated guesses for the spam email example could be: `chars 0 = 0`, `chars 1..1000 = 1`, `chars 1001..1000 = 2`, `chars >10000 = 3`. `line breaks 0 = 0`, `line breaks 1..10 = 1`, `line breaks 11..100 = 2`, `line breaks 101..1000 = 3`, `line breaks >1001 = 4`. And something similar for `dollar occurs`. We would then apply these ranges to the dataset before handing it to the classifier - this also has the benefit of acting as a sort of scaler to the dataset.
 
 ## Task 4
-h(x1) = -w0 + w1*x1 = -(-1) + 0.1* ???
+w = (0.1, 0.1, 0.2), x1 = (1, 1), add bias term -1 -> x'1 = (-1, 1, 1)
+w * x'1 = (0.1, 0.1, 0.2) * (-1, 1, 1) = 0.1 * -1 + 0.1 * 1 + 0.2 * 1 = -0.1 + 0.1 + 0.2 = 0.2
+0.2 > 0 -> class 1.
+
+h(x1) = -w0 + w1 * x1 = -(-1) + 0.1 * ???
 
 ## Genetic algorithm vs hill climbing
 The genetic algorithm is not stochastic meaning its results has some amount of randomness involved - this comes from the mutation and crossover which we could also change to modify the randomness. Thus the genetic algorithm has a higher degree of exploration while the hillclimbing algorithm is pure exploitation. Therefore the hillclimbing algorithm(s) will always end up at the same local optimum(s) (which may be the global optimum), while the genetic algorithm could theoretically end up on any local optimum, which may be better if you for example run it a couple times to make sure youve found the global optimum.
