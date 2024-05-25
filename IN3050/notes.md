@@ -46,11 +46,30 @@
 w * x'1 = (0.1, 0.1, 0.2) * (-1, 1, 1) = 0.1 * -1 + 0.1 * 1 + 0.2 * 1 = -0.1 + 0.1 + 0.2 = 0.2
 0.2 > 0 -> class 1.
 
-- b: w_i = w_i - learning_rate * (output - target) * x_i
+- b: w_i = w_i - learning_rate * (predicted - target) * x_i
 w = (0.1, 0.1, 0.2) - 0.2 * (1 - 0) * (-1, 1, 1)
 w = (0.1, 0.1, 0.2) - 0.2 * (-1, 1, 1)
 w = (0.1, 0.1, 0.2) - (-0.2, 0.2, 0.2) # NOTE: double negative!
 w = (0.3, -0.1, 0)
+
+## Task 5
+- a: (bias, x1, x2) = (-1, 2, -1) -> take the weighted sum of these by dotting with the weights going into the hidden layer
+h3 = (0.3, 0.6, 0.9) . (-1, 2, -1) = 0.3 * -1 + 0.6 * 2 + 0.9 * -1 = -0.3 + 1.2 - 0.9 = 0
+THEN apply activation function, logistic function in this case, on this weighted sum:
+exp(x) is equivalent to `e^x` where e is eulers number ~2.718.
+a_3 = 1/(1 + exp(-h3)) = 1/2 = 0.5
+
+- b: 
+h1 = (0.1, 0.4, 0.7) . (-1, 2, -1) = 0.1 * -1 + 0.4 * 2 + 0.7 * -1 = -0.1 + 0.8 - 0.7 = 0
+We have already calculated the activation function of 0 to be 0.5, so a_1 = 0.5
+
+Starting to see a pattern, but lets calculate h2 just to be sure
+
+h2 = (0.2, 0.5, 0.8) . (-1, 2, -1) = 0.2 * -1 + 0.5 * 2 + 0.8 * -1 = -0.2 + 1 - 0.8 = 0
+a_2 = 0.5 (same as for h1 and h3)
+
+Final layer = `(-1, 0.5, 0.5, 0.5)`. We then dot these with the weights to get the final output.
+(-1, -1, 2, 3) . (-1, 0.5, 0.5, 0.5) = -1 * -1 + -1 * 0.5 + 2 * 0.5 + 3 * 0.5 = 1 - 0.5 + 1 + 1.5 = 3
 
 ## Genetic algorithm vs hill climbing
 The genetic algorithm is not stochastic meaning its results has some amount of randomness involved - this comes from the mutation and crossover which we could also change to modify the randomness. Thus the genetic algorithm has a higher degree of exploration while the hillclimbing algorithm is pure exploitation. Therefore the hillclimbing algorithm(s) will always end up at the same local optimum(s) (which may be the global optimum), while the genetic algorithm could theoretically end up on any local optimum, which may be better if you for example run it a couple times to make sure youve found the global optimum.
@@ -74,4 +93,11 @@ Filter old and new individuals to select the next generation. u(mu) old generati
 
 ## Perceptron
 Update weights formula:
-w_i = w_i - learning_rate * (output - target) * x_i
+w_i = w_i - learning_rate * (predicted - target) * x_i
+
+
+## Formulas
+Dot product: `a . b = a_1 * b_1 + a_2 * b_2 + ... + a_n * b_n`
+(np.)exp: `exp(x) = e^x`
+Perceptron update weights: `w_i = w_i - learning_rate * (predicted - target) * x_i`
+logistic activation: `1/(1 + exp(-x))`
