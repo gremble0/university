@@ -1791,7 +1791,7 @@ Only if the method return type is void. - **FALSE**
 
 1.4: Which of the following statements is closest to reality?
 Select an alternative:
-Java threads can be created and run so quickly that even if we are just doing two or three integer additions, it is worth doing them in a separate thread because the thread will execute quickly on another core.
-Java threads take a lot of time to create and to synchronize so in general a thread should not be created unless it can do a lot of work, e.g., at least many thousands of additions.
-Java Threads are cheap to create as long as there are less threads than cores on the machine.
-Java threads are expensive to create but it becomes cheaper and cheaper to create threads the more threads a program creates.
+Java threads can be created and run so quickly that even if we are just doing two or three integer additions, it is worth doing them in a separate thread because the thread will execute quickly on another core. - **FALSE**
+Java threads take a lot of time to create and to synchronize so in general a thread should not be created unless it can do a lot of work, e.g., at least many thousands of additions. - **TRUE**
+Java Threads are cheap to create as long as there are less threads than cores on the machine. -- **FALSE**
+Java threads are expensive to create but it becomes cheaper and cheaper to create threads the more threads a program creates. -- **FALSE**
