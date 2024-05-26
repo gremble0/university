@@ -1795,3 +1795,97 @@ Java threads can be created and run so quickly that even if we are just doing tw
 Java threads take a lot of time to create and to synchronize so in general a thread should not be created unless it can do a lot of work, e.g., at least many thousands of additions. - **TRUE**
 Java Threads are cheap to create as long as there are less threads than cores on the machine. -- **FALSE**
 Java threads are expensive to create but it becomes cheaper and cheaper to create threads the more threads a program creates. -- **FALSE**
+
+2:
+```java
+import java.util.concurrent.*;
+
+class Problem {
+    static int num = 2;
+    static int extra = 2;
+    static CyclicBarrier b;
+
+    public static void main(String[] args) {
+        Problem p = new Problem();
+        num = Integer.parseInt(args[0]);
+        extra = Integer.parseInt(args[1]);
+        b = new CyclicBarrier(num);
+
+        p.utfoer(num + extra);
+        System.out.println("Main TERMINATED");
+    }
+
+    void utfoer(int antT) {
+        Thread[] t = new Thread[antT];
+        for (int i = 0; i < antT; i++)
+            (t[i] = new Thread(new Arbeider(i))).start();
+
+        try {
+            for (int i = 0; i < antT; i++)
+                t[i].join();
+        } catch (Exception e) {
+        }
+    }
+
+    class Arbeider implements Runnable {
+        int ind;
+
+        void sync() {
+            try {
+                b.await();
+            } catch (Exception e) {
+                return;
+            }
+        }
+
+        public Arbeider(int in) {
+            ind = in;
+        };
+
+        public void run() {
+            sync();
+            System.out.println("A" + ind);
+            sync();
+            System.out.println("B" + ind);
+        }
+    }
+}
+```
+
+2.1: when called with parameters "2 0" will the program always terminate?
+- With these parameters num will be set to `2` and extra will be set to `0`. This means that we will call `utfoer` with `2` as an argument and the `CyclicBarrier` `b` will be instantied with `parties = 2` meaning it will wait for 2 threads to call `await` before it releases all waiting threads. We will then create 2 new `Arbeider` threads and immediately start them both, before waiting for these to finish in the `utfoer` method. The two arbeider threads will then both call `sync()` which in turn calls `b.await()`. This means the Arbeider threads will block until they are released which will happen as soon as the second thread calls `sync()`. After the threads get released they will then print `"A" + ind`. We can not know whether the first or second thread will print first since they both get released simultaneously, however we know that after each thread has finished their call to `println` they will again call `sync()` which will block until both threads call it. When both threads have called sync they will again be released and finally print `"B" + ind` which again we can not know whether the first or second thread calls first. After that the threads terminate and the calls to `t[i].join()` unblock, thus ending the `p.utfoer(num + extra)` method call meaning the main method goes to its final line printing "Main TERMINATED" before the program terminates as the main method and all other threads created in the program have terminated.
+
+2.2: When the program is called with the parameters "2 0", will the program always print the same text?
+- No, as described in task 2.1 we can not know which thread will call `println` first after they get released. However we do know that the output of the program will follow a certain pattern. The program will first print "A 0" and "A 1" in either order depending on which thread calls println first. Then the program will print "B 0" and "B 1" in either order. Then the program will print "Main TERMINATED".
+
+For a walkthrough of the program giving more context see answer to task 2.1
+
+2.3: When the program is called with the parameters "2 2", will the program always terminate?
+- With these parameters both `num` and `extra` will be set to 2. This means that we will call utfoer with 4 as an argument and the CyclicBarrier b will be instantiated with parties = 2 meaning it will wait for 2 threads to call await before it releases them. We will then create 4 Arbeider threads and immediately start them all, before waiting for these to finish in the utfoer method. Compared to the previous parameterlist of "2 0" we now have a lot more combinations, so let's instead look at one combination in which the program does not terminate to prove that it does not *always* terminate. Let's say the first thing that happens is that two threads calls sync and immediately get released and then both print "A" + ind. Then one new thread + one of the threads that printed "A" calls sync and both get released, and then print "A" and "B" respectively. One thread has now terminated, one has done nothing and two threads that have printed "A". Then both of the threads that have printed "A" call sync and get released before printing "B" and terminating. Three threads have now terminated and one has done nothing. Now when the final thread calls sync() it will wait there forever since the other threads have all finished and the barrier is too big to go past, meaning the program will never print "Main TERMINATED" before terminating.
+- It is however worth nothing that this is a very unlikely scenario if the threads execute at about the same speed, however since it is a possibility we cannot say that the program will *always* terminate.
+
+2.4: When the program is called with the paramters "2 2", will the program always print the same text? If so, show the output. If not, give two different examples of what the program prints.
+- The program will not always give the same output, there are many combinations. See 2.3 for more context and descriptions. Here are two possible outputs:
+A 0
+A 1
+B 0
+B 1
+A 2
+A 3
+B 2
+B 3
+Main TERMINATED
+
+A 0
+A 1
+A 2
+B 0
+B 1
+B 2
+
+3:
+3.1:
+This question is based on Erathostenes Sieve that finds prime numbers up to a given number N. You should already be quite familiar with the sieve as you have implemented it in Oblig 3 (attached as PDF). This question is about finding so-called Prime Deserts. A Prime Desert is an interval `[A, B]` where A < B, A and B are prime numbers, and there is no prime between A and B. Examples of such deserts are `[2, 3]`, `[7, 11]`, `[23, 29]`, and `[337, 347]`. The size of a Prime Desert is defined as B-A-1, i.e., the number of integers strictly between A and B. A is called the start point of the Prime Desert and B is called the end point. You are to write a Java program that generates a list of Prime Deserts. The list should be sorted so that the intervals come in ascending order, i.e., the starts points are in ascending order. The first Prime Desert is `[2, 3]` and thereafter, the next Prime Desert should be larger than the previous one throughout the list. Furthermore, you should find all Prime Deserts where the end point no greater than N, but you should exclude from the list any Prime Desert whose size is not greater than the size of the previous Prime Desert in the list. For example, that means that the start of the list is: `[2,3]` ,`[3, 5]`, `[7, 11]`, `[23, 29]`, `[89, 97]`,... i.e., `[5, 7]`, `[11, 13]`, `[13, 17]`, `[17, 19]` and more are left out because their size is not greater than the previous Prime Desert in the list. To be sure, you may not leave out a Prime Desert, if it is larger than the previous in the list and smaller than the next one; for example, you cannot have a list that starts with `[2, 3]` followed by `[23, 29]`. You need not write the entire program as you can assume that you already have the code that you wrote for Oblig 3. You are welcome to base your code on Modell2 from the lectures in Week 5 (uke5).
+
+```java
+```
