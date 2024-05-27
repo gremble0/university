@@ -2146,3 +2146,25 @@ public class PrimeDesertsPara {
   }
 }
 ```
+
+5.1: There are many ways of parallelizing a recurvise algorithm. Of the following statements, which of them is a good idea?
+1. When the recursive calls form a tree structure, it is a good idea to spawn and use threads at the bottom of the tree only. **FALSE**
+2. A simple way to parallelize a recursive program is to have one thread per recursive call. This almost always leads to achieving a good speedup. **FALSE**
+3. It is important to limit the number of threads. **TRUE**
+4. When the recursive calls form a tree structure, it is a good idea to spawn new thread at the top of the tree and limit the number of threads at the bottom of the tree. **TRUE**
+5. Recursive calls are relatively expensive compared to creating and running a thread. **FALSE**
+6. Recursive calls are several orders of magnitude cheaper than creating and running a thread. **TRUE**
+7. When the recursive calls form a tree structure, it is a good idea to replace branches at the lower levels of the tree with simple sequential solutions of the problem. **TRUE**
+8. It is important to balance the number of threads and the amount of work done by each thread. **TRUE**
+
+## Exam 2016
+1:
+a: *Beskriv meget kortfattet de to viktigste egenskapene ved tråder i et Java-program* - A thread is a sequential object that runs in parallel with any other threads in the program. A thread shares memory with the other threads in the program.
+b: *Terminerer programmet alltid når maintråden er ferdig?* - No, the program only terminates when the main method and all other threads spawned by the user has terminated.
+
+2:
+a: *Tenk deg et program hvor det er en tråd som usynkronisert både leser og øker en variabel ‘x’ (initielt = 0) med 1 hver gang den er ferdig med en deloppgave, mens de andre trådene går i løkke, leser ‘x’ og skal terminere når x == 20. Kan dette gå galt – vil alle ‘lese-trådene’ sikkert terminere hvis det løses minst 22 slike deloppgaver?* - Since the condition for ending is `x == 20` and the writing thread will continue writing until 22 the reading threads are not guaranteed to read the value 20 before it gets overwritten to be 21 by the writing thread causing that thread to never terminate as it has "missed its window" to read the value that would cause it to terminate.
+b: *Tenk deg et program hvor det er en tråd som usynkronisert både leser og øker en variabel ‘x’ (initielt = 0) med 1 hver gang den er ferdig med en deloppgave, mens de andre trådene går i løkke, leser ‘x’ og skal terminere når x >= 20. Kan dette gå galt – vil 2 alle leser-trådene sikkert terminere hvis x økes til minst 22?* - With this condition all reading threads will at some point reach a point where it reads a value larger than or equal to 20 causing them to successfully terminate. It does no longer matter (at least for causing the thread to terminate) whether the reading threads misses some values when reading since it only requires some value larger than 20 which will always happen when the writing thread finishes.
+
+## Gustavsons law
+Gustafson's Law is a principle in parallel computing that addresses the limitations of Amdahl's Law by considering the scale of computational problems. It posits that as the problem size grows, the proportion of parallelizable work increases, allowing for more effective utilization of parallel processing capabilities and achieving greater speedup with more processors. Formula: `S(p) = p - a(p - 1)` where S(p) is the speedup with p processors, p is the number of processors, a is the fraction of the workload that is sequential (not parallelizable). Amdahl's Law focuses on the speedup of a task using multiple processors, emphasizing the limit imposed by the sequential portion of the task. It shows that the maximum speedup is constrained by the part of the task that cannot be parallelized. In contrast, Gustafson's Law suggests that as more processors are added, the size of the problem can increase proportionally, making the parallel portion dominant and leading to greater overall speedup.
