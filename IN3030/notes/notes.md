@@ -1888,15 +1888,12 @@ B 2
 This question is based on Erathostenes Sieve that finds prime numbers up to a given number N. You should already be quite familiar with the sieve as you have implemented it in Oblig 3 (attached as PDF). This question is about finding so-called Prime Deserts. A Prime Desert is an interval `[A, B]` where A < B, A and B are prime numbers, and there is no prime between A and B. Examples of such deserts are `[2, 3]`, `[7, 11]`, `[23, 29]`, and `[337, 347]`. The size of a Prime Desert is defined as B-A-1, i.e., the number of integers strictly between A and B. A is called the start point of the Prime Desert and B is called the end point. You are to write a Java program that generates a list of Prime Deserts. The list should be sorted so that the intervals come in ascending order, i.e., the starts points are in ascending order. The first Prime Desert is `[2, 3]` and thereafter, the next Prime Desert should be larger than the previous one throughout the list. Furthermore, you should find all Prime Deserts where the end point no greater than N, but you should exclude from the list any Prime Desert whose size is not greater than the size of the previous Prime Desert in the list. For example, that means that the start of the list is: `[2,3]` ,`[3, 5]`, `[7, 11]`, `[23, 29]`, `[89, 97]`,... i.e., `[5, 7]`, `[11, 13]`, `[13, 17]`, `[17, 19]` and more are left out because their size is not greater than the previous Prime Desert in the list. To be sure, you may not leave out a Prime Desert, if it is larger than the previous in the list and smaller than the next one; for example, you cannot have a list that starts with `[2, 3]` followed by `[23, 29]`. You need not write the entire program as you can assume that you already have the code that you wrote for Oblig 3. You are welcome to base your code on Modell2 from the lectures in Week 5 (uke5).
 
 ```java
-import java.util.ArrayList;
-import java.util.Arrays;
-
 public class PrimeDeserts {
   /**
    * @return an array of pairs of prime deserts. In a shape like this: [[2,3],
    *         [3,5], [7,11]]
    */
-  private static ArrayList<int[]> getPrimeDeserts(int[] primes) {
+  private static List<int[]> getPrimeDeserts(int[] primes) {
     // Could do some more proper error handling if wanted, but we need to be
     // able to index at least `primes[1]` for this not to throw an exception
     if (primes.length < 2)
@@ -1936,7 +1933,213 @@ public class PrimeDeserts {
     // Assume we have from oblig3
     SieveOfEratosthenesSeq sieve = new SieveOfEratosthenesSeq(n);
     int[] primes = sieve.getPrimes();
-    ArrayList<int[]> primeDeserts = getPrimeDeserts(primes);
+    List<int[]> primeDeserts = getPrimeDeserts(primes);
+
+    for (int[] desert : primeDeserts)
+      System.out.println(Arrays.toString(desert));
+  }
+}
+```
+
+3.2: Parallel
+```java
+public class PrimeDesertsPara {
+  // THIS METHOD DOES NOT WORK BECAUSE THE SYNCHRONIZATION NEEDS TO BE DONE
+  // SEQUENTIALLY!!! THE SEMAPHORE SOLUTION ONLY WORKS IF THE ORDER OF THE
+  // SYNCHRONIZED OUTPUT DOES NOT MATTER. SINCE THE OUTPUT LIST NEEDS TO
+  // CONSIST OF PAIRS WHO'S DIFFERENCE INCREASE IN MONOTONIC ORDER THIS
+  // IS NOT SUFFICIENT. THIS APPROACH MAY RARELY BE USEFUL
+  private static List<int[]> getPrimeDeserts(int[] primes) {
+    List<int[]> primeDeserts = new ArrayList<>();
+    Semaphore synchronizing = new Semaphore(1);
+    // Class local to this function so that it can access the `primes` and
+    // `primeDeserts` variables without having to send them around as a parameter
+    // or anything. This could easily be moved outside of this function if wanted
+    class PrimeDesertsInInterval implements Runnable {
+      private List<int[]> localDeserts;
+      private final int start, end;
+
+      PrimeDesertsInInterval(int start, int end) {
+        localDeserts = new ArrayList<>();
+        this.start = start;
+        this.end = end;
+      }
+
+      public void run() {
+        // Keep track of previous results to not double calculate
+        int prevDistance = primes[start + 1] - primes[start];
+        localDeserts.add(new int[] { primes[start], primes[start + 1] });
+
+        // length - 1 because we look ahead in each iteration
+        for (int i = start + 1; i < end; ++i) {
+          int curDistance = primes[i + 1] - primes[i];
+          if (curDistance > prevDistance) {
+            primeDeserts.add(new int[] { primes[i], primes[i + 1] });
+            prevDistance = curDistance;
+          }
+        }
+
+        synchronize();
+      }
+
+      private void synchronize() {
+        // Upload this threads local deserts to the global `primeDeserts`
+        // after locking it. This may be faster or slower than doing all
+        // the synchronization sequentially in the main thread after all
+        // threads have finished depending on when each thread finishes.
+        // (If there is a small time difference between the slowest and
+        // fastest threads sequentially is probably faster, otherwise
+        // this is probably faster)
+        try {
+          synchronizing.acquire();
+        } catch (Exception e) {
+          return;
+        }
+
+        for (int[] desert : localDeserts)
+          primeDeserts.add(desert);
+
+        synchronizing.release();
+      }
+    }
+
+    // Use all cores - can be changed
+    final int cores = Runtime.getRuntime().availableProcessors();
+    final int intervalSize = primes.length / cores;
+
+    Thread[] threads = new Thread[cores];
+    int start = 0;
+    for (int i = 0; i < cores - 1; ++i) {
+      (threads[i] = new Thread(new PrimeDesertsInInterval(start, start + intervalSize))).start();
+      start += intervalSize;
+    }
+    (threads[cores - 1] = new Thread(new PrimeDesertsInInterval(start, primes.length - 1))).start();
+
+    try {
+      for (int i = 0; i < cores; ++i)
+        threads[i].join();
+    } catch (Exception e) {
+      e.printStackTrace();
+      return null;
+    }
+
+    return filterPrimeDeserts(primeDeserts);
+  }
+
+  // FIXED VERSION
+  private static List<int[]> getPrimeDeserts2(int[] primes) {
+    // Class local to this function so that it can access the `primes` variable
+    // without having to send them around as a parameter or anything. This could
+    // easily be moved outside of this function if wanted
+    class PrimeDesertsInInterval implements Runnable {
+      public List<int[]> localDeserts;
+      private final int start, end;
+
+      PrimeDesertsInInterval(int start, int end) {
+        localDeserts = new ArrayList<>();
+        this.start = start;
+        this.end = end;
+      }
+
+      public void run() {
+        // Keep track of previous results to not double calculate
+        int prevDistance = primes[start + 1] - primes[start];
+        localDeserts.add(new int[] { primes[start], primes[start + 1] });
+
+        // length - 1 because we look ahead in each iteration
+        for (int i = start + 1; i < end; ++i) {
+          int curDistance = primes[i + 1] - primes[i];
+          if (curDistance > prevDistance) {
+            localDeserts.add(new int[] { primes[i], primes[i + 1] });
+            prevDistance = curDistance;
+          }
+        }
+      }
+    }
+
+    List<int[]> primeDeserts = new ArrayList<>();
+    // Use all cores - can be changed
+    final int cores = Runtime.getRuntime().availableProcessors();
+    final int intervalSize = primes.length / cores;
+
+    Thread[] threads = new Thread[cores];
+    PrimeDesertsInInterval[] tasks = new PrimeDesertsInInterval[cores];
+    int start = 0;
+    for (int i = 0; i < cores - 1; ++i) {
+      tasks[i] = new PrimeDesertsInInterval(start, start + intervalSize);
+      (threads[i] = new Thread(tasks[i])).start();
+      start += intervalSize;
+    }
+    // Last thread takes the rest of the primes
+    tasks[cores - 1] = new PrimeDesertsInInterval(start, primes.length - 1);
+    (threads[cores - 1] = new Thread(tasks[cores - 1])).start();
+
+    try {
+      for (int i = 0; i < cores; ++i) {
+        threads[i].join();
+        // Synchronize the results from that thread
+        for (int[] desert : tasks[i].localDeserts)
+          primeDeserts.add(desert);
+      }
+    } catch (Exception e) {
+      e.printStackTrace();
+      return null;
+    }
+
+    return filterPrimeDeserts(primeDeserts);
+  }
+
+  private static List<int[]> filterPrimeDeserts(List<int[]> primeDeserts) {
+    if (primeDeserts.size() < 2)
+      return primeDeserts;
+
+    // Primes are currently only in monotonically increasing order within each
+    // threads local intervals. We need to filter out the pairs that are not
+    // larger than the ends of the previous threads largest desert. e.g. if
+    // Thread-1's last pair was [7,11] and Thread-2's first pair is [11,13]
+    // we need to filter out [11,13] since 13-11 < 11-7.
+    //
+    // There are two ways to do this:
+    // 1: Go through the existing primeDeserts array and `.remove()` any such
+    // elements. This will minimize memory usage, but will result in a lot of array
+    // resizing and shuffling since removing from the middle of an array is an O(n)
+    // operation, which may be very bad for performance.
+    // 2: Build up a new array only adding the fitting elements. This will result in
+    // more memory usage/garbage collection, but may be more effective.
+    //
+    // I will go with the second option because shorter runtime is usually better
+    // than low memory usage.
+
+    List<int[]> filteredPrimeDeserts = new ArrayList<>();
+    int prevDistance = primeDeserts.get(0)[1] - primeDeserts.get(0)[0];
+    filteredPrimeDeserts.add(primeDeserts.get(0));
+
+    int size = primeDeserts.size();
+    for (int i = 0; i < size; ++i) {
+      int curDistance = primeDeserts.get(i)[1] - primeDeserts.get(i)[0];
+      if (curDistance > prevDistance) {
+        filteredPrimeDeserts.add(primeDeserts.get(i));
+        prevDistance = curDistance;
+      }
+    }
+
+    return filteredPrimeDeserts;
+  }
+
+  public static void main(String[] args) {
+    // Main is same as sequential
+    int n;
+    try {
+      n = Integer.parseInt(args[0]);
+    } catch (Exception e) {
+      e.printStackTrace();
+      return;
+    }
+
+    // Assume we have from oblig3
+    SieveOfEratosthenesSeq sieve = new SieveOfEratosthenesSeq(n);
+    int[] primes = sieve.getPrimes();
+    List<int[]> primeDeserts = getPrimeDeserts2(primes);
 
     for (int[] desert : primeDeserts)
       System.out.println(Arrays.toString(desert));
