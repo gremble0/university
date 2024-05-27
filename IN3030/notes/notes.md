@@ -1888,4 +1888,58 @@ B 2
 This question is based on Erathostenes Sieve that finds prime numbers up to a given number N. You should already be quite familiar with the sieve as you have implemented it in Oblig 3 (attached as PDF). This question is about finding so-called Prime Deserts. A Prime Desert is an interval `[A, B]` where A < B, A and B are prime numbers, and there is no prime between A and B. Examples of such deserts are `[2, 3]`, `[7, 11]`, `[23, 29]`, and `[337, 347]`. The size of a Prime Desert is defined as B-A-1, i.e., the number of integers strictly between A and B. A is called the start point of the Prime Desert and B is called the end point. You are to write a Java program that generates a list of Prime Deserts. The list should be sorted so that the intervals come in ascending order, i.e., the starts points are in ascending order. The first Prime Desert is `[2, 3]` and thereafter, the next Prime Desert should be larger than the previous one throughout the list. Furthermore, you should find all Prime Deserts where the end point no greater than N, but you should exclude from the list any Prime Desert whose size is not greater than the size of the previous Prime Desert in the list. For example, that means that the start of the list is: `[2,3]` ,`[3, 5]`, `[7, 11]`, `[23, 29]`, `[89, 97]`,... i.e., `[5, 7]`, `[11, 13]`, `[13, 17]`, `[17, 19]` and more are left out because their size is not greater than the previous Prime Desert in the list. To be sure, you may not leave out a Prime Desert, if it is larger than the previous in the list and smaller than the next one; for example, you cannot have a list that starts with `[2, 3]` followed by `[23, 29]`. You need not write the entire program as you can assume that you already have the code that you wrote for Oblig 3. You are welcome to base your code on Modell2 from the lectures in Week 5 (uke5).
 
 ```java
+import java.util.ArrayList;
+import java.util.Arrays;
+
+public class PrimeDeserts {
+  /**
+   * @return an array of pairs of prime deserts. In a shape like this: [[2,3],
+   *         [3,5], [7,11]]
+   */
+  private static ArrayList<int[]> getPrimeDeserts(int[] primes) {
+    // Could do some more proper error handling if wanted, but we need to be
+    // able to index at least `primes[1]` for this not to throw an exception
+    if (primes.length < 2)
+      return null;
+
+    // ArrayList since we cant know the size of the array beforehand
+    ArrayList<int[]> primeDeserts = new ArrayList<>();
+
+    // First two primes are always a desert
+    int[] firstDesert = new int[] { primes[0], primes[1] };
+    primeDeserts.add(firstDesert);
+
+    // Keep track of previous results to not double calculate
+    int prevDistance = primes[1] - primes[0];
+
+    // length - 1 because we look ahead in each iteration
+    for (int i = 1; i < primes.length - 1; ++i) {
+      int curDistance = primes[i + 1] - primes[i];
+      if (curDistance > prevDistance) {
+        primeDeserts.add(new int[] { primes[i], primes[i + 1] });
+        prevDistance = curDistance;
+      }
+    }
+
+    return primeDeserts;
+  }
+
+  public static void main(String[] args) {
+    int n;
+    try {
+      n = Integer.parseInt(args[0]);
+    } catch (Exception e) {
+      e.printStackTrace();
+      return;
+    }
+
+    // Assume we have from oblig3
+    SieveOfEratosthenesSeq sieve = new SieveOfEratosthenesSeq(n);
+    int[] primes = sieve.getPrimes();
+    ArrayList<int[]> primeDeserts = getPrimeDeserts(primes);
+
+    for (int[] desert : primeDeserts)
+      System.out.println(Arrays.toString(desert));
+  }
+}
 ```
