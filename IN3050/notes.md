@@ -71,6 +71,10 @@ a_2 = 0.5 (same as for h1 and h3)
 Final layer = `(-1, 0.5, 0.5, 0.5)`. We then dot these with the weights to get the final output.
 (-1, -1, 2, 3) . (-1, 0.5, 0.5, 0.5) = -1 * -1 + -1 * 0.5 + 2 * 0.5 + 3 * 0.5 = 1 - 0.5 + 1 + 1.5 = 3
 
+- c:
+we calculated a_3 in task a to be 0.5.
+w_3 = w_3 - learning_rate * (predicted - target) * a_3 = 3 - 0.1 * (3 - 5) * 0.5 = 3 - 0.1 * -2 * 0.5 = 3 - 0.1 * -1 = 3 + 0.1 = 3.1
+
 ## Genetic algorithm vs hill climbing
 The genetic algorithm is not stochastic meaning its results has some amount of randomness involved - this comes from the mutation and crossover which we could also change to modify the randomness. Thus the genetic algorithm has a higher degree of exploration while the hillclimbing algorithm is pure exploitation. Therefore the hillclimbing algorithm(s) will always end up at the same local optimum(s) (which may be the global optimum), while the genetic algorithm could theoretically end up on any local optimum, which may be better if you for example run it a couple times to make sure youve found the global optimum.
 
@@ -95,9 +99,9 @@ Filter old and new individuals to select the next generation. u(mu) old generati
 Update weights formula:
 w_i = w_i - learning_rate * (predicted - target) * x_i
 
-
 ## Formulas
 Dot product: `a . b = a_1 * b_1 + a_2 * b_2 + ... + a_n * b_n`
 (np.)exp: `exp(x) = e^x`
 Perceptron update weights: `w_i = w_i - learning_rate * (predicted - target) * x_i`
 logistic activation: `1/(1 + exp(-x))`
+Backpropagation: ``
