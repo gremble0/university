@@ -81,10 +81,15 @@ w_3 = w_3 - learning_rate * (predicted - target) * a_3 = 3 - 0.1 * (3 - 5) * 0.5
 ## Task 6
 - a: Overfitting is when a machine learning model is trained too much on some training data leading to poor generalization if you tried to train it on new data it has not previously trained on. If we look at the picture we can see that the green line is clearly overfitted as it is bending in an unnatural shape to try to perfectly classify every single outlying datapoint - this model would probably not have the greatest performance on untrained data. The purple line is clearly underfitted as it is just a linear function which does not really fit to the dataset at all. The black line is a good middle ground between the two and is probably the model you would use on untrained datasets of a similar type.
 - b: If a kNN classifier is struggling with overfitting I would suggest to increase the k value. With a smaller value for k the classifier can be overly sensitive to outlying datapoints, classifying them correctly for the test dataset instead of giving a more generalizable curve. This problem can be addressed by increasing the k value, as long as we don't make k too big causing underfitting (as for example the purple classifier in the figure).
-- c: Inductive bias is some sort of preexisting assumption about the data that every algorithm has some degree of. In terms of the perceptron and logistic regression classifiers this is the fact that they are linear meaning they would not be able to produce curves such as the black or green in the figure. Inductive bias is necessary for an algorithm to be able to generalize from a finite test set into a general population.
+- c: Inductive bias is some sort of preexisting assumption about what a trained model should look like. In terms of the perceptron and logistic regression classifiers this is the fact that they are linear meaning they would not be able to produce curves such as the black or green in the figure. Inductive bias is necessary for an algorithm to be able to generalize from a finite test set into a general population.
 
 ## Task 7
+- a: `Q[center, right] = Q[center, right] + learning_rate * (reward + discount_rate * max(Q[center_right, :) - Q[center, right])` =
+     `1 + 0.1 * (1 + 0.1 * 10 - 1)` = `1.1`
 
+    Not required in task
+     `Q[center_right, down] = Q[center_right, down] + learning_rate * (reward + discount_factor * max(Q[bottom_right, :]) - Q[center_right, down])` =
+     `0 + 0.1 * (1 + 0.1 * 0 - 0)` = `0.1`
 
 ## Genetic algorithm vs hill climbing
 The genetic algorithm is not stochastic meaning its results has some amount of randomness involved - this comes from the mutation and crossover which we could also change to modify the randomness. Thus the genetic algorithm has a higher degree of exploration while the hillclimbing algorithm is pure exploitation. Therefore the hillclimbing algorithm(s) will always end up at the same local optimum(s) (which may be the global optimum), while the genetic algorithm could theoretically end up on any local optimum, which may be better if you for example run it a couple times to make sure youve found the global optimum.
@@ -111,8 +116,15 @@ Update weights formula:
 w_i = w_i - learning_rate * (predicted - target) * x_i
 
 ## Formulas
-Dot product: `a . b = a_1 * b_1 + a_2 * b_2 + ... + a_n * b_n`
-(np.)exp: `exp(x) = e^x`
-Perceptron update weights: `w_i = w_i - learning_rate * (predicted - target) * x_i`
-logistic activation: `1/(1 + exp(-x))`
-Backpropagation activation functions - one for hidden layer(s) `g` and one for output layer `f`: ``
+- Dot product: `a . b = a_1 * b_1 + a_2 * b_2 + ... + a_n * b_n`
+- (np.)exp: `exp(x) = e^x`
+
+Perceptron
+- Perceptron update weights: `w_i = w_i - learning_rate * (predicted - target) * x_i`
+- logistic activation: `1/(1 + exp(-x))`
+- Backpropagation activation functions - one for hidden layer(s) `g` and one for output layer `f`: ``
+
+Reinforcement learning:
+- SARSA: `Q[s,a] = (1 - learning_rate) * Q[s,a] + learning_rate * (reward + discount_rate * Q[s',a'])`
+- Q-learning: `Q[s,a] = (1 - learning_rate) * Q[s,a] + learning_rate * (reward + discount_rate * max(Q[s',:]))`
+    - Update Q[s,a] in Q-learning: `Q[s,a] = Q[s,a] + learning_rate * (reward_+1 + discount_factor * max(Q[s_+1,a]) - Q[s,a])`
