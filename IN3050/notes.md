@@ -90,7 +90,7 @@ w_3 = w_3 - learning_rate * (predicted - target) * a_3 = 3 - 0.1 * (3 - 5) * 0.5
     Not required in task
     `Q[center_right, down] = Q[center_right, down] + learning_rate * (reward + discount_factor * max(Q[bottom_right, :]) - Q[center_right, down])` =
     `0 + 0.1 * (1 + 0.1 * 0 - 0)` = `0.1`
-- b: SARSA calculates the action we actually took instead of the optimal (max Q[s,a]), thus the part of the formula that previously was `up` with a value of 10 is now `down` with a value of 0
+- b: SARSA calculates the action we actually took instead of the optimal `(max Q[s,a])`, thus the part of the formula that previously was `up` with a value of 10 is now `down` with a value of 0
     `Q[center, right] = Q[center, right] + learning_rate * (reward + discount_factor * Q[center', right'] - Q[center, right])` =
     `1 + 0.1 * (1 + 0.1 * 0 - 1)`
 - c: The two different algorithms give different results here because they base their calculations off of two different possible paths. The on policy algorithm SARSA calculates based on the actual path we have taken - right, down, the off policy algorithm Q-learning calculates based on the theoretically best next step in each node leading to the path - right, up. Thus we get two different results.
@@ -101,8 +101,11 @@ w_3 = w_3 - learning_rate * (predicted - target) * a_3 = 3 - 0.1 * (3 - 5) * 0.5
 ## Task 8
 - a: [Separable](./separable.png)
      [Unseperable](./unseparable.png)
-- b:
+- b: Kmeans works by first initializing k random centers, then every datapoint calculates the distance (euclidian, manhattan, etc) to each of the centers and identifies with the cluster belonging to the closest centroid. Then it recalculates the centers of each cluster by taking the mean of each dimension for all datapoints assigned to each cluster. It then repeats the distance calculation + centroid updating until the centers stop moving significantly or until some number of generations have been reached. Since the identities of the datapoints changes for each iteration (for some of them at least) the centers will therefore also shift around accordingly.
+- c: Kmeans works on the first dataset because for every datapoint the classes of their closest neighbors are the same as their own - for all cat datapoints all their closest neighbors are cats, same for dogs. For the other dataset there is an outlying `dog` datapoint who's distance to the center of the cat cluster is shorter than some of the other dogs, thus it will always be classified as a cat.
 
+## Task 9
+[L systems](./lsystems.png)
 
 ## Genetic algorithm vs hill climbing
 The genetic algorithm is not stochastic meaning its results has some amount of randomness involved - this comes from the mutation and crossover which we could also change to modify the randomness. Thus the genetic algorithm has a higher degree of exploration while the hillclimbing algorithm is pure exploitation. Therefore the hillclimbing algorithm(s) will always end up at the same local optimum(s) (which may be the global optimum), while the genetic algorithm could theoretically end up on any local optimum, which may be better if you for example run it a couple times to make sure youve found the global optimum.
