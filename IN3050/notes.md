@@ -88,8 +88,21 @@ w_3 = w_3 - learning_rate * (predicted - target) * a_3 = 3 - 0.1 * (3 - 5) * 0.5
      `1 + 0.1 * (1 + 0.1 * 10 - 1)` = `1.1`
 
     Not required in task
-     `Q[center_right, down] = Q[center_right, down] + learning_rate * (reward + discount_factor * max(Q[bottom_right, :]) - Q[center_right, down])` =
-     `0 + 0.1 * (1 + 0.1 * 0 - 0)` = `0.1`
+    `Q[center_right, down] = Q[center_right, down] + learning_rate * (reward + discount_factor * max(Q[bottom_right, :]) - Q[center_right, down])` =
+    `0 + 0.1 * (1 + 0.1 * 0 - 0)` = `0.1`
+- b: SARSA calculates the action we actually took instead of the optimal (max Q[s,a]), thus the part of the formula that previously was `up` with a value of 10 is now `down` with a value of 0
+    `Q[center, right] = Q[center, right] + learning_rate * (reward + discount_factor * Q[center', right'] - Q[center, right])` =
+    `1 + 0.1 * (1 + 0.1 * 0 - 1)`
+- c: The two different algorithms give different results here because they base their calculations off of two different possible paths. The on policy algorithm SARSA calculates based on the actual path we have taken - right, down, the off policy algorithm Q-learning calculates based on the theoretically best next step in each node leading to the path - right, up. Thus we get two different results.
+- d: Greedy policy - 0%, will always choose the highest q-value - `up`.
+     Epsilon-greedy - 10% chance to choose a random direction instead of the best one, then we have a 1/4 chance of choosing `down` if the 10% fires -> 0.1 * 0.25 = 0.025.
+     `Softmax = (exp(Q_(s,t)(a)) / temperature) / sum(b, exp(Q_(s,t)(b)))` = `(exp(0) / 1) / (exp(0) + exp(0) + exp(0) + exp(10)) / 1` = `1 / 1 + 1 + 1 + 22026.4657948` = 0.0000045
+
+## Task 8
+- a: [Separable](./separable.png)
+     [Unseperable](./unseparable.png)
+- b:
+
 
 ## Genetic algorithm vs hill climbing
 The genetic algorithm is not stochastic meaning its results has some amount of randomness involved - this comes from the mutation and crossover which we could also change to modify the randomness. Thus the genetic algorithm has a higher degree of exploration while the hillclimbing algorithm is pure exploitation. Therefore the hillclimbing algorithm(s) will always end up at the same local optimum(s) (which may be the global optimum), while the genetic algorithm could theoretically end up on any local optimum, which may be better if you for example run it a couple times to make sure youve found the global optimum.
