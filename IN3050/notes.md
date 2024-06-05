@@ -204,3 +204,24 @@ def tsp_simulated_annealing(cities):
 
 print(tsp_simulated_annealing(GENERATE_RANDOM_SOLUTION()))
 ```
+
+### 3
+The representation lets us encode some pre existing knowledge about the shape of the problem into our solution allowing us to more easily model the problem. For example for the TSP we could represent the problem as a permutation problem since this would by definition not allow undesired solutions such as visiting the same cities more than once/not visiting some cities, etc. If we were to represent the problem in some other way - for example as an array of integers we would allow these undesried solutions which we would later have to filter out.
+### 4
+- a: Exploration should start high since we don't yet know what solutions are good or bad, and decrease as the process converges around a few possible good solutions. A way to do this in RL is to start with a high epsilon value in an epsilon greedy algorithm and decrease it as the search progresses.
+- b: Exploration should start high since we don't yet know what solutions are good or bad, and decrease as the process converges around a few possible good solutions. A way to do this in EA is to start with a high mutation rate and decrease it as the search progresses.
+### 5
+- a: The training data is used to actively update the weights in the model as it's learning by comparing the models predicted values with some golden standard of target values. The test data is applied after the training is done (its important to not have it spill into or use it while training) to get a generalized accuracy for how the model performs on untrained data of the same shape as the training data, thus giving us a sense of whether the model is underfitted, overfitted, good, bad, etc.
+- b: We keep two (or three with a validation set) datasets to separate between what data we are using to actively update the model (train) and what data we are using to benchmark the performance of (test) the model. These need to be separated in order to ensure that the model is not cheating by integrating the data from the test set before its supposed to. If we did not do this it would be sort of like getting the answers to an exam before you have started it.
+- c: The validation set is used while training, not to update the weights, but to make sure the model is making steady generalizable progress and not overfitting to the training set. If we notice a decline in accuracy on the validation set we can stop the training early and possible roll back to a previous generation to get the best generalizable model. Different models and parameters may perform differently on this validation set which may not be representative of the model's true general accuracy, which is why we need another fully independent test set to verify this accuracy.
+- d: Cross-validation works by splitting the training set into n equally sized bins. We then run n experiments on these where the k'th bin is used as the test set and the rest of the bins as the training set. This gives us a larger test dataset by using the whole training dataset in different ways, which is especially benefitial when we don't have that much data.
+### 6
+- a: A perceptron is an algorithm for binary classification. It takes some vector of input and applies weights to each input value, often combined with a bias term of 1 or -1. If the input consists of m features the perceptron has m weights + a threshold weight w0. It then takes the weighted sum of the inputs before it runs that sum through some activation function (for example logistc, relu, etc), which produces a predicted output based on the input. It can then compare the output with some gold standard to check if it predicted right. If the weighted sum is greater than the threshold w0, the perceptron classifies the input as positive, otherwise negative class. If it predicted wrongly it can then update the weights based on this formula: `weight_i = weight_i - learning_rate * (predicted - target) * feature_i`.
+- b:
+    1. It could only produce linear classifiers. Binary classification.
+    2. A new technique where you could add several hidden layers to the perceptron was invented - gradient descent, backpropagation.
+    3. Faster hardware - GPUs, more data - internet, better algorithms.
+### 7
+
+
+`1/(1 + e^(-x))`
