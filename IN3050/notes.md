@@ -143,4 +143,64 @@ Perceptron
 Reinforcement learning:
 - SARSA: `Q[s,a] = (1 - learning_rate) * Q[s,a] + learning_rate * (reward + discount_rate * Q[s',a'])`
 - Q-learning: `Q[s,a] = (1 - learning_rate) * Q[s,a] + learning_rate * (reward + discount_rate * max(Q[s',:]))`
-    - Update Q[s,a] in Q-learning: `Q[s,a] = Q[s,a] + learning_rate * (reward_+1 + discount_factor * max(Q[s_+1,a]) - Q[s,a])`
+    - Update `Q[s,a]` in Q-learning: `Q[s,a] = Q[s,a] + learning_rate * (reward_+1 + discount_factor * max(Q[s_+1,a]) - Q[s,a])`
+
+## Exam 2023
+### 1
+- Supervised learning: can be used to train a model that classifies images.
+- Unsupervised learning: can be used to generate recommended content on social media.
+- Reinforcement learning: can be used to teach a model how to path through a maze.
+
+### 2
+- a: 
+```python
+N_ITERATIONS = 200
+
+def tsp_hill_climbing(cities):
+    # copy the parameter
+    best = cities[:]
+    # keep track of the best distance to not have to recalculate it inside loop every time
+    best_distance = EVALUATE_DISTANCE(best)
+
+    for i in range(N_ITERATIONS):
+        neighbor = GENERATE_RANDOM_NEIGHBOR(best)
+        neighbor_distance = EVALUATE_DISTANCE(neighbor)
+        # update best if we have found an improvement
+        if neighbor_distance < best_distance:
+            best = neighbor
+            best_distance = neighbor_distance
+        
+    return best
+
+print(tsp_hill_climbing(GENERATE_RANDOM_SOLUTION()))
+```
+- b:
+```python
+N_ITERATIONS = 200
+
+def tsp_simulated_annealing(cities):
+    best = cities[:]
+    best_distance = EVALUATE_DISTANCE(best)
+
+    # temparature starts high
+    temperature = N_ITERATIONS
+
+    for i in range(N_ITERATIONS):
+        neighbor = GENERATE_RANDOM_NEIGHBOR(best)
+        neighbor_distance = EVALUATE_DISTANCE(neighbor)
+
+        if neighbor_distance < best_distance:
+            # if neighbor is better explore it
+            best = neighbor
+            best_distance = neighbor_distance
+        elif SHOULD_I_EXPLORE(best, neighbor, temperature):
+            # if neighbor is worse, maybe explore it anyways
+            best = neighbor
+            best_distance = neighbor_distance
+
+        temperature -= 1
+
+    return best
+
+print(tsp_simulated_annealing(GENERATE_RANDOM_SOLUTION()))
+```
