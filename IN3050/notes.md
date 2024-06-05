@@ -145,6 +145,10 @@ Reinforcement learning:
 - Q-learning: `Q[s,a] = (1 - learning_rate) * Q[s,a] + learning_rate * (reward + discount_rate * max(Q[s',:]))`
     - Update `Q[s,a]` in Q-learning: `Q[s,a] = Q[s,a] + learning_rate * (reward_+1 + discount_factor * max(Q[s_+1,a]) - Q[s,a])`
 
+Linear regression:
+- Predict: `predicted = weights . features`
+- Train: 
+
 ## Exam 2023
 ### 1
 - Supervised learning: can be used to train a model that classifies images.
@@ -255,3 +259,31 @@ The representation lets us encode some pre existing knowledge about the shape of
 ### 11
 Biases in machine learning algorithm is when a model reinforces some stereotype based on the statistics in the data it is trained on. For example if a model is trained to predict whether a defendant in a court case is guilty or not based on their personal traits they will predict true or false based on whether the defendant has personality traits that are common for guilty defendants. This means that it will likely categorize a young black male as guilty and a pregnant white mother as innocent. The result of this is that in terms of percentages the model may have a good accuracy, but the absolute number of false positives may be a lot higher for some types of people. Whether this is fair is up for debate and is why biases in machine learning can be problematic.
 - ML model may pick up on human biases present in the test data and associate certain attributes with being good or bad, instead of being independent.
+
+## Exam 2022
+### 1
+- a:
+    - Hill climbing works by making small incremental changes changes to the current solution, moving directly towards the local optimum.
+    - Gradient descent works by moving towards the gradient (the direction the solution quality changes the most when we change the solution).
+- b: We cannot run gradient descent on non differentiable problems, that is: problems that have some (or all) input values where its function is not differentiable. For example the absolute value function `f(x) = |x|` since it is not differentiable at x = 0. However we can still run hill climbing on it.
+### 2
+- a: The traveling salesman problem is best represented as permutations since for some sequence of cities, the only valid solutions to the problem are different permutations of the same cities. It would for example be inefficient to represent this as a sequence of integers since this would allow duplicate cities, missing cities, etc., while solutions like these would by definition not be valid permutations of the initial sequence of cities. We can therefore say more generally that other representations allow for invalid solutions which we would later have to filter through.
+- b: An example of a mutation operator for such a problem would be randomly swapping two elements in the list. Given the same list `[1 3 2 5 4]` it could for example swap 1 and 3 to produce `[3 1 2 5 4]`
+### 3
+- a: Exploration refers to how many different kinds of solutions an algorithm checks, often involving a tradeoff where you include suboptimal solutions hoping that they can act as seeds for better solutions. Having a lot of exploration means we are less likely to get stuck in local optima so its a good idea to have some of it. Exploitation refers to the degree to which an algorithm keeps solutions that are good. A normal way to do exploitation is to keep track of the `elite` solutions - that is: keep the best solutions to make sure you don't lose them. Having a lot of exploitation means we will keep trying to improve the best solutions so its also important to have some of this. Exploration and exploitation are opposites of eachother, but its important to balance them to ensure we both explore new solutions to not get stuck and exploit good solutions to make sensible gradual improvements.
+- b: Increase mutation rate or increasing the impact of a mutation.
+- c: Selection pressure is how competetive the current population is, that is: given some solution how likely is it to survive compared to other solutions. Algorithms that have a high selection pressure will favor the strongest solutions leading to more exploitation, whereas algorithms with a low selection pressure will allow weaker solutions to survive leading to more exploration.
+### 4
+- Calculate distance to all other datapoints
+- Pick the k nearest ones
+- Pick the majority class of the k nearest datapoints
+### 5
+- a: multiply features with weights: `predicted = weights . features = (0, -1, 1) . (-1, 3, 1) = -2`
+- b: I used Mean Square Error (MSE):
+    - Formula: `w_i_new = w_i_old - learning_rate * (predicted - target) * feature_i`
+    - `w_0_new = 0 - 0.1 * (-2 - 0) * -1 = -0.2`
+    - `w_1_new = -1 - 0.1 * (-2 - 0) * 3 = -0.4`
+    - `w_2_new = 1 - 0.1 * (-2 - 0) * 1 = 1.2`
+    - `(-0.2, -0.4, 1.2)`
+### 6
+
