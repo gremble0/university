@@ -222,6 +222,36 @@ The representation lets us encode some pre existing knowledge about the shape of
     2. A new technique where you could add several hidden layers to the perceptron was invented - gradient descent, backpropagation.
     3. Faster hardware - GPUs, more data - internet, better algorithms.
 ### 7
+- a: `logistic(x) = 1/(1 + e^(-x))`
+- b: `h1(x1, x2) = logistic(bias * v01 + x1 * v11 + x2 * v21)` = `1/(1 + e^(-(-1 * v01 + x1 * v11 + x2 * v21))`
+- c: `out(x1, x2) = logistic(bias * w0 + logistic(h1(x1, x2)) * w1 + logistic(h2(x1, x2)) * w2)` = `1/(1 + e^(-(-1 * w0 + a1 * w1 + a2 * w2)))`
+- d: `update_w2(a2) = w2 - learning_rate * (predicted - target) * a2` = `w2 - 0.1 * (predicted - 1) * a2`
+- e: ~`update_v12(a1) = v12 - learning_rate * (predicted - target) * a1` = `v12 - 0.1 * (predicted - 1) * a1`~
 
+- Realized I was doing 4050 exam so now we jump to 3050 exam 2023 lol
 
-`1/(1 + e^(-x))`
+### 9
+- a: An agent with a greedy policy will always take the action with the largest reward. We can follow the agent for 5 steps to see if it reaches the large reward. 
+    1. `max(Q[center, :])` = 10 -> move right
+    2. `max(Q[center_right, :]` = 10 -> move up
+    3. `max(Q[top_right, :]` = 10 -> move down
+    4. `max(Q[center_right, :]` = 10 -> move up
+    5. `max(Q[top_right, :]` = 10 -> move down
+    - We can see here that we have entered an infinite loop of going back and forward between center_right and top_right. This is because when in these states the highest rewards are simply to go back and forth between them, meaning they will never reach the big reward `R`.
+- b: Instead of a greedy policy we can use an epsilon greedy policy, which introduces a variable `epsilon` which is a number between 0 and 1 that acts as the probability to choose a random action instead of the action with the biggest reward. If we are lucky with this policy the following could happen:
+    1. We choose some epsilon value, for example 0.1
+    2. We choose our first action - epsilon does not trigger (90% chance) and we pick the greedy option -> move right, we are now in the state center_right.
+    3. We choose our second action - epsilon triggers (10% chance) meaning we choose a random action instead of moving up which is the greedy action.
+        - We randomly choose moving down (25% chance)
+    - This sequence is rather unlikely (0.9 * 0.1 * 0.25 = 0.0225 = 2.25%) but it is a possible way of reaching the big reward. There are also many other combinations which are all possible with an epsilon greedy policy.
+### 10
+- a:
+    1. Choose `k` random datapoints.
+    2. Classify each datapoint based on proximity to each randomly chosen datapoint.
+    3. Calculate the center of each of every cluster.
+    4. Classify each datapoint based on proximity to each of the new centers.
+    5. Repeat step 3-4 until centers stop moving significantly or some amount of iterations have passed.
+- b: An autoencoder is a model that can reproduce an output similar to the input. Some use cases are - removing noise from audio, generating data and compression + decompression.
+### 11
+Biases in machine learning algorithm is when a model reinforces some stereotype based on the statistics in the data it is trained on. For example if a model is trained to predict whether a defendant in a court case is guilty or not based on their personal traits they will predict true or false based on whether the defendant has personality traits that are common for guilty defendants. This means that it will likely categorize a young black male as guilty and a pregnant white mother as innocent. The result of this is that in terms of percentages the model may have a good accuracy, but the absolute number of false positives may be a lot higher for some types of people. Whether this is fair is up for debate and is why biases in machine learning can be problematic.
+- ML model may pick up on human biases present in the test data and associate certain attributes with being good or bad, instead of being independent.
