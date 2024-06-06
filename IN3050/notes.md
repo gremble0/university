@@ -141,13 +141,13 @@ Perceptron
 - Backpropagation activation functions - one for hidden layer(s) `g` and one for output layer `f`: ``
 
 Reinforcement learning:
-- SARSA: `Q[s,a] = (1 - learning_rate) * Q[s,a] + learning_rate * (reward + discount_rate * Q[s',a'])`
-- Q-learning: `Q[s,a] = (1 - learning_rate) * Q[s,a] + learning_rate * (reward + discount_rate * max(Q[s',:]))`
-    - Update `Q[s,a]` in Q-learning: `Q[s,a] = Q[s,a] + learning_rate * (reward_+1 + discount_factor * max(Q[s_+1,a]) - Q[s,a])`
+- SARSA: `Q[s,a] = (1 - learning_rate) * Q[s,a] + learning_rate * (reward + discount_rate * Q[s',a'])` - s', a' is the next state and action we actually took
+- Q-learning: `Q[s,a] = (1 - learning_rate) * Q[s,a] + learning_rate * (reward + discount_factor * max(Q[s',:]))`
+    - Update `Q[s,a]` in Q-learning: `Q[s,a] = Q[s,a] + learning_rate * (reward + discount_factor * max(Q[s_+1, :]) - Q[s,a])`
 
 Linear regression:
 - Predict: `predicted = weights . features`
-- Train: 
+- Train: `w_i_new = w_i_old - learning_rate * (predicted - target) * feature_i`
 
 ## Exam 2023
 ### 1
@@ -284,6 +284,17 @@ Biases in machine learning algorithm is when a model reinforces some stereotype 
     - `w_0_new = 0 - 0.1 * (-2 - 0) * -1 = -0.2`
     - `w_1_new = -1 - 0.1 * (-2 - 0) * 3 = -0.4`
     - `w_2_new = 1 - 0.1 * (-2 - 0) * 1 = 1.2`
-    - `(-0.2, -0.4, 1.2)`
+    - `w_new = (-0.2, -0.4, 1.2)`
 ### 6
-
+- a: multiply featueres with weights: `predicted = weights . features = (0, -1, 1) . (-1, 3, 1) = -2`.
+    - Then apply logistic function to this prediction: `1/(1 + e^-(-2)) = 0.119` -> 0.119 < 0.5 -> round down to 0 -> negative class
+- b: In logistic regression its common to use Binary Cross Entropy loss: `w_i_new = w_i_old - learning_rate * (predicted - target) * feature_i`
+    - `w_0_new = 0 - 0.1 * (0.119 - 0) * -1 = 0.0119`
+    - `w_1_new = -1 - 0.1 * (0.119 - 0) * 3 = -1.0357`
+    - `w_2_new = 1 - 0.1 * (0.119 - 0) * 1 = 0.9881`
+    - `w_new = (0.0119, -1.0357, 0.9881)`
+### 7
+- a: Without a hidden layer we can only compute linear decision boundaries
+- b: Because that makes us unable to run gradient descent since step functions are non differentiable (have no gradient)
+### 8
+- Autoencoders take some input and produces a similar but not identical output, we could use this to generate many different trees.
